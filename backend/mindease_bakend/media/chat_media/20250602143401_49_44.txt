@@ -1,0 +1,979 @@
+
+   Django
+========
+
+-> Django is a Python-based web framework that helps developers build websites quickly and efficiently.
+   It includes tools for handling databases, creating web pages, and managing user authentication, all with built-in security features.
+-> It's very easy to switch databases in the Django framework.
+-> Django ORM (Object-Relational Mapping):- Simplifies database interaction by using Python code instead of SQL.
+-> Admin Panel.
+-> Django has built-in protection against various web vulnerabilities, Includes protection against malicious attacks like Cross-Site Request Forgery (CSRF).
+-> Django follows an architectural pattern called the MTV (Model-Template-View) pattern. 
+-> Middleware Support
+
+DRY (Don't Repeat Yourself) Principle:
+---------------------------------------
+-> Django promotes the DRY principle by providing tools to reuse code and reduce redundancy.
+   Its template engine, ORM, and generic views help developers write clean and maintainable code.
+
+Scalability:
+-------------
+-> Django is highly scalable and can handle large amounts of traffic with ease. It's been used to build some of the busiest sites on the internet.
+
+Batteries-Included Framework:
+------------------------------
+Django provides everything you need to build a web application, like URL routing, database management, form handling, authentication, and an admin panel, without needing extra tools.
+
+Django Workflow
+----------------
+-> A user requests a webpage (e.g., /products).
+   Django maps this URL to a specific view function using its URL routing system.
+   The view retrieves data from the Model (e.g., products from the database).
+   The data is sent to the Template for rendering. 
+   The rendered HTML is sent back to the user's browser.
+
+Model-View-Template (MVT)
+--------------------------
+-> Model:
+        Represents the data structure.
+        Uses Django's ORM to interact with the database.
+   View:
+       Handles the logic of the application.
+       Retrieves data from the model and sends it to the template.
+   Template:
+       Handles the presentation layer.
+       Defines how the data should be displayed using HTML, CSS, and embedded Django
+
+Frame Work
+----------
+-> A framework is a collection of pre-written code and tools that helps developers build applications faster and more efficiently.
+   It provides a structured foundation and guidelines for solving common problems, so you don’t have to start from scratch.
+-> Pre-Built Components: Frameworks include ready-made libraries, functions, and templates for tasks like database handling, user authentication, and routing.
+-> Saves Times:- reduce the time and effort required in the development process.
+-> Security Built-In:- Frameworks often include tools to handle security, such as protecting against hacking attempts like SQL injection.
+-> frame works:- Django, Flutter, Angular, React Native etc.., 
+
+Architecture
+------------
+-> Architecture refers to the high-level design and structure of a software application or system.
+   It defines how different components (like databases, APIs, user interfaces) interact with each other.
+   A well-designed architecture ensures the system is efficient, scalable, maintainable, and secure.
+-> It describes how the system is structured and how its components (such as databases, APIs, services, and user interfaces) work together. 
+
+MVC (Model-View-Controller)
+---------------------------
+-> The MVC pattern is very similar to MVT but differs in the role of the View and Controller.
+   Model: Represents the data layer, like in MVT.
+   View: Displays the data to the user (this is the Template in Django).
+   Controller: Manages the user input and business logic (In Django, the View in MVT acts as the controller).
+-> Key Differences:
+   In MVC, the Controller handles the logic, whereas in MVT, the View handles the logic.
+   In MVC, the View is only concerned with displaying data, while in MVT, the Template is focused solely on presentation.
+
+HTTP (HyperText Transfer Protocol)
+-----------------------------------
+-> HTTP stands for HyperText Transfer Protocol.
+-> HTTP (Hypertext Transfer Protocol) is a fundamental protocol of the Internet, enabling the transfer of data between a client and a server.
+-> It is a set of rules for transferring data from one computer to another.
+-> HTTP is the protocol that enables web browsers and servers to talk to each other and exchange data (like web pages, images, and videos).
+-> Request-Response Model:
+   HTTP follows a client-server model where a client (usually a web browser) sends a request to the server,
+   and the server responds with the requested resource (like a web page, image, or file). 
+
+HTTp Request
+------------
+-> An HTTP request is the message that a client (a web browser) sends to a server, asking for a specific action or resource,
+-> An HTTP request consists of several components that carry the necessary information for the server to process the request and provide an appropriate response.
+   Here are the components of an HTTP request:
+   1. A request line:- A request line contains the HTTP method (GET, POST, PUT, or DELETE), indicating the desired action,
+      the target URL or resource path, indicating the location of the web resources, and the version of the HTTP protocol.
+   2. A request header:- A request header contains additional information and metadata about the request( the browser type, accepted content types,
+      user-agent information, authentication tokens, and cookies)
+   3. A request body:- A request body is an optional component in an HTTP request, carrying additional information the client sends to the server.
+      This component tells the server something specific, like submitting a form, sending data to update a profile, or uploading a file.
+
+HTTP response
+--------------
+-> An HTTP response is a message a server sends to the client in response to an HTTP request.
+   It contains the data requested by the client, additional metadata, and status information about the success or failure of the request.
+   HTTP responses typically include the following information:-
+   1. A status line:- indicates the status of the request to the client device.
+      It is the first line of the response that includes the HTTP version, the status code, and the status message.
+   2. A response header:- contains metadata and additional information about the server’s response to the client’s request,
+      such as content type, length, or caching directives.
+   3. A blank line:- A single blank line separates the response header from the response body.
+   4. A response body (optional):- contains the data that the server sends back to the client.
+      If the request is successful, it includes the requested data in the HTML, JSON, or XML format,
+      or it can contain an image or any data based on the request and the server’s capabilities.
+
+HTTP Status code
+----------------
+-> An HTTP status code is a message a web server sends to the client after processing its request to inform if it can fulfill the request.
+-> After the server processes the request, it returns a status code to indicate whether the request was successful or if an error occurred.
+-> The HTTP status code is a three-digit numerical code that a web server includes in its response to the client.
+   The status code informs the client about the outcome of the HTTP request — if the request was successful, redirected, or encountered an error.
+-> These are some of the most common HTTP status codes:-
+   200 OK:- The request was successful, and the server has provided the requested data.
+   400 Bad Request. The server cannot understand the client’s request.
+   401 Unauthorized. The client does not have proper authentication credentials to access a resource on the server.
+   403 Forbidden. The client’s identity is known, but they do not have permission to access the requested resource.
+   404 Not Found. You have probably encountered this error code before. It means that the resource could not be found on the server.
+   500 Internal Server Error. The server cannot fulfill the request because it has encountered a condition it doesn’t know how to handle.
+   502 Bad Gateway. The server cannot communicate with the upstream (host) server.
+   
+Stateless Protocol
+------------------
+-> HTTP is stateless, which means that each request is independent.
+   The server doesn't remember previous requests or interactions.
+   Each time you load a webpage, it's like the server is seeing you for the first time.
+
+HTTPS (Secure HTTP)
+-------------------
+-> HTTPS is the secure version of HTTP.
+
+HTTP methods
+-------------
+-> HTTP methods are actions defined in the HTTP protocol that describe what kind of operation a client (like a web browser) wants to perform on a resource located on a server.
+   Each method specifies a different type of request.
+   Here's an explanation of the most common HTTP methods:
+   1. GET - To retrieve data from a server.
+   2. POST - To send data to the server.
+   3. PUT - To update an existing resource or create it if it does not exist.
+   4. PATCH - To partially update an existing resource.
+   5. DELETE - To delete a resource on the server.
+   6. HEAD - To retrieve headers of a resource without fetching the resource itself.
+   7.OPTIONS - To describe the communication options available for a resource.
+
+ HTTP Header
+------------
+-> An HTTP Header is a key-value pair of information sent as part of an HTTP request or response.
+   Headers provide metadata about the request or response, such as details about the browser, server, content type, or caching policies.
+   They enable the client (e.g., a browser) and server to communicate additional context, making web interactions more efficient and secure.
+-> Types of HTTP Headers:-
+   1. Request Headers
+      Sent by the client (e.g., browser) to provide information about the request or the client itself.
+   2. Response Headers
+      Sent by the server in response to a request to provide details about the response.
+
+ HTTP Body
+----------
+-> The HTTP Body refers to the portion of an HTTP request or response that contains the data being sent between the client and server.
+   Unlike HTTP headers, which provide metadata, the body holds the actual content of the message, such as form data, JSON, images, or other types of payload.
+-> Optional: Not all HTTP methods require a body. For example:
+   GET and HEAD requests typically do not have a body.
+   POST, PUT, and PATCH requests often include a body.
+-> HTTP Body in Requests:
+   The body of a request typically contains data the client sends to the server, such as form data
+-> HTTP Body in Responses:
+   The body of a response typically contains the content being sent back to the client, such as HTML Pages
+
+ HTTP OPTIONS Method
+---------------------
+-> The HTTP OPTIONS method is used to describe the communication options available for a specific resource or the server as a whole.
+   It allows a client (e.g., a browser) to discover the supported HTTP methods and capabilities of a web server for a particular endpoint.
+-> Discovery of Supported Methods:
+   It provides a list of HTTP methods (e.g., GET, POST, PUT, DELETE) that the server supports for the requested resource.
+-> No Side Effects:
+   The OPTIONS method does not change the state of the resource or perform any action beyond returning metadata.
+-> The HTTP OPTIONS method is like asking a server: "Hey server, what actions (methods) can I perform on this resource?"
+   It's a way for the client to figure out what the server allows. For example, does the server allow us to GET, POST, or DELETE something at a particular URL?
+
+ URL (Uniform Resource Locator)
+--------------------------------
+-> A URL (Uniform Resource Locator) is a web address that specifies the location of a resource (like a webpage, file, or API) on the internet and how to access it.
+   It's divided into several parts, each with a specific purpose.
+   Here’s an example URL:- 
+   https://www.example.com:8080/path/to/page?query=search#section
+   1. Scheme (Protocol):-
+      Specifies how the resource is accessed (e.g., HTTP, HTTPS, FTP).
+      Example: https://
+      Tells the browser or application which protocol to use for communication.
+   2. Host (Domain):-
+      The unique name of the server where the resource is located.
+      Example: www.example.com
+      Identifies the server or website you want to reach.
+   3. Port:-
+      Specifies the communication port on the server.
+      Example: :8080
+      Tells the server which service or application to use.
+   4. Path:-
+      Specifies the location of a specific resource on the server.
+      Example: /path/to/page
+      Represents the directory or file structure on the server.
+   5. Query String:-
+      Contains parameters sent to the server for additional instructions.
+      Example: ?query=search
+      Allows passing of data to the server, such as search terms, filters, or settings.
+      Starts with a ?.
+      Parameters are in key=value format (e.g., query=search).
+      Multiple parameters are separated by & (e.g., ?key1=value1&key2=value2).
+   6. Fragment (Hash):-
+      Identifies a specific part of the resource, often used for navigation within a page.
+      Example: #section
+      Directs the browser to a specific section of a page without reloading.
+      Only processed by the client (browser), not sent to the server.
+ 
+ CSRF (Cross-Site Request Forgery)
+-----------------------------------
+-> CSRF stands for Cross-Site Request Forgery.
+-> It’s an attack where a malicious website tricks a user’s browser into making unintended requests to a trusted website where the user is already logged in.
+-> CSRF (Cross-Site Request Forgery) is a type of web security vulnerability
+   that allows an attacker to trick users into performing unintended actions on a website where they're authenticated.
+-> How CSRF Works:-
+   Authentication: A user logs into a website and receives a session token or cookie.
+   Attack Setup: The attacker creates a malicious link or form on their website that triggers an action on the target website.
+   Unintentional Request: The user, while still logged in, visits the attacker's website and unknowingly performs the malicious action
+                          by clicking a link or loading a page containing   malicious JavaScript.
+   Execution: The action (e.g., transferring money, changing account settings) is executed on the user's behalf
+              because the website trusts the session token/cookie sent with the request.
+-> Key Characteristics:
+   Targets authenticated users.
+   Exploits the user's credentials or session tokens.
+-> How is CSRF Prevented?
+   CSRF Tokens:-
+   A unique, random token is generated by the server and sent to the user’s browser.
+   The token must be included in every sensitive form or API request.
+   If the token is missing or invalid, the server rejects the request.
+   Django automatically generates a CSRF token. Add {% csrf_token %} in your forms to include the token.
+
+ CSRF token 
+------------
+-> A CSRF token is a unique, secret value that is associated with a user’s session and included in web forms to protect against CSRF attacks.
+   It serves as a safeguard to ensure that the requests made to a website are intentional and not triggered by an attacker.
+-> When a user first visits a website or logs in, the server generates a random, unique token and associates it with the user’s session.
+   The token is then sent to the client (user's browser) and embedded into every HTML form or API request.
+   When the form is submitted, the token is sent with the request as part of the form data.
+   The server checks if the submitted CSRF token matches the one stored for the user's session.
+   Upon receiving the request, the server verifies that the CSRF token submitted with the form matches the token stored in the session.
+   If the tokens match, the request is processed.
+   If they don’t match or the token is missing, the server rejects the request and usually sends a 403 Forbidden response, blocking the malicious request.
+-> CSRF Middleware:  
+   Django's CSRF middleware automatically checks the validity of the token for each incoming request (for POST, PUT, DELETE requests) and compares it with the session token.
+   If the token is invalid or missing, Django returns a 403 Forbidden error.
+-> CSRF Exemption:
+   If for some reason a view should not require CSRF protection (e.g., APIs or certain actions), you can exempt it by using the @csrf_exempt decorator,
+   though this should be used carefully.
+-> server validation:-
+   The server compares the submitted CSRF token (csrfmiddlewaretoken) with the token stored for the session.
+   If they match, the server processes the request. If not, the server denies the request and responds with a 403 Forbidden.
+
+Host Header Attack
+-------------------
+-> A Host Header Attack occurs when an attacker manipulates the Host header in an HTTP request to exploit vulnerabilities in the target web application.
+   The Host header typically contains the domain name (e.g., www.example.com) the user intends to visit.
+   However, attackers can modify this header to their advantage, causing unintended consequences for the web server or application.
+->  in Django, you can use the ALLOWED_HOSTS setting to restrict acceptable Host headers:
+    ALLOWED_HOSTS = ['example.com', 'www.example.com']
+    This will prevent requests with invalid Host headers from being processed.
+
+ SSRF
+------
+-> Server-side request forgery is a web security vulnerability that allows an attacker to cause the server-side application to make requests to an unintended location.
+-> A vulnerability where the attacker tricks the server into sending requests to unauthorized locations.
+-> Server-Side Request Forgery (SSRF) is a type of attack where an attacker tricks a server into making requests to internal or external resources that it should not have access to.
+
+ Venv (Virtual Environment)
+----------------------------
+-> A tool to create isolated Python environments: It ensures that the Python libraries you use for one project don’t interfere with other projects.
+-> This ensures that dependencies for one project do not interfere with those of another.
+-> Without venv, you’d have to install and uninstall Django versions every time you switch projects! This can cause errors and confusion.
+   With venv, each project gets its own "sandbox" to safely install and manage the correct version of Django and other libraries.
+-> All libraries installed inside the virtual environment stay separate from the system Python.
+-> This way, you can create different projects with different versions of libraries, and they won’t interfere with each other.
+
+ Local Host
+------------
+-> In Django, localhost refers to the local machine or server you are working on.
+   It is used for development purposes to run and test your Django project on your computer before deploying it to a production environment.
+-> By default, Django runs the project on localhost and port 8000,
+-> It allows developers to test the application locally without exposing it to the internet.
+
+
+ Session
+----------
+-> A session in Django is a way to store data for individual users.
+-> Django uses cookies to store a session ID,
+-> A session in Django is a way to store data  across multiple requests from the same user.
+   This allows you to persist information about the user, even though HTTP is stateless.
+-> They allow storing and retrieving user-specific data across multiple requests.
+   When a user visits a Django-powered website, they are assigned a unique session ID stored as a cookie.
+   This ID helps Django recognize and associate subsequent requests with the user’s session data.
+-> Session data is stored on the server, while the client only receives a session ID (stored in a cookie).
+-> When a user visits your website for the first time, Django generates a unique session ID and sends it to the user's browser as a cookie.
+   For subsequent requests, the browser sends this session ID back to the server, allowing Django to retrieve the associated data.
+-> Database (default): Stores session data in a database (usually in a table called django_session).
+-> In Django, sessions are essential for maintaining state and managing user-specific data across multiple HTTP requests. Since HTTP is a stateless protocol,
+-> The default expiration time of session data in Django is 300 seconds (or 5 minutes).
+   if a user does not make any requests within this 5-minute window, the session will expire, and the session data will be cleared.
+
+ Cookies
+------------
+-> In Django, cookies are small pieces of data stored on the client side (in the user's browser) that are sent with each request to the server.
+   Cookies are typically used to store user-specific information like session data, preferences, or authentication tokens.
+-> Django uses cookies to store session Id by default.
+-> The default session cookie is named sessionid, and it is a session cookie (i.e., it expires when the browser is closed).
+-> By default, session cookies are deleted when the browser is closed.
+   you can make a session cookie persistent in Django by manually setting its expiration time.
+-> Data Size: The data stored in cookies is typically limited (around 4 KB).
+
+ Cache
+--------
+-> Caching in Django is the process of storing the results of expensive operations(
+   like database queries, complex calculations, or page rendering) so that they can be reused without needing to recompute or refetch the data.
+   The main goal of caching is to improve the performance of your application by reducing the time and resources needed to generate content for a user request.
+-> Reduce database load:-If your application frequently queries the same data, caching can store the result of that query for reuse, avoiding repeated database hits.
+-> Speed up page rendering:- Rendering templates or views can be computationally expensive.
+   By caching the result, you avoid re-rendering the same content repeatedly.
+-> Caching speeds up your Django application by storing results of expensive operations.
+-> Cached items are removed when their timeout expires.
+-> Types of Caching:-
+   1. View Caching:-
+      Caches the entire output of a view.
+      You can use the @cache_page decorator to cache the entire response of a view.
+   2. Template Fragment Caching:-
+      Caches a specific part (fragment) of a template rather than the whole page.
+      It is done using the {% cache %} tag in templates.
+   3. Low-Level Caching:-
+      This type of caching allows you to cache arbitrary data, such as the results of database queries, and store them in the cache for future use. 
+   4. Database Caching:-
+      Django can cache database queries, reducing the need for repeated database lookups.
+      It is particularly useful when certain queries return the same results frequently.
+   5. Template Cache:-
+      This allows caching of a specific template for a period.
+   6. Session Caching:-
+      Storing session data in the cache rather than the default database or file-based session storage.
+      When you need to speed up session data retrieval.
+-> Cache Backends (Where the Cache is Stored):-
+   1. Memcached:-
+      An in-memory key-value store. Very fast and scalable.
+      Memcached stores data in-memory on the server where it is running. It is an in-memory key-value store, so the data is cached in RAM.
+   2. Redis:-
+      Another in-memory store, but with more advanced features (e.g., persistent storage and support for complex data structures).
+      Redis also stores data in-memory    
+   3. File-Based Cache:-
+      Stores cached data on the filesystem. Good for smaller applications or where you don't want to set up an external caching system.
+      The cached items are stored in files on the server's filesystem.
+      These files are typically stored in a directory specified by the CACHE_DIR or LOCATION setting in the cache configuration.
+   4. Database Cache:-
+      Caches data in the database itself. Useful for persistent caching.
+      the cached items are stored in a special table in your database (usually named something like django_cache).
+   5. Dummy Cache:-
+      A no-op cache for development. It doesn't actually store any data.
+      The Dummy cache backend does not store data at all. It is just a placeholder and is useful for development or testing when you don't need actual caching.
+ 
+
+ Template Engine
+-------------------
+-> The template engine is a system in Django that helps you combine HTML with Python data to generate dynamic web pages.
+-> It allows you to use special syntax, like {{ variable }} for placeholders and {% for %} for loops, to add logic and dynamic content to your HTML files.
+-> The Django Template Engine is a system that helps you create dynamic web pages.
+   It lets you combine static HTML with dynamic data to generate pages that can change based on user input, database data, or other factors.
+-> These are HTML files with placeholders for dynamic content.
+   For example:- <h1>Welcome, {{ username }}!</h1>
+
+ Module
+---------
+-> In Django, a module refers to a Python file that contains reusable code.
+   These modules can include functions, classes, and variables that serve specific purposes,
+   and they are organized into apps to structure a Django project effectively.
+-> Django comes with built-in modules that provide essential functionalities:-
+   django.urls: For URL routing and mapping views to URLs.
+   django.db.models: Provides classes and functions for defining database models.
+   django.contrib.auth: For user authentication and authorization.
+-> Developers can create their own modules in Django by adding Python files within an app using .py.
+-> Reusability: Code can be reused across different parts of the application.
+
+Package
+----------
+-> In Python, a package is a folder that contains multiple Python modules and a special file named __init__.py.
+   The __init__.py file tells Python that this folder is a package.
+-> Django Project Itself Is a Package. When you create a Django project, it is a package.
+-> Django Apps Are Packages. When you create a Django app, it is also a package.
+-> Third-Party Packages:-
+   Third-party packages are Python libraries you can install to add extra functionality to your Django project. For example:
+   Django REST Framework: Adds tools to build APIs.
+   Django Allauth: Adds user authentication and social login functionality. 
+   These packages are installed using pip.
+
+Library
+----------
+-> In Django, a library refers to a collection of pre-written code that provides specific functionalities, 
+   allowing developers to save time and focus on building their applications.
+   Libraries are often included in the form of modules or packages,
+   and they can be part of Django’s built-in framework, third-party libraries, or custom code written by developers.
+-> Built-in Libraries:-
+   django.db: Helps you interact with databases (create, read, update, and delete data).
+   django.http: Helps you handle HTTP requests and send responses.
+   django.contrib.auth: Helps you manage user login and authentication
+-> Third-Party Libraries (Libraries Created by Other Developers):-
+   django-rest-framework
+   django-allauth - Adds login features, including social media logins (Google, Facebook, etc.).
+
+ Signal
+---------
+-> In Django, signals are like "event listeners." Imagine you want to perform some action whenever a certain event happens in your project.
+   Instead of manually checking for that event every time, you can use signals to automatically trigger specific functions when the event occurs.
+-> In Django, signals are used to trigger some function whenever any event occurs.
+   For example, when users make some changes in the database, we can trigger a particular function, which can show the changes to users on the web page.
+-> Example:-
+   Let's say you want to send a welcome email every time a new user registers.
+   Instead of manually calling the function to send the email each time, you can use signals to automatically send the email when a new user is created.
+
+ __init__.py
+-------------
+-> __init__.py tells Python to treat a directory as a package.
+-> In Django, __init__.py is a special Python file that is used to mark a directory as a Python package.
+   It is often used to initialize the package or make imports available at the package level.
+-> When a directory contains a file called __init__.py, Python treats that directory as a package.
+   Without this file, Python won't recognize the directory as a package and you won't be able to import modules from it.
+-> __init__.py allows you to perform relative imports within the package.
+
+
+manage.py
+----------
+-> In Django, the manage.py file is a script that helps you manage your Django project through the command line.
+   When you first create a Django project, Django automatically generates a manage.py file for you.
+-> manage.py is a file that acts like a control center for your Django project, allowing you to run various commands to manage the development and deployment process.
+-> When you run commands like python manage.py runserver or python manage.py migrate, you're actually using the manage.py file.
+-> Instead of having to manually run individual commands for setting up or managing the project, Django provides a single manage.py file to run all commands.
+   This makes it easier to perform important tasks like starting the server, migrating the database, etc., with simple commands from the terminal.
+
+app
+----
+-> An app in Django is a smaller, self-contained module that handles specific functionality within the project.
+   Each app typically represents a feature or a section of the website (like a blog, an authentication system, or an online store).
+   Apps can be reused across different projects, making them modular and portable.
+
+ASGI and WSGI
+---------------
+-> In Django, both ASGI (Asynchronous Server Gateway Interface) and WSGI (Web Server Gateway Interface) 
+   are protocols that define how web servers communicate with Python web applications.
+   They allow the server to interact with the application, pass requests, and receive responses.
+-> WSGI:-
+   WSGI is the older and more traditional interface for Python web applications, used for synchronous applications.
+   WSGI applications are synchronous, meaning they handle one request at a time.
+   If one request is being processed, the server must wait until that request is completed before handling the next one.
+-> ASGI:-
+   ASGI supports asynchronous processing, meaning it can handle multiple requests concurrently.
+   With ASGI, a request doesn’t need to wait for a previous one to finish; it can handle multiple requests at the same time.
+   This makes ASGI ideal for applications with long-lived connections, like WebSockets or APIs that need to handle a large number of concurrent requests.
+   With Django 3.0 and later, ASGI support was added, allowing Django to handle both synchronous (WSGI) and asynchronous (ASGI) requests.
+   For example, ASGI is used to handle WebSockets and long-polling requests, while WSGI still handles traditional HTTP requests.
+
+Concurrency
+-----------
+-> Concurrency means that multiple tasks are managed at the same time. However, these tasks may not necessarily be running simultaneously.
+   Instead, the system is designed to manage multiple tasks and switch between them quickly.
+-> Tasks are handled at the same time, but not necessarily executed simultaneously
+-> Example:-
+   Imagine a chef with multiple cooking stations. The chef can switch between cooking stations, managing multiple dishes,
+   but they are still only cooking one dish at a time, just switching back and forth between them quickly.
+-> concurrency allows a system to handle multiple tasks (or requests) at once, even if they’re not running at the exact same time.
+   It might be that one task is paused while waiting for some resource (like a network response), and the system handles another task during that time.
+-> Concurrency means managing multiple tasks at once, even if they aren't running at the same time.
+
+Thread
+-------
+-> A thread is a smaller unit of a process that can run independently.
+   A process can have multiple threads, and these threads can work simultaneously (if your system has multiple CPU cores).
+-> Example:- 
+   Think of threads as chefs working in the kitchen. Each chef can cook a separate dish at the same time.
+   If you have multiple chefs (threads), the dishes are prepared simultaneously.
+-> A thread is like a worker. If you have many threads, your program can do multiple things at once, like downloading multiple files at the same time.
+
+
+settings.py
+------------
+-> The settings.py file in Django is the central configuration file for a Django project.
+   It contains settings that define how the project behaves, interacts with databases, serves static files, handles security, and more.
+-> A Django settings file contains all the configurations of your Django Project.
+-> 1. BASE_DIR:-
+      Defines the root directory of your project.
+      This tells Django where your project lives on your computer. It helps to figure out paths to things like files and templates.
+      Represents the directory containing the manage.py file.
+   2. SECRET_KEY (A secret for your project):-
+      Django uses this to secure things like session cookies and passwords.
+   3. DEBUG
+      This setting tells Django whether to show detailed error messages.
+   4. ALLOWED_HOSTS:-
+      This is a list of domain names or IPs allowed to access your project.
+   5. STATIC and MEDIA FILES (Files for your website):-
+      Django has two types of files:
+      Static files: Files like CSS, JavaScript, and images that don’t change.
+      Media files: Files uploaded by users (e.g., profile pictures).
+   6. TEMPLATES (How to show web pages?):-
+      This tells Django where to look for templates (HTML files).
+   7. ROOT_URLCONF:- 
+      Points to the file where your project’s URL patterns are defined (urls.py).
+   8. Default Auto Field:- 
+      In Django models, each table in the database needs a primary key to uniquely identify each row.
+      By default, Django automatically adds a primary key field to your model if you don't define one explicitly.
+
+
+urls.py and urlpattern 
+-----------------------
+-> In Django, URLs (Uniform Resource Locators) play a vital role in mapping web requests to the appropriate views that handle them.
+-> Each Django project typically has a central urls.py file in the project's root directory. This file defines the main URL patterns for the entire project.
+   path(): Maps a specific URL pattern to a view.
+   include(): Used to include URL patterns from another app's urls.py.
+-> Each app in a Django project can have its own urls.py file.
+-> A URL pattern connects a URL to a view in Django.
+
+ Middleware
+------------
+-> middleware is like a gatekeeper for all incoming requests and outgoing responses.
+-> In Django, middleware is a way to process requests and responses globally, before they reach your view or after the view has handled them.
+   It's like a filter or handler that sits between the user’s request and your Django view, allowing you to perform certain tasks at different stages of the request/response cycle.
+-> The request passes through middleware before reaching your view.
+   Each middleware can modify the request or perform some logic (like checking if a user is logged in).
+   After the view generates the response, it passes back through middleware before being sent to the user. The middleware can modify the response 
+-> Middleware is useful when you want to apply global logic that should happen for every request or every response, without having to add the same logic to each view. 
+   example:- Session Management- Track user sessions using cookies.
+-> Middleware is like a filter for requests and responses in Django.
+-> Middleware is executed in order (as defined in settings).
+-> You can write custom middleware.
+
+SECRET_KEY in settings
+----------------------
+-> In Django, the SECRET_KEY is a special string used to keep your application secure.
+   It acts like a password for your application and is used in several critical security features.
+   It's important because it ensures that the data exchanged between the server and the client (like in forms, cookies, or sessions) remains secure.
+-> Password Hashing: When users set their passwords, Django doesn't store them directly.
+   Instead, it hashes the password using the SECRET_KEY to create a secure version that can't easily be reversed.
+-> CSRF Protection: Django uses the SECRET_KEY to generate tokens to protect against Cross-Site Request Forgery (CSRF) attacks.
+
+
+ Views
+---------
+-> In Django, views are functions or classes that handle web requests and return web responses.
+->  Views contain the logic that processes user input, interacts with the model (database),
+    and returns an appropriate response, such as an HTML page, JSON data, or a redirect.
+-> 1. Function-based Views:-
+      Easier for simple views
+   2. Class-based Views:-
+      Reusable and modular for more complex views.
+-> They act as the controller in the Model-View-Controller (MVC).
+-> Request:- refers to the HTTP request that Contains all the information about the incoming HTTP request (headers, data, method, etc.).
+             headers - Information about the request (e.g., User-Agent, Content-Type, authentication tokens).
+-> render:- The render function is used to render a template and return it as part of the response.
+            It's typically used when you want to return an HTML page after processing the request.
+            render combines a template with context data and then returns an HTTP response with the rendered HTML.
+            It helps display a page with data from the server.
+            When you want to show a webpage (like a product page, user profile, etc.) with some data on it.
+-> redirect:- The redirect function is used to redirect the user to a different URL.
+              It sends the user to another page
+              Instead of showing a page with data, it just tells the browser, "Go to this new page now." 
+
+ models
+---------
+-> A Django model is a Python class that defines the structure of your database table.
+   It represents data in your application, and each model typically corresponds to one table in the database.
+   A model contains fields that define the columns in the table.
+-> Django provides a powerful ORM (Object-Relational Mapping) that automatically translates these models into database tables,
+   allowing you to interact with your data using Python code rather than writing SQL queries.
+-> meta class:-
+   define inside your model to configure various options for the model's behavior. 
+   Common options include db_table (custom table name), ordering (default ordering of query results),
+   The Meta class gives you fine control over how your model behaves in the database and Django’s admin interface.
+-> methods(custom functions):-    
+   In Django models, methods are functions that are defined inside a model class to perform specific tasks or calculations related to the model.
+   They allow you to add custom logic to the model, making it more useful and interactive.
+   You can define methods for various purposes, such as performing calculations, formatting output, or providing custom functionality.
+   enabling you to handle logic and data manipulation directly within the model class. 
+-> __str__ method:-
+   The __str__ method in Django models is a special method that defines how an instance of the model is represented as a string. 
+   When you work with Django models, you may often need to print or display model instances.
+   If you don’t define the __str__ method, Django will default to displaying a less helpful output, usually something like the object's memory address.
+   Improves Readability: Instead of showing the default memory address or generic identifier, the __str__ method shows something meaningful, like the product's name or a custom string.
+
+ apps.py
+-----------
+-> When you create an app in Django, you get a folder with some default files, one of which is apps.py.
+   This file is used to configure and register the app within your Django project.
+-> apps.py is where you configure your app's settings and behavior.
+-> AppConfig Class:-
+   This class is where you define how your app behaves. It's like telling Django how to handle your app.
+
+ admin.py
+-----------
+-> In Django, the admin.py file is used to control how the Django admin interface works with your models.
+   This is where you can define how the data in your models is displayed and interacted with in the admin panel.
+-> admin.py is where you register your models and define how they will be displayed and interacted with in the Django admin interface.
+-> You can register a model using admin.site.register(ModelName).
+-> You can customize how the model appears.
+-> You can add inline models to show related models together.
+-> You can also customize the overall appearance of the admin site.
+-> You can also change things like the site title and header.
+
+ migrations and migrate
+-------------------------
+-> makemigrations:- 
+   migrations are files that track changes to your models and allow updating the database schema.
+   When you create or modify a model, Django doesn't automatically apply those changes to the database.
+   Instead, you need to create a migration file that describes the changes. 
+-> migrate:-
+   Applies those changes to the database.
+   The migrate command applies migration files to the database,
+
+ admin dashboard
+------------------
+-> The Django Admin Dashboard is a built-in feature of Django that provides a user-friendly interface to manage your application's data. 
+   offering powerful functionality for developers and non-developers alike to interact with the database without directly writing SQL queries.
+-> Can Perform CRUD operations on your models.
+-> The admin dashboard is available at the URL /admin/ by default.
+   It requires a superuser or staff account to access.
+
+ context
+-------------
+-> context refers to the data sent from a view to a template to render dynamic content. 
+-> The context is a Python dictionary containing key-value pairs.
+   The keys represent the variable names that will be accessible in the template, and the values represent the data associated with those keys.
+
+Context processor
+------------------
+-> A context processor in Django is a Python function that takes a request object as input and returns a dictionary of data.
+   This data is automatically added to the context of every template rendered in your Django application.
+   Context processors make it easy to inject commonly used variables into all templates without explicitly passing them in each view.
+-> A context processor in Django is a way to automatically add common data to all your templates, so you don’t need to pass it manually in every view.
+-> For example, if you want every template to have access to the site name or the logged-in user, you can use a context processor.
+-> Django has a built-in context processor that adds the request object to all templates.
+   This lets you access request.user in any template to check if a user is logged in.
+-> Django provides several built-in context processors, which are included by default in the TEMPLATES setting.
+-> You can define your own context processor to add custom global data:
+   Create a file (e.g., context_processors.py) in one of your apps,
+   Add the Context Processor to Settings, In your TEMPLATES settings, add the path to your custom context processor
+
+
+Http response
+---------------
+-> In Django, an HTTP response is an object that represents the server's response to a client's request.
+   It contains the content that is sent to the client (such as HTML, JSON, or other types of data), along with metadata like status codes, headers, and cookies.
+   Content: The body of the response, which could be HTML, JSON, or any other format.
+   Status Code: A numeric code that indicates the result of the request.
+   Headers: Metadata about the response, such as content type (Content-Type: text/html) or cache control.
+   Cookies: Optional data stored by the client for future requests.
+
+
+ include Tag
+--------------
+-> In Django, the {% include %} tag is used to include the contents of another template into the current template.
+   It is particularly useful when you want to reuse common HTML structures across multiple templates, such as headers, footers, navigation bars, etc.
+
+ Jinja Tags
+-------------
+-> Jinja tags are special syntax used in templates to add logic, loops, conditionals, or to output variables.
+-> most commonly used Jinja tags:
+   1. Variable Tag:-
+      {{ user.name }}
+   2. Control Flow Tags:-
+      {% if condition %} , {% for item in items %}
+   3. Comment Tag:-
+      {% comment %}
+   4. Include Tag:-
+      {% include 'header.html' %}
+   5. Block and Extends Tags:-
+   6. Url Tag
+
+
+ DTL(Django Template Language)
+-------------------------------
+-> It is the default templating system used in Django to dynamically generate HTML pages.
+   It is a simple yet powerful language designed for combining static HTML with dynamic data passed from views.
+ 
+      
+ filter in template
+--------------------
+-> In Django templates, filters are tools that modify the display of a variable.
+   For example, if you want to convert text to uppercase or limit the number of characters shown, you can use a filter.
+   Filters make data look the way you want in your web page.
+   example:-
+   {{ name|upper }}
+-> there have so many filters:-
+   1. Show a Default Value If a variable is empty, you can display something else using default:- {{ username|default:"Guest" }}
+   2. Format a Date If you have a date, you can display it in a specific format:- {{ order_date|date:"F j, Y" }}
+   3. Limit Characters If a string is too long, you can shorten it:- {{ description|truncatechars:10 }}
+   4. Slices a list or string:- {{ items|slice:":3" }}
+   5. Returns the length of a list, string, or dictionary:- {{ products|length }}
+
+
+ extends tag
+--------------
+-> The {% extends %} tag in Django allows one template (child) to inherit from another (base template).
+   The base template contains common structures like headers and footers, while placeholders ({% block %}) are overridden in the child template to provide page-specific content.
+   This keeps templates consistent and avoids repeating code.
+
+
+ flush
+-------
+-> The flush command deletes all rows from all tables in your database.
+->  After deleting the data, it resets the primary key sequences to start from the beginning.
+-> Does not affect migrations: It only removes data and resets primary keys; migrations remain unaffected.
+
+
+ functions inside Auth 
+-------------------------
+-> django.contrib.auth module provides a framework for managing user authentication and authorization.
+   It handles various aspects, such as user registration, login, password management, permissions, and session management.  
+-> authenticate():-
+   Used to authenticate a user based on their username and password.
+   It checks if the credentials are correct.
+   If authentication is successful, it returns a User object; otherwise, it returns None.
+-> login() :-
+   Logs a user in by creating a session for them.
+-> logout() :-
+   Logs a user out by removing their session data.
+-> create_user()
+-> set_password() :-4
+   Hashes the provided password and sets it for the user.
+-> @login_required:-
+   This decorator ensures that only logged-in users can access a particular view
+
+ Authorization
+---------------
+-> Authorization in Django is all about deciding what a user can and can't do after they’ve been authenticated (logged in).
+   It determines what parts of your website or app a user has access to,
+   and whether they have the right permissions to perform certain actions (like adding, deleting, or changing content).
+   In Django, authorization is mainly handled by permissions and groups, which are part of the django.contrib.auth module.
+-> determining whether a user has the necessary permissions to access a specific resource.
+
+
+ Query parameters
+-------------------
+-> Query parameters are the parts of a URL that allow you to send extra information from the browser (client-side) to the server (Django).
+   These are typically used to filter or change the data you want to see on a page.
+-> example :- http://example.com/products/?category=clothing&sort=price&page=2
+   ? :-marks the start of the query parameters.
+   category=clothing, sort=price, and page=2 are the query parameters.
+-> When a user visits a URL like the one above, Django lets you access these query parameters inside your view function.
+-> Query parameters are extra pieces of data in the URL.
+-> Query parameters in Django refer to the key-value pairs that are included in the URL of a web request.
+   They are typically used to send data to the server from the client-side, and they can be accessed in your Django views to filter or modify the results based on the passed parameters. 
+-> Query parameters are appended to the URL after a question mark (?).
+   Multiple parameters can be added by separating them with an ampersand (&).
+-> You can use request.GET in Django to get the values of query parameters.
+-> Query parameters are optional and are typically not used for identifying resources directly.
+-> Modifying the behavior of a resource (e.g., filtering or sorting)
+
+ Path parameters
+---------------------
+-> In Django, path parameters (or path variables) are parts of the URL that are dynamic and can change based on the request.
+   They are used to pass information to views through the URL pattern.
+   Path parameters are defined using the Django URL dispatcher and can be extracted in views.
+   These parameters are part of the URL pattern and are enclosed in < > brackets in the urls.py file.
+-> example :-  path('product/<int:id>/', views.product_detail, name='product_detail'),
+-> They are typically used when the value is crucial to identifying the resource you want to access.
+   They are mandatory and are typically included in the URL's main structure.
+-> Identifying specific resources (e.g., product ID)
+-> they are required to identify a resource
+
+
+ CORS(Cross-Origin Resource Sharing)
+----------------------------------------
+-> CORS is a mechanism that allows a web application running at one origin (e.g., http://example.com) to request resources from a different origin (e.g., http://api.example.com).
+   Browsers enforce the same-origin policy for security reasons, meaning web applications can only make requests to the same domain unless explicitly allowed.
+   CORS relaxes this restriction by adding special HTTP headers that define which origins are allowed to access the server's resources. These headers include:
+   Access-Control-Allow-Origin: Specifies which origin(s) are permitted.
+   Access-Control-Allow-Methods: Indicates which HTTP methods are allowed (e.g., GET, POST, OPTIONS).
+   Access-Control-Allow-Headers: Lists the custom headers that can be sent in the request.
+-> When a website running on Domain A (e.g., http://example.com) wants to access data from Domain B (e.g., http://api.example.com), 
+   browsers block this by default for security reasons. This is called the same-origin policy.
+   CORS (Cross-Origin Resource Sharing) allows Domain A to access resources on Domain B, but only if Domain B explicitly allows it.
+-> CORS allows a frontend app (from one domain) to talk to a backend server (on another domain).
+
+
+ Preflight Request
+-------------------
+-> A preflight request is a safety check performed by browsers before making certain cross-origin HTTP requests.
+   This check is part of the CORS (Cross-Origin Resource Sharing) mechanism to ensure that the target server explicitly allows the desired request.
+-> A preflight request is a preliminary HTTP request sent by the browser to check if the actual CORS request is safe to send.
+   It is an HTTP OPTIONS request that asks the server about its CORS policy. If the server responds with appropriate CORS headers, the actual request is sent.
+   A preflight request is triggered when the CORS request uses,
+-> A preflight request is a special type of OPTIONS request that is automatically sent by browsers before a CORS request to determine if the actual request is safe to send.
+-> A preflight request happens when the browser is unsure if a cross-origin request is safe to send.
+   The browser wants to avoid sending sensitive information (like credentials or custom headers) unless the server confirms it’s okay.
+   The preflight request uses the HTTP OPTIONS method to ask:
+   Which HTTP methods are allowed (GET, POST, etc.)?
+   Which headers can I include in my actual request?
+   Is this origin (website) allowed?
+
+
+ Content Type
+----------------
+-> Let’s say you want to create comments model to a BlogPost and Product. Instead of creating two separate comment tables, you can use Content Types for a generic relationship. 
+-> allowing a model (e.g., Comment) to relate to multiple models (e.g., Post, Product) without fixed ForeignKeys.
+
+ Content negotiation 
+-----------------------
+-> Content negotiation in Django refers to the process by which the server determines the best possible format to return the response,
+   based on the client's request headers or other criteria.
+   This mechanism allows a Django application to serve the same content in different formats, such as JSON, XML, HTML, etc., depending on the client's needs.
+-> In Django, content negotiation is most commonly used in APIs. The Django REST Framework (DRF) provides robust support for this.
+   Request Headers: DRF inspects the Accept header in the HTTP request to decide the response format.
+   example:-   def get(self, request, format=None):
+-> Content Negotiation is the process that helps the server decide what kind of response (format) to send back to the client based on the client's request.
+-> Django doesn't have built-in content negotiation, but Django REST Framework (DRF) extends Django to handle it easily.
+-> It allows the server to serve data in multiple formats based on the client’s needs.
+
+
+ User-Agent
+-------------
+-> In Django, the User-Agent is part of the request headers that a client (such as a web browser or mobile app) sends to the server to identify itself.
+   It typically provides information about the client's software, including the browser type, version, operating system, and device details.
+   This data can be used by the server to adjust its response based on the client's capabilities or preferences.
+-> You can access the User-Agent string in your Django view using the request object. Specifically, it is available through request.META['HTTP_USER_AGENT'].
+-> example :- user_agent = request.META.get('HTTP_USER_AGENT', 'unknown')
+   result  :- Your user-agent is: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124 Safari/537.36
+-> You can detect whether the user is on a mobile or desktop browser, or which browser they are using, and then tailor the response or template accordingly.
+
+
+ URL and DIR in settings.py 
+------------------------------
+-> DIR :-
+   DIR tells Django where to find the files in your project's file system.
+   This path is where Django will search for templates, static files, or other resources.
+
+-> URL :-
+   URL tells Django how to access files from a web browser (frontend).
+   where files will be accessible on the web
+
+
+ Worker
+----------
+-> A worker in Django is a separate process (or program) that runs in the background to handle tasks that take time,
+   so your main web application can respond quickly to users. These tasks could be things like: Sending an email after a user signs up
+   Without workers, these tasks would slow down your website, because the user would have to wait for them to finish before the website responds.
+-> Django itself doesn't provide built-in functionality to handle background tasks,
+   but you can use third-party tools like Celery, Django Q, or RQ (Redis Queue) to create workers that do this.
+-> Performance: Workers run long tasks outside the main web request, so users aren’t waiting for them.
+-> In Django, a worker typically refers to a background task processor, responsible for handling time-consuming operations outside of the main HTTP request/response cycle.
+-> can run in the background while your web server handles HTTP requests. background tasks are executed asynchronously.
+
+
+
+
+ __pycache__
+--------------
+-> __pycache__ folder in Django stores compiled versions of your Python code.
+   When you run your Django project, Python turns your .py files (the ones you write) into .pyc files (compiled bytecode) to make your project run faster next time.
+-> __pycache__ is a folder that stores Python bytecode files.which are generated when you run a Python script.
+   These files are created by Python's interpreter to improve performance by storing a compiled version of Python files.
+   When you run a Python script or Django project, Python compiles the source code into bytecode and saves it in the __pycache__ directory.
+-> It’s used for performance improvements during development and deployment.
+
+
+DRF
+-------
+-> Django Rest Framework is a highly flexible and extensible tool for building APIs.
+-> A tool that helps you build APIs.
+
+Login Required Decorator 
+-------------------------
+-> The login_required decorator in Django is used to restrict access to a view such that only authenticated users can access it.
+   If a user who is not authenticated tries to access a view decorated with login_required, they will be redirected to the login page.
+-> If the user is not authenticated, they are redirected to the login page.
+   By default, this redirects them to the URL defined in the LOGIN_URL setting,
+   # settings.py
+   LOGIN_URL = '/custom-login/'
+-> If the LOGIN_URL setting is not provided in your Django project's settings,
+   Django will use a default URL of /accounts/login/ as the redirect URL for unauthenticated users when they try to access a view decorated with login_required
+
+
+ never_cache decorator
+-------------------------- 
+-> The never_cache decorator in Django is used to make sure a specific view is never cached.
+   This means that every time the view is accessed, it will fetch fresh data, not store it for future use.
+-> It tells the browser and any cache systems not to save the response for later use. This is useful when you want to ensure users always see the latest version of a page.
+-> When you apply the never_cache decorator to a view, it explicitly sets the HTTP response headers to prevent caching.
+   It does this by adding the following cache-control headers:-
+   Cache-Control: no-store: - This tells caches not to store the response.
+   Cache-Control: no-cache: - This indicates that caches must revalidate the response before serving it again.
+   Pragma: no-cache: - This is an HTTP/1.0 header for backward compatibility.
+   Expires: 0: - This ensures that the content is considered expired immediately.
+-> when use it :-
+   When displaying dynamic content that changes frequently.
+
+ Cache control 
+-----------------
+-> When you visit a website, some of the resources (like images, CSS, JavaScript, etc.) are stored temporarily by your browser.
+   This is called caching. The next time you visit the website, the browser uses the cached data to load the page faster.
+-> Cache-Control is a way to control how long and where these resources should be cached.
+-> Cache Control is a mechanism used in HTTP headers to define how, when, and for how long web content should be cached by browsers, proxies, or other caching systems.
+   It gives developers control over the caching behavior for web pages and resources like images, CSS, JavaScript, etc.
+-> It helps control when and how content should be cached (stored temporarily) and for how long.
+-> Cache-Control is a way to manage how and when content is stored to improve performance and ensure freshness.
+
+
+ Environment variables
+-------------------------
+-> Why use environment variables? :-
+   To keep sensitive information (like secret keys, API keys, or database credentials) out of your code. This makes your project more secure.
+-> In Django, environment variables are commonly used to store sensitive information such as
+   database credentials, API keys, secret keys, and configuration settings that should not be hardcoded in the codebase.
+   The use of environment variables improves the security, portability, and flexibility of the application.
+-> How to use environment variables in Django:-
+   Install python-decouple 
+   Create a .env file:
+   The .env file contains all your environment variables, and it should be placed in the root directory of your Django project.
+   This file is where you define sensitive settings.
+   Add .env file to .gitignore
+
+types of messages
+------------------
+DEBUG – For debugging info.
+INFO – For general information.
+SUCCESS – To show success messages.
+WARNING – For warnings.
+ERROR – To show error messages
+
+Mixin
+------------
+-> When you have common logic shared across multiple views.
+   For functionalities like authentication checks, permission checks, or custom context data.
+-> A Mixin is a reusable class that adds extra features to Django class-based views.
+   Think of it like a helper that you can attach to multiple views to avoid writing the same code over and over.
+-> In Django, a Mixin is a reusable class that provides additional functionality to views without being a full-fledged view itself.
+   Mixins are typically used with class-based views (CBVs) to keep the code DRY (Don't Repeat Yourself) and modular.
+
+
+reverse()
+------------
+-> reversing is a way to get the URL of a page using the name you gave that URL in your urls.py file.
+   This helps you avoid writing the full URL everywhere in your code, making it easier to change later if needed.
+
+viewsets
+------------
+-> In Django, ViewSets are a powerful feature provided by Django Rest Framework (DRF) that help you quickly create RESTful APIs.
+   They combine views and routers to automatically generate the standard CRUD (Create, Read, Update, Delete) operations for your models.
+-> You don’t need to manually write URLs and view code for each action.
+-> ModelViewSet: Provides full CRUD operations (list, create, retrieve, update, delete).
+-> Saves Time: You don’t have to write separate views for list, create, update, delete, etc.
+   Automatic URLs: Django automatically creates the URLs for each action.
+
+Json JsonB
+-----------
+-> In Django, JSONField is used to store JSON data in your database. JSON is a way to store data as key-value pairs
+-> When you use JSONField in Django with a PostgreSQL database, the data is stored as JSONB.
+-> JSON:
+   Stores the data as plain text.
+   Slower for searching and filtering.
+   Indexing: Not indexed by default, so queries can be slower for large datasets.
+-> JSONB:
+   Stores the data in a binary format (optimized for search).
+   Faster for searching and filtering.
+   Indexing: Supports indexing, which makes it faster for querying and searching 
+-> JSONField in Django uses JSONB in PostgreSQL by default.
+
+
+
+Mixin
+channels
+generic view 
+generic foreign key
+
+
+
+
+
+
+
+***************************

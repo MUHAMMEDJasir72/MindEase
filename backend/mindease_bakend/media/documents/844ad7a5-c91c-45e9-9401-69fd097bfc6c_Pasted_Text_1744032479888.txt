@@ -1,0 +1,230 @@
+import React, { useState } from 'react';
+import { registerTherapist } from '../../api/therapist';
+import { showToast } from '../../utils/toast';
+
+function RequestForm() {
+  const [formData, setFormData] = useState({
+    fullname: '',
+    dateOfBirth: '',
+    gender: '',
+    phone: '',
+    state: '',
+    country: '',
+    address: '',
+    professionalTitle: '',
+    specializations:'',
+    yearsOfExperience: '',
+    language: '',
+    professionalLicenseNumber: '',
+    licenseIssuingAuthority: '',
+    licenseExpiryDate: '',
+    degree: '',
+    university: '',
+    yearOfGraduation: '',
+    additionalCertifications: '',
+    governmentIssuedID: null,
+    professionalLicense: null,
+    educationalCertificate: null,
+    additionalCertificationDocument: null,
+  });
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: files ? files[0] : value,
+    }));
+  };
+
+  const handleSubmit = async(e) => {
+    e.preventDefault()
+    const response = await registerTherapist(formData);
+    if (response.success){
+      // showToast("Form submitted successfully", "success");
+    }else{
+      // showToast('sumthing error', "error");
+    }
+   
+  };
+
+  const handleNext = (e)=>{
+    e.preventDefault();
+    setCurrentStep((prev)=>prev+1)
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto mt-32 bg-white shadow-md rounded-2xl overflow-hidden">
+        <h1>{currentStep}</h1>
+      <div className="flex flex-col md:flex-row">
+        {/* Form Section */}
+        <div className="md:w-2/3 w-full bg-gray-100 p-8">
+          {currentStep === 1 && 
+          <>
+           <h2 className="text-2xl font-semibold mb-6 text-gray-700 text-center">Personal Information</h2>
+          <form onSubmit={handleNext} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input
+              type="text"
+              required
+              name="fullname"
+              placeholder="Full name"
+              className="p-3 rounded-lg border border-gray-300"
+              value={formData.fullname}
+              onChange={handleChange}
+            />
+            <input
+              type="date"
+              required
+              name="dateOfBirth"
+              className="p-3 rounded-lg border border-gray-300"
+              value={formData.dateOfBirth}
+              onChange={handleChange}
+            />
+            <select
+              name="gender"
+              required
+              className="p-3 rounded-lg border border-gray-300"
+              value={formData.gender}
+              onChange={handleChange}
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+            <input
+              type="tel"
+              required
+              name="phone"
+              placeholder="Mobile Number"
+              className="p-3 rounded-lg border border-gray-300"
+              value={formData.phone}
+              onChange={handleChange}
+            />
+            <input
+              type="text"
+              required
+              name="state"
+              placeholder="State"
+              className="p-3 rounded-lg border border-gray-300"
+              value={formData.state}
+              onChange={handleChange}
+            />
+            <input
+              type="text"
+              required
+              name="country"
+              placeholder="Country"
+              className="p-3 rounded-lg border border-gray-300"
+              value={formData.country}
+              onChange={handleChange}
+            />
+            <textarea
+              name="address"
+              required
+              placeholder="Address"
+              rows={3}
+              className="p-3 rounded-lg border border-gray-300 sm:col-span-2 resize-none"
+              value={formData.address}
+              onChange={handleChange}
+            />
+            <button
+              type="submit"
+              className="sm:col-span-2 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200"
+            >
+              Next
+            </button>
+            </form>
+            </>
+            }
+            {currentStep === 2 && 
+            <>
+            <h2 className="text-2xl font-semibold mb-6 text-gray-700 text-center">Professional Information</h2>
+            <form onSubmit={handleNext} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input name="professionalTitle" placeholder="Professional Title" value={formData.professionalTitle} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <input name="specializations" placeholder="Specializations" value={formData.specializations} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required/>
+            <input name="yearsOfExperience" placeholder="Years of Experience" value={formData.yearsOfExperience} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required/>
+            <input name="language" placeholder="Language" value={formData.language} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required/>
+            <input name="professionalLicenseNumber" placeholder="License Number" value={formData.professionalLicenseNumber} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required/>
+            <input name="licenseIssuingAuthority" placeholder="Issuing Authority" value={formData.licenseIssuingAuthority} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required/>
+            <input type="date" name="licenseExpiryDate"  value={formData.licenseExpiryDate} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <button
+              type="submit"
+              className="sm:col-span-2 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200"
+            >
+              Next
+            </button>
+            </form>
+            </>
+            }
+            {currentStep === 3 && 
+            <>
+            <h2 className="text-2xl font-semibold mb-6 text-gray-700 text-center">Educational Background</h2>
+            <form onSubmit={handleNext} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input name="degree" placeholder="Degree" value={formData.degree} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <input name="university" placeholder="University" value={formData.university} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <input name="yearOfGraduation" placeholder="Year of Graduation" value={formData.yearOfGraduation} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <input name="additionalCertifications" placeholder="Additional Certifications" value={formData.additionalCertifications} onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <button
+              type="submit"
+              className="sm:col-span-2 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200"
+            >
+              Next
+            </button>
+            </form>
+            </>
+            }
+            {currentStep === 4 && 
+            <>
+            <h2 className="text-2xl font-semibold mb-6 text-gray-700 text-center">Supporting Documents </h2>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="font-semibold">Government Issued ID:</label>
+            <input type="file" name="governmentIssuedID" onChange={handleChange} className="p-3 rounded-lg border border-gray-300"  required/>
+            <label className="font-semibold">Professional License:</label>
+            <input type="file" name="professionalLicense" onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <label className="font-semibold">Educational Certificate:</label>
+            <input type="file" name="educationalCertificate" onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <label className="font-semibold">Additional Certification Document:</label>
+            <input type="file" name="additionalCertificationDocument" onChange={handleChange} className="p-3 rounded-lg border border-gray-300" required />
+            <button
+              type="submit"
+              className="sm:col-span-2 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition duration-200"
+            >
+              Submit
+            </button>
+            </form>
+            </>
+            }
+        </div>
+
+        <div className="md:w-1/3 w-full bg-blue-100 flex items-center justify-center p-6">
+        <div className="flex flex-col items-start gap-10">
+            <div className="flex items-center gap-4">
+            <div className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center font-bold">1</div>
+            <h1 className="text-lg font-semibold">Personal Information</h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+            <div className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center font-bold">2</div>
+            <h1 className="text-lg font-semibold">Professional Information</h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+            <div className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center font-bold">3</div>
+            <h1 className="text-lg font-semibold">Educational Background</h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+            <div className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center font-bold">4</div>
+            <h1 className="text-lg font-semibold">Supporting Documents</h1>
+            </div>
+        </div>
+        </div>
+
+
+      </div>
+    </div>
+  );
+}
+
+export default RequestForm;
