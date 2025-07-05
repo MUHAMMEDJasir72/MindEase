@@ -153,11 +153,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.UserDetails'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", "https://mindease-lhdm.onrender.com"  # Add the origin of your React app
+    "http://localhost:5173", "https://mind-ease-s9ec.vercel.app"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  "https://mindease-lhdm.onrender.com"  # Add the origin here as well
+    "http://localhost:5173",  "https://mind-ease-s9ec.vercel.app" # Add the origin here as well
 ]
 
 REST_FRAMEWORK = {
