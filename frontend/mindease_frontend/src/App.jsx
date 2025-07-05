@@ -35,8 +35,7 @@ import AdminEarnings from "./pages/admin/AdminEarnings";
 import ChatToAdmin from "./pages/Thearapist/ChatToAdmin";
 import ChatToTherapists from "./pages/admin/ChatToTherapists";
 import AppointmentManagement from "./pages/admin/AppointmentManagement";
-import TherapistApplicationSubmitted from "./pages/Thearapist/submited";
-
+import TherapistApplicationSubmitted from "./pages/Thearapist/Submited"
 
 function App() {
   return (
