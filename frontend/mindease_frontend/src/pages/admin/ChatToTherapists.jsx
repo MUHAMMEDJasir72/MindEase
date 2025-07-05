@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminSidebar from '../../components/Admin/AdminSidebar';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminTherapistChat from '../../components/Therapist/AdminTherapistChat';
 import { getAllTherapist, getTherapist } from '../../api/admin';
 import { User } from 'lucide-react';
