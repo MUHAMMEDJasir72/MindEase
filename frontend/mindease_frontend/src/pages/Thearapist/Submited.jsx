@@ -1,9 +1,7 @@
-import React, { useEffect } from 'react';
-import { checkIsApproved } from '../../api/therapist';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../api/auth';
 
-const TherapistApplicationSubmitted = () => {
+const Submitted = () => {
   const handleEditForm = () => {
     // Add your navigation logic here
     console.log("Navigate to edit form");
@@ -112,4 +110,4 @@ const TherapistApplicationSubmitted = () => {
   );
 };
 
-export default TherapistApplicationSubmitted;
+export default Submitted;

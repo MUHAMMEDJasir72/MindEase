@@ -35,7 +35,7 @@ import AdminEarnings from "./pages/admin/AdminEarnings";
 import ChatToAdmin from "./pages/Thearapist/ChatToAdmin";
 import ChatToTherapists from "./pages/admin/ChatToTherapists";
 import AppointmentManagement from "./pages/admin/AppointmentManagement";
-import TherapistApplicationSubmitted from "./pages/Thearapist/submited";
+import Submitted from "./pages/Thearapist/submited";
 
 
 function App() {
@@ -64,7 +64,7 @@ function App() {
         {/* therapist routes */}
         <Route path="/therapistDashboard" element={< ThearapistDashboard/>} />
         <Route path="/requestForm" element={< RequestForm/>} /> 
-        <Route path="/submited" element={< TherapistApplicationSubmitted/>} />
+        <Route path="/submited" element={< Submitted/>} />
         <Route path="/therapistHome" element={<TherapistRoute><TherapistHome /></TherapistRoute>} />
         <Route path="/therapistProfile" element={<TherapistRoute><TherapistProfile/></TherapistRoute>} />
         <Route path="/therapistAppointments" element={<TherapistRoute><TherapistAppointments /></TherapistRoute>} />
