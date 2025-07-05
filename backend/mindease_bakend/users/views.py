@@ -208,6 +208,7 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated, IsNotBlockedUser]
 
     def get(self, request):
+        print('workkkk')
         user = request.user
         profile_data = {
             "username": user.username,

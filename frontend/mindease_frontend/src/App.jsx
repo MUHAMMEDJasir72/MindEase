@@ -63,9 +63,9 @@ function App() {
         <Route path="/chat/:userId/:therapistId" element={<UserRoute><Chat/></UserRoute>} />
        
         {/* therapist routes */}
-        <Route path="/therapistDashboard" element={<TherapistRoute>< ThearapistDashboard/></TherapistRoute>} />
-        <Route path="/requestForm" element={<TherapistRoute>< RequestForm/></TherapistRoute>} /> 
-        <Route path="/submited" element={<TherapistRoute>< Submited/></TherapistRoute>} />
+        <Route path="/therapistDashboard" element={< ThearapistDashboard/>} />
+        <Route path="/requestForm" element={< RequestForm/>} /> 
+        <Route path="/submited" element={< Submited/>} />
         <Route path="/therapistHome" element={<TherapistRoute><TherapistHome /></TherapistRoute>} />
         <Route path="/therapistProfile" element={<TherapistRoute><TherapistProfile/></TherapistRoute>} />
         <Route path="/therapistAppointments" element={<TherapistRoute><TherapistAppointments /></TherapistRoute>} />

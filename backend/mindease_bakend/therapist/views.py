@@ -103,11 +103,17 @@ class RegisterTherapistView(APIView):
 
 
 
+
 class CheckRequestedView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        if hasattr(request.user, 'therapist_details'):
-            return Response({"success": True }, status=status.HTTP_200_OK)
-        return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+        if request.user.role != 'therapist' or not hasattr(request.user, 'therapist_details'):
+            return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"success": True}, status=status.HTTP_200_OK)
+
+
+
         
 class CheckApproveView(APIView):
     # Uncomment this when ready to use authentication

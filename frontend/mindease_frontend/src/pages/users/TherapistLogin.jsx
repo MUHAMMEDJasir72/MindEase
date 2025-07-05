@@ -63,6 +63,8 @@ function TherapistLogin() {
                 }
                 else{
                     const res = await checkRequested()
+                    console.log('jasir',res.success)
+
                     if (res.success){
                          navigate('/submited');
                     }else{
