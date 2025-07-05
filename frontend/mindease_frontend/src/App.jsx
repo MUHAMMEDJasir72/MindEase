@@ -8,7 +8,6 @@ import ChangePassword from "./pages/users/ChangePassword";
 import ThearapistDashboard from "./pages/Thearapist/TherapistDashboard";
 import RequestForm from "./pages/Thearapist/RequestForm";
 import Therapists from "./pages/admin/Therapists";
-import Submited from "./pages/Thearapist/submited";
 import TherapistDetails from "./pages/admin/TherapistDetails";
 import Users from "./pages/admin/Users";
 import TherapistLogin from "./pages/users/TherapistLogin";
@@ -35,8 +34,8 @@ import Earnings from "./pages/Thearapist/Earnings";
 import AdminEarnings from "./pages/admin/AdminEarnings";
 import ChatToAdmin from "./pages/Thearapist/ChatToAdmin";
 import ChatToTherapists from "./pages/admin/ChatToTherapists";
-import SessionDetails from "./pages/admin/AppointmentManagement";
 import AppointmentManagement from "./pages/admin/AppointmentManagement";
+import TherapistApplicationSubmitted from "./pages/Thearapist/submited";
 
 
 function App() {
@@ -65,7 +64,7 @@ function App() {
         {/* therapist routes */}
         <Route path="/therapistDashboard" element={< ThearapistDashboard/>} />
         <Route path="/requestForm" element={< RequestForm/>} /> 
-        <Route path="/submited" element={< Submited/>} />
+        <Route path="/submited" element={< TherapistApplicationSubmitted/>} />
         <Route path="/therapistHome" element={<TherapistRoute><TherapistHome /></TherapistRoute>} />
         <Route path="/therapistProfile" element={<TherapistRoute><TherapistProfile/></TherapistRoute>} />
         <Route path="/therapistAppointments" element={<TherapistRoute><TherapistAppointments /></TherapistRoute>} />
