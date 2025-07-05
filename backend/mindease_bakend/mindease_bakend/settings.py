@@ -18,7 +18,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG")
 
-ALLOWED_HOSTS = ['mindease-lhdm.onrender.com']
+ALLOWED_HOSTS = ['mindease-lhdm.onrender.com','http://localhost:8000']
 
 
 # Application definition
@@ -153,11 +153,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.UserDetails'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Add the origin of your React app
+    "http://localhost:5173", "https://mindease-lhdm.onrender.com"  # Add the origin of your React app
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  # Add the origin here as well
+    "http://localhost:5173",  "https://mindease-lhdm.onrender.com"  # Add the origin here as well
 ]
 
 REST_FRAMEWORK = {
