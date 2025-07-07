@@ -154,7 +154,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.UserDetails'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", "https://mind-ease-s9ec.vercel.app"
+    "http://localhost:5173", "https://mind-ease-5mnf.vercel.app"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
