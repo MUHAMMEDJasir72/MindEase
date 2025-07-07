@@ -158,7 +158,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  "https://mind-ease-s9ec.vercel.app" # Add the origin here as well
+    "http://localhost:5173",  "https://mind-ease-5mnf.vercel.app" # Add the origin here as well
 ]
 
 REST_FRAMEWORK = {
