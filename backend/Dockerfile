@@ -1,30 +1,23 @@
-FROM python:3.11-slim-bullseye
+# Use official Python image
+FROM python:3.11-slim
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        gcc \
-        python3-dev \
-        libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Set working directory
 WORKDIR /app
 
-# Install Python dependencies
-COPY ./mindease_bakend/requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir gunicorn==21.2.0 daphne && \
-    pip install --no-cache-dir -r requirements.txt
+# Install dependencies
+COPY requirements.txt /app/
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy application code
-COPY ./mindease_bakend/ .
 
-# Set PORT environment variable for Cloud Run
-ENV PORT=8080
+# Copy project files
+COPY mindease_bakend/ /app/
 
-# Expose port (optional for Cloud Run, but good practice)
-EXPOSE 8080
+# Collect static files
+RUN python manage.py collectstatic --noinput
 
-# Run Daphne server
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8080", "mindease_bakend.asgi:application"]
+# Run the app
+CMD ["gunicorn", "mindease_bakend.wsgi:application", "--bind", "0.0.0.0:8000"]

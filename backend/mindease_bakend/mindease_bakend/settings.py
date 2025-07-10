@@ -96,20 +96,16 @@ WSGI_APPLICATION = 'mindease_bakend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-from decouple import config
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'NAME': config("DB_NAME"),  
+        'USER': config("DB_USER"),  
+        'PASSWORD': config("DB_PASSWORD"), 
+        'HOST': config("DB_HOST"),
+        'PORT': config("DB_PORT"),  
     }
 }
-
-
 
 
 # Password validation
@@ -146,7 +142,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+import os
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -158,11 +157,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.UserDetails'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", "https://mind-ease-5mnf.vercel.app"
+    "http://localhost:5173"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  "https://mind-ease-5mnf.vercel.app" # Add the origin here as well
+    "http://localhost:5173"
 ]
 
 REST_FRAMEWORK = {
@@ -200,14 +199,13 @@ STRIPE_ENDPOINT_SECRET = config("STRIPE_ENDPOINT_SECRET")
 ASGI_APPLICATION = 'mindease_bakend.asgi.application'
 
 
+# Not for production
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("redis", 6379)],
-        },
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
     },
 }
+
 
 
 
