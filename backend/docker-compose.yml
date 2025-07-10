@@ -10,4 +10,4 @@ services:
     volumes:
       - ./mindease_bakend:/app
     env_file:
-      - ./mindease_bakend/.env
+      - .env
