@@ -17,7 +17,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY mindease_bakend/ /app/
 
 # Collect static files
-RUN python manage.py collectstatic --noinput
+# RUN python manage.py collectstatic --noinput
 
 # Run the app
 CMD ["gunicorn", "mindease_bakend.wsgi:application", "--bind", "0.0.0.0:8000"]
