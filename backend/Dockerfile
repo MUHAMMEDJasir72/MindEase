@@ -12,11 +12,9 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-
 # Copy project files
 COPY mindease_bakend/ /app/
 
-# Collect static files
-
 # Run the app
 CMD ["gunicorn", "mindease_bakend.wsgi:application", "--bind", "0.0.0.0:8000"]
+
