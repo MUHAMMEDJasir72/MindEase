@@ -15,5 +15,8 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy project files
 COPY mindease_bakend/ /app/
 
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
 # Run Daphne ASGI server
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "mindease_bakend.asgi:application"]
