@@ -15,6 +15,5 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy project files
 COPY mindease_bakend/ /app/
 
-# Run the app
-CMD ["gunicorn", "mindease_bakend.wsgi:application", "--bind", "0.0.0.0:8000"]
-
+# Run Daphne ASGI server
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "mindease_bakend.asgi:application"]
