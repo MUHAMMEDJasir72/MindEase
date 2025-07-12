@@ -161,7 +161,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173", "https://www.mindeasee.shop"
+    "http://localhost:5173", "https://www.mindeasee.shop", "https://api.mindeasee.shop"
 ]
 
 REST_FRAMEWORK = {
