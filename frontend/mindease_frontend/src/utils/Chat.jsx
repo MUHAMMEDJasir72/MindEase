@@ -282,7 +282,7 @@ function Chat() {
         return (
           <div className="mt-2 rounded-lg overflow-hidden">
             <img 
-              src={`http://localhost:8000${msg.media.replace('/media/media/', '/media/')}`}  
+              src={`${import.meta.env.VITE_BASE_URL}{msg.media.replace('/media/media/', '/media/')}`}  
               alt="Sent image" 
               className="max-w-full max-h-64 object-contain rounded-lg"
             />
