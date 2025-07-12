@@ -21,7 +21,7 @@ const TherapistNotification = () => {
 
   fetchNotifications();
 
-  const socket = new ReconnectingWebSocket(`${routerBaseUrl}ws/therapist/notifications/`);
+  const socket = new ReconnectingWebSocket(`${routerBaseUrl}wss/therapist/notifications/`);
 
   socket.onopen = () => {
     console.log("WebSocket connected");
