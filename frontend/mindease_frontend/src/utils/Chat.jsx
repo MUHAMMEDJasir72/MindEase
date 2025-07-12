@@ -108,7 +108,7 @@ function Chat() {
       });
 
     // Set up WebSocket
-    socketRef.current = new WebSocket(`ws://localhost:8000/ws/chat/${roomName}/`);
+    socketRef.current = new WebSocket(`${routerBaseUrl}wss/chat/${roomName}/`);
 
     socketRef.current.onopen = () => {
       setIsConnected(true);
@@ -292,7 +292,7 @@ function Chat() {
         return (
           <div className="mt-2 rounded-lg overflow-hidden">
             <video controls className="max-w-full max-h-64 rounded-lg">
-              <source src={`http://localhost:8000${msg.media.replace('/media/media/', '/media/')}`} type="video/mp4" />
+              <source src={`${import.meta.env.VITE_BASE_URL}${msg.media.replace('/media/media/', '/media/')}`} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>

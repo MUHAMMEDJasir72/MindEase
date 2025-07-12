@@ -67,7 +67,7 @@ function AdminTherapistChat({ roomName, sender, receiver }) {
   useEffect(() => {
     if (!roomName) return;
 
-    ws.current = new WebSocket(`${routerBaseUrl}ws/chatAdminTherapist/${roomName}/`);
+    ws.current = new WebSocket(`${routerBaseUrl}wss/chatAdminTherapist/${roomName}/`);
 
     ws.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
