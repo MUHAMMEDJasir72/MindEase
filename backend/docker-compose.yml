@@ -12,7 +12,7 @@ services:
       - "8000:8000"
     volumes:
       - ./mindease_bakend:/app
-      - ./staticfiles:/app/staticfiles
+      - /home/ubuntu/MindEase/backend/staticfiles:/app/staticfiles
     depends_on:
       - redis
     environment:
