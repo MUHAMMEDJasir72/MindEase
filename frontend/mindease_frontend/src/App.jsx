@@ -58,7 +58,7 @@ function App() {
         <Route path="/bookTherapist/:id" element={<UserRoute><StripeProvider><BookTherapist/></StripeProvider></UserRoute>} />
         <Route path="/appointments" element={<UserRoute><Appointments/></UserRoute>} />
         <Route path="/videoCall/:userId/:roomId/:type" element={<VideoCall/>} />
-        <Route path="/chat/:userId/:therapistId" element={<UserRoute><Chat/></UserRoute>} />
+        <Route path="/chat/:userId/:therapistId" element={<Chat/>} />
        
         {/* therapist routes */}
         <Route path="/therapistDashboard" element={< ThearapistDashboard/>} />
