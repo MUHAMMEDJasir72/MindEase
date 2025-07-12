@@ -158,7 +158,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.UserDetails'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", "https://www.mindeasee.shop", "https://mindeasee.shop"
+    "http://localhost:5173", "https://www.mindeasee.shop", "https://mindeasee.shop", "https://api.mindeasee.shop",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
