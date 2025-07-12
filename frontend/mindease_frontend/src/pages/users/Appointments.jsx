@@ -219,7 +219,7 @@ function Appointments() {
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <img 
-                            src={`http://127.0.0.1:8000${appointment.therapist_details.profile_image}`} 
+                            src={`${import.meta.env.VITE_BASE_URL}${appointment.therapist_details.profile_image}`} 
                             alt={appointment.therapist_details.full_name}
                             className="w-16 h-16 rounded-full object-cover border-2 border-teal-100"
                             onError={(e) => {

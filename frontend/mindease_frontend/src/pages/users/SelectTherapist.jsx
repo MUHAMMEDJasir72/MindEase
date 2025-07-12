@@ -175,7 +175,7 @@ function SelectTherapist() {
                 <div key={therapist.id} className='bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition duration-300'>
                   <div className='h-[244px] overflow-hidden'>
                     <img 
-                      src={`http://127.0.0.1:8000${therapist.profile_image}`} 
+                      src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`} 
                       alt={therapist.fullname} 
                       className='w-full h-full object-cover'
                       onError={(e) => {

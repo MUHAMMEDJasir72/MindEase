@@ -127,7 +127,7 @@ function Therapists() {
                       <div className='flex-shrink-0 h-12 w-12 rounded-full overflow-hidden border-2 border-white shadow-sm'>
                         <img
                           className='h-full w-full object-cover'
-                          src={`http://127.0.0.1:8000${therapist.profile_image}`}
+                          src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
                           alt={'profile image'}
                         />
                       </div>

@@ -158,7 +158,7 @@ function BookTherapist() {
       <div className="hidden md:block w-80 min-w-[20rem] bg-white p-6 shadow-md">
         <div className="flex flex-col items-center mb-6">
           <img 
-            src={`http://127.0.0.1:8000${therapist.profile_image}`} 
+            src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`} 
             alt={therapist.fullname}
             className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-teal-100"
           />
@@ -200,7 +200,7 @@ function BookTherapist() {
           <div className="md:hidden mb-8">
             <div className="flex items-center gap-4 mb-6">
               <img 
-                src={`http://127.0.0.1:8000${therapist.profile_image}`} 
+                src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`} 
                 alt={therapist.fullname}
                 className="w-16 h-16 rounded-full object-cover border-2 border-teal-100"
               />

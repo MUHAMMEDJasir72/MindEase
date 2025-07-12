@@ -54,7 +54,7 @@ const TherapistProfileEditModal = ({ isOpen, onClose, therapistData, onSave }) =
       // Set up initial documents and their previews
       Object.keys(documentLabels).forEach(docKey => {
         if (therapistData[docKey]) {
-          initialPreviews[docKey] = `http://127.0.0.1:8000${therapistData[docKey]}`;
+          initialPreviews[docKey] = `${import.meta.env.VITE_BASE_URL}${therapistData[docKey]}`;
           initialDocuments[docKey] = therapistData[docKey];
         }
       });

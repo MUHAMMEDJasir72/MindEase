@@ -72,7 +72,7 @@ function TherapistDetails() {
           <div className='w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-lg'>
             <img 
               className='w-full h-full object-cover' 
-              src={`http://127.0.0.1:8000${details.profile_image}`} 
+              src={`${import.meta.env.VITE_BASE_URL}${details.profile_image}`} 
               alt='Therapist profile'
             />
           </div>

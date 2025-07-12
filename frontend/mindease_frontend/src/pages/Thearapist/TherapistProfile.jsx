@@ -15,7 +15,7 @@ function TherapistProfile({ therapist }) {
 
   const [therapistData, setTherapistData] = useState({})
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const baseUrl = "http://127.0.0.1:8000";
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [rate, setRate] = useState('')
 
  useEffect(() => {
@@ -69,7 +69,7 @@ function TherapistProfile({ therapist }) {
               {/* Profile Image */}
               <div className="relative">
                 <img 
-                  src={ therapistData.profile_image ? `http://127.0.0.1:8000${therapistData.profile_image}` : '/default_profile-2.png'}
+                  src={ therapistData.profile_image ? `${import.meta.env.VITE_BASE_URL}${therapistData.profile_image}` : '/default_profile-2.png'}
                   alt="Profile" 
                   className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-md"
                 />

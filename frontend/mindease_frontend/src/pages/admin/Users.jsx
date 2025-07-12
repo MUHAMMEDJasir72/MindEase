@@ -212,7 +212,7 @@ function Users() {
                           <div className='flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden'>
                             {user.profile_image ? (
                               <img 
-                                src={`http://127.0.0.1:8000${user.profile_image}`} 
+                                src={`${import.meta.env.VITE_BASE_URL}${user.profile_image}`} 
                                 alt={user.fullname || 'User'} 
                                 className='h-full w-full object-cover'
                               />

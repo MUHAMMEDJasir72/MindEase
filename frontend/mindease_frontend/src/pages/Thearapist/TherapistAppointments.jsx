@@ -334,7 +334,7 @@ function TherapistAppointments() {
                             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
                               {session.client_profile_image ? (
                                 <img 
-                                  src={`http://127.0.0.1:8000${session.client_profile_image}`} 
+                                  src={`${import.meta.env.VITE_BASE_URL}${session.client_profile_image}`} 
                                   alt={session.client_name}
                                   className="w-full h-full object-cover"
                                 />

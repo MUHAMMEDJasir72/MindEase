@@ -342,13 +342,13 @@ function Chat() {
             {therapist.profile_image && role === 'user' ? (
               <img 
                 className="h-full w-full object-cover" 
-                src={`http://127.0.0.1:8000${therapist.profile_image}`}
+                src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
                 alt={therapist.fullname || "Therapist"}
               />
             ) : user.profile_image && role === 'therapist' ? (
               <img 
                 className="h-full w-full object-cover" 
-                src={`http://127.0.0.1:8000${user.profile_image}`}
+                src={`${import.meta.env.VITE_BASE_URL}${user.profile_image}`}
                 alt={user.fullname || "User"}
               />
             ) : (
