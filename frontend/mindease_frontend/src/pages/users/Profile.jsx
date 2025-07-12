@@ -90,7 +90,7 @@ function Profile() {
           <div className="w-[130px] h-[130px] border-[#336c6d] border-[3px] rounded-3xl overflow-hidden relative">
             <img
               className="w-full h-full object-cover"
-              src={ user.profile_image ? `http://127.0.0.1:8000${user.profile_image}` : '/default_profile-2.png'}
+              src={ user.profile_image ?`${import.meta.env.VITE_BASE_URL}${user.profile_image}` : '/default_profile-2.png'}
 
               alt="Profile"
             />
