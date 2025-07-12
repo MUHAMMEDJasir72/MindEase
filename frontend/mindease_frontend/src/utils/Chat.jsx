@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTherapistInfo, getUserInfo } from '../api/therapist';
-import { basicUrl } from '../api/axiosInstance';
+import { basicUrl, routerBaseUrl } from '../api/axiosInstance';
 
 function Chat() {
   const [messages, setMessages] = useState([]);
