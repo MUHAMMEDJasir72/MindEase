@@ -50,13 +50,6 @@ function Navbar() {
           );
         })}
       </ul>
-
-      {/* User Profile (optional) */}
-      <div className='mt-auto'>
-        <div className='w-12 h-12 rounded-full bg-teal-700 flex items-center justify-center text-white'>
-          <User size={20} />
-        </div>
-      </div>
     </nav>
   );
 }
