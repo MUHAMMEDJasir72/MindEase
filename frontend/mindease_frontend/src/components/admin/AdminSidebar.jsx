@@ -25,12 +25,9 @@ const menuItems = [
   { key: 'sessionDetails', label: 'sessionDetails', icon: <Calendar size={19} />, path: '/sessionDetails' },
   
   // Financial sections
-  { key: 'earnings', label: 'Therapist Earnings', icon: <DollarSign size={19} />, path: '/earnings' },
   { key: 'adminEarnings', label: 'Admin Earnings', icon: <PieChart size={19} />, path: '/adminEarnings' },
-  { key: 'priceManagement', label: 'Price Management', icon: <CreditCard size={19} />, path: '/price-management' },
   
   // Communication sections
-  { key: 'feedbacks', label: 'Feedbacks', icon: <MessageSquare size={19} />, path: '/feedbacks' },
   { key: 'messages', label: 'Messages', icon: <MessageCircle size={19} />, path: '/chatToTherapists' },
   
   // Management sections
