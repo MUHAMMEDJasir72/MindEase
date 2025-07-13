@@ -161,11 +161,7 @@ function Therapists() {
                     </div>
                   </div>
                 ))}
-              {therapists.filter(t => t.isTherapist === (activeTab === 'therapists')).length === 0 && (
-                <div className='p-8 text-center text-gray-500'>
-                  No {activeTab === 'therapists' ? 'approved therapists' : 'pending requests'} found
-                </div>
-              )}
+              
             </div>
           </div>
         </div>
