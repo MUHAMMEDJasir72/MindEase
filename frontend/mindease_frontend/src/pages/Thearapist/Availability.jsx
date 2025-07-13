@@ -12,6 +12,8 @@ function Availability() {
     const [selectedTimes, setSelectedTimes] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [availableTimesForModal, setAvailableTimesForModal] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isFetchingTimes, setIsFetchingTimes] = useState(false);
 
     // Format date as "23, April, 2025"
     const formatDisplayDate = (dateString) => {
@@ -49,47 +51,50 @@ function Availability() {
     const allTimeSlots = generateTimeSlots();
 
     const getAvailableTimesForModal = async () => {
-    if (!selectedDateForSlot) return allTimeSlots;
+        if (!selectedDateForSlot) return allTimeSlots;
 
-    const dateStr = selectedDateForSlot.toISOString().split('T')[0];
-    const isToday = dateStr === new Date().toISOString().split('T')[0];
-    const now = new Date();
+        setIsFetchingTimes(true);
+        const dateStr = selectedDateForSlot.toISOString().split('T')[0];
+        const isToday = dateStr === new Date().toISOString().split('T')[0];
+        const now = new Date();
 
-    try {
-        const response = await getAvailableSlots(dateStr);
+        try {
+            const response = await getAvailableSlots(dateStr);
 
-        if (response.success) {
-            const existingTimes = response.data.map(slot =>
-                slot.time.substring(0, 5) // HH:MM
-            );
+            if (response.success) {
+                const existingTimes = response.data.map(slot =>
+                    slot.time.substring(0, 5) // HH:MM
+                );
 
-            let filteredSlots = allTimeSlots.filter(slot =>
-                !existingTimes.includes(slot.value.substring(0, 5))
-            );
+                let filteredSlots = allTimeSlots.filter(slot =>
+                    !existingTimes.includes(slot.value.substring(0, 5))
+                );
 
-            // Further filter out past times if selected date is today
-            if (isToday) {
-                filteredSlots = filteredSlots.filter(slot => {
-                    const [slotHour, slotMinute] = slot.value.split(':').map(Number);
-                    const slotTime = new Date();
-                    slotTime.setHours(slotHour, slotMinute, 0, 0);
-                    return slotTime > now;
-                });
+                // Further filter out past times if selected date is today
+                if (isToday) {
+                    filteredSlots = filteredSlots.filter(slot => {
+                        const [slotHour, slotMinute] = slot.value.split(':').map(Number);
+                        const slotTime = new Date();
+                        slotTime.setHours(slotHour, slotMinute, 0, 0);
+                        return slotTime > now;
+                    });
+                }
+
+                return filteredSlots;
             }
 
-            return filteredSlots;
+            return allTimeSlots;
+        } catch (error) {
+            console.error('Error fetching existing slots:', error);
+            return allTimeSlots;
+        } finally {
+            setIsFetchingTimes(false);
         }
-
-        return allTimeSlots;
-    } catch (error) {
-        console.error('Error fetching existing slots:', error);
-        return allTimeSlots;
-    }
-};
-
+    };
 
     const handleRemoveTimeSlot = async (timeSlotId) => {
         try {
+            setIsSubmitting(true);
             const response = await removeSlot(timeSlotId);
             
             if (response.success) {
@@ -114,6 +119,8 @@ function Availability() {
             }
         } catch (error) {
             console.error('Error removing time slot:', error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -121,10 +128,17 @@ function Availability() {
         setSelectedDate(date);
     };
 
-    const handleAddSlot = () => {
+    const handleAddSlot = async () => {
         setSelectedDateForSlot(new Date());
         setSelectedTimes([]);
         setShowAddSlotModal(true);
+        setIsFetchingTimes(true);
+        try {
+            const times = await getAvailableTimesForModal();
+            setAvailableTimesForModal(times);
+        } finally {
+            setIsFetchingTimes(false);
+        }
     };
 
     const toggleTimeSelection = (time) => {
@@ -191,6 +205,7 @@ function Availability() {
     useEffect(() => {
         const fetchDates = async () => {
             try {
+                setIsLoading(true);
                 const info = await getAvailableDates();
                 
                 if (info.success) {
@@ -223,25 +238,27 @@ function Availability() {
                 }
             } catch (error) {
                 console.error('Error fetching available dates:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
         
         fetchDates();
     }, []); // Only run on component mount
 
-    // Fetch available times for the modal when needed
-    useEffect(() => {
-        if (showAddSlotModal) {
-            const fetchTimes = async () => {
-                const times = await getAvailableTimesForModal();
-                setAvailableTimesForModal(times);
-            };
-            fetchTimes();
-        }
-    }, [selectedDateForSlot, showAddSlotModal]);
+    if (isLoading) {
+        return (
+            <div className='flex min-h-screen bg-gray-50'>
+                <TherapistSidebar />
+                <div className='flex-1 ml-[200px] p-6 flex items-center justify-center'>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className='flex'>
+        <div className='flex min-h-screen bg-gray-50'>
             <TherapistSidebar />
             <div className='flex-1 ml-[200px] p-6'>
                 <div className='flex gap-6'>
@@ -251,9 +268,17 @@ function Availability() {
                             <h2 className='text-xl font-semibold'>Available Dates</h2>
                             <button 
                                 onClick={handleAddSlot}
-                                className='bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600'
+                                className='bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 flex items-center gap-1'
+                                disabled={isSubmitting}
                             >
-                                Add Slot
+                                {isSubmitting ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                        Adding...
+                                    </>
+                                ) : (
+                                    'Add Slot'
+                                )}
                             </button>
                         </div>
                         {availableDates.length > 0 ? (
@@ -303,10 +328,15 @@ function Availability() {
                                                 {!timeSlot.is_booked && (
                                                     <button
                                                         onClick={() => handleRemoveTimeSlot(timeSlot.id)}
-                                                        className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-lg"
+                                                        disabled={isSubmitting}
+                                                        className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-lg disabled:opacity-50"
                                                         title="Remove time slot"
                                                     >
-                                                        ×
+                                                        {isSubmitting ? (
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-red-500"></div>
+                                                        ) : (
+                                                            '×'
+                                                        )}
                                                     </button>
                                                 )}
                                             </div>
@@ -342,6 +372,11 @@ function Availability() {
                                             onChange={(date) => {
                                                 setSelectedDateForSlot(date);
                                                 setSelectedTimes([]);
+                                                setIsFetchingTimes(true);
+                                                getAvailableTimesForModal().then(times => {
+                                                    setAvailableTimesForModal(times);
+                                                    setIsFetchingTimes(false);
+                                                });
                                             }}
                                             inline
                                             minDate={new Date()}
@@ -356,18 +391,24 @@ function Availability() {
                                         Available Time Slots (9AM - 10PM)
                                     </label>
                                     <div className='border rounded p-4 h-64 overflow-y-auto'>
-                                        <div className='grid grid-cols-3 gap-2'>
-                                            {availableTimesForModal.map((slot) => (
-                                                <button
-                                                    key={slot.value}
-                                                    type="button"
-                                                    onClick={() => toggleTimeSelection(slot.value)}
-                                                    className={`p-2 rounded text-sm ${selectedTimes.includes(slot.value) ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                                                >
-                                                    {slot.display}
-                                                </button>
-                                            ))}
-                                        </div>
+                                        {isFetchingTimes ? (
+                                            <div className="flex items-center justify-center h-full">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500"></div>
+                                            </div>
+                                        ) : (
+                                            <div className='grid grid-cols-3 gap-2'>
+                                                {availableTimesForModal.map((slot) => (
+                                                    <button
+                                                        key={slot.value}
+                                                        type="button"
+                                                        onClick={() => toggleTimeSelection(slot.value)}
+                                                        className={`p-2 rounded text-sm ${selectedTimes.includes(slot.value) ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                                    >
+                                                        {slot.display}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                     <p className='text-sm text-gray-500 mt-2'>
                                         Selected: {selectedTimes.length} time slot{selectedTimes.length !== 1 ? 's' : ''}
@@ -380,15 +421,23 @@ function Availability() {
                                     type='button'
                                     onClick={() => setShowAddSlotModal(false)}
                                     className='px-4 py-2 border rounded hover:bg-gray-100'
+                                    disabled={isSubmitting}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type='submit'
                                     disabled={selectedTimes.length === 0 || isSubmitting}
-                                    className={`px-4 py-2 rounded ${selectedTimes.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                    className={`px-4 py-2 rounded flex items-center gap-2 ${selectedTimes.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                                 >
-                                    {isSubmitting ? 'Adding...' : 'Add Slots'}
+                                    {isSubmitting ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        'Add Slots'
+                                    )}
                                 </button>
                             </div>
                         </form>

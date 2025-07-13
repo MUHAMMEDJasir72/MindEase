@@ -11,6 +11,7 @@ function SelectTherapist() {
   const [selectedSpecialties, setSelectedSpecialties] = useState([]);
   const [sortOption, setSortOption] = useState('rating-desc');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const therapistsPerPage = 8;
 
   // Get all unique specialties from therapists
@@ -22,6 +23,7 @@ function SelectTherapist() {
 
   useEffect(() => {
     const fetchTherapists = async () => {
+      setIsLoading(true);
       try {
         const info = await getTherapist();
         if (info.success) {
@@ -29,6 +31,8 @@ function SelectTherapist() {
         }
       } catch (error) {
         console.error("Failed to fetch therapists:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
   
@@ -74,6 +78,7 @@ function SelectTherapist() {
     });
     
     setFilteredTherapists(results);
+    setCurrentPage(1); // Reset to first page when filters change
   }, [therapists, searchTerm, selectedSpecialties, sortOption]);
 
   // Pagination logic
@@ -88,10 +93,22 @@ function SelectTherapist() {
         ? prev.filter(s => s !== specialty)
         : [...prev, specialty]
     );
-    setCurrentPage(1); // Reset to first page when filters change
   };
 
-  console.log(therapists)
+  if (isLoading) {
+    return (
+      <div className='flex min-h-screen bg-gray-50'>
+        <div className='w-56 min-w-[14rem] bg-white shadow-md'>
+          <Navbar />
+        </div>
+        <div className='flex-1 p-8 flex justify-center items-center'>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex min-h-screen bg-gray-50'>
@@ -114,10 +131,7 @@ function SelectTherapist() {
                   placeholder='Search therapists by name...'
                   className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none'
                   value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
-                  }}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               
@@ -126,10 +140,7 @@ function SelectTherapist() {
                 <select
                   className='appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none'
                   value={sortOption}
-                  onChange={(e) => {
-                    setSortOption(e.target.value);
-                    setCurrentPage(1);
-                  }}
+                  onChange={(e) => setSortOption(e.target.value)}
                 >
                   <option value='rating-desc'>Highest Rating</option>
                   <option value='rating-asc'>Lowest Rating</option>

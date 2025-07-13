@@ -4,39 +4,39 @@ import { useNavigate } from 'react-router-dom';
 import { showToast } from '../../utils/toast';
 import { logoutUser } from '../../api/auth';
 import { Pencil, Check } from 'lucide-react';
-import { profileInfo,updateProfileField,updateProfileImage } from '../../api/user';
+import { profileInfo, updateProfileField, updateProfileImage } from '../../api/user';
 
 function Profile() {
   const navigate = useNavigate();
-
-
-  const loginMethod = localStorage.getItem('loginMethod')
+  const loginMethod = localStorage.getItem('loginMethod');
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState({});
+  const [editingField, setEditingField] = useState(null);
+  const [editedValue, setEditedValue] = useState('');
 
   useEffect(() => {
-
     const fetchProfile = async () => {
-      const info = await profileInfo();
-      if (info.success) {
-        setUser(info.profile_info);
+      setIsLoading(true);
+      try {
+        const info = await profileInfo();
+        if (info.success) {
+          setUser(info.profile_info);
+        }
+      } catch (error) {
+        showToast('Failed to load profile', 'error');
+      } finally {
+        setIsLoading(false);
       }
     };
     
     const token = localStorage.getItem("access");
-    console.log(token)
     if (!token) {
       navigate("/login"); 
-    }else{
+    } else {
       fetchProfile();
     }
-    
-  }, []);
+  }, [navigate]);
   
-
-  const [user, setUser] = useState({});
-  const [editingField, setEditingField] = useState(null);
-  const [editedValue, setEditedValue] = useState('');
-  console.log(user.profile_image)
-
   const handleLogout = async () => {
     const response = await logoutUser();
     if (response.success) {
@@ -57,7 +57,6 @@ function Profile() {
     const res = await updateProfileField(field, editedValue);
     if (res.success) {
       setUser((prev) => ({ ...prev, [field]: editedValue }));
-      // showToast(`${field} updated!`, 'success');
     } else {
       showToast(res.message, 'error');
     }
@@ -73,13 +72,25 @@ function Profile() {
       showToast('Profile picture updated!', 'success');
       setUser((prev) => ({
         ...prev,
-        profile_image: res.profile_image, // <-- replace with actual field
+        profile_image: res.profile_image,
       }));
-    }
-    else {
+    } else {
       showToast(res.message, 'error');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex-1 p-8 flex justify-center items-center">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -90,18 +101,17 @@ function Profile() {
           <div className="w-[130px] h-[130px] border-[#336c6d] border-[3px] rounded-3xl overflow-hidden relative">
             <img
               className="w-full h-full object-cover"
-              src={ user.profile_image ?`${import.meta.env.VITE_BASE_URL}${user.profile_image}` : '/default_profile-2.png'}
-
+              src={user.profile_image ? `${import.meta.env.VITE_BASE_URL}${user.profile_image}` : '/default_profile-2.png'}
               alt="Profile"
             />
 
             <label className="absolute bottom-0 right-0 bg-[#336c6d] hover:bg-[#013435] p-1 rounded-tl-xl transition cursor-pointer">
               <Pencil size={20} className="text-[#d8dede]" />
               <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
               />
             </label>
           </div>

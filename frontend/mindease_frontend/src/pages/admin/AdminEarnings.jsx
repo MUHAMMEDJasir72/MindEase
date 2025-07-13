@@ -10,52 +10,43 @@ import {
   FaExchangeAlt,
   FaTimes
 } from 'react-icons/fa';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import moment from 'moment';
 import { getTransactions, getWalletAmount } from '../../api/therapist';
 import { getWithdrawRequests, processWithdraw } from '../../api/admin';
 import { showToast } from '../../utils/toast';
+import moment from 'moment';
 
 function AdminEarnings() {
   const [totalEarnings, setTotalEarnings] = useState({});
   const [transactions, setTransactions] = useState([]);
   const [withdrawalRequests, setWithdrawalRequests] = useState([]);
-  const [loading, setLoading] = useState({
-    earnings: true,
-    transactions: true,
-    requests: true
-  });
+  const [isLoading, setIsLoading] = useState(true);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch total earnings
+        const earningsRes = await getWalletAmount();
+        setTotalEarnings(earningsRes.data);
+        
+        // Fetch transactions
+        const transactionsRes = await getTransactions();
+        setTransactions(transactionsRes.data);
+        
+        // Fetch withdrawal requests
+        const requestsRes = await getWithdrawRequests();
+        setWithdrawalRequests(requestsRes.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        showToast('Failed to load data', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchData();
   }, []);
-
-  const fetchData = async () => {
-    try {
-      // Fetch total earnings
-      const earningsRes = await getWalletAmount();
-      setTotalEarnings(earningsRes.data);
-      setLoading(prev => ({...prev, earnings: false}));
-      
-      // Fetch transactions
-      const transactionsRes = await getTransactions();
-      setTransactions(transactionsRes.data);
-      setLoading(prev => ({...prev, transactions: false}));
-      
-      // Fetch withdrawal requests
-      const requestsRes = await getWithdrawRequests();
-      setWithdrawalRequests(requestsRes.data);
-      setLoading(prev => ({...prev, requests: false}));
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Failed to load data');
-      setLoading({earnings: false, transactions: false, requests: false});
-    }
-  };
 
   const openConfirmationModal = (request) => {
     setSelectedRequest(request);
@@ -68,22 +59,34 @@ function AdminEarnings() {
   };
 
   const handleProcessRequest = async () => {
-  if (!selectedRequest) return;
+    if (!selectedRequest) return;
 
-  try {
-    const res = await processWithdraw(selectedRequest.id);
-    if (res.success) {
-      showToast(res.message, 'success');
+    try {
+      const res = await processWithdraw(selectedRequest.id);
+      if (res.success) {
+        showToast(res.message, 'success');
+        closeConfirmationModal();
+        // Refresh data
+        const requestsRes = await getWithdrawRequests();
+        setWithdrawalRequests(requestsRes.data);
+      }
+    } catch (error) {
+      console.error('Error processing request:', error);
+      showToast('Failed to process request', 'error');
       closeConfirmationModal();
-      fetchData(); // Refresh data
     }
-  } catch (error) {
-    console.error('Error processing request:', error);
-    toast.error('Failed to process request');
-    closeConfirmationModal();
+  };
+
+  if (isLoading) {
+    return (
+      <div className='flex min-h-screen bg-gray-50'>
+        <AdminSidebar />
+        <div className='flex-1 ml-[200px] p-6 flex items-center justify-center'>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
   }
-};
-console.log(withdrawalRequests)
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -99,13 +102,9 @@ console.log(withdrawalRequests)
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-600 mb-1">Total Earnings</h2>
-                {loading.earnings ? (
-                  <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
-                ) : (
-                  <p className="text-3xl font-bold text-gray-800 flex items-center">
-                    <FaRupeeSign className="mr-2" /> {totalEarnings.balance}
-                  </p>
-                )}
+                <p className="text-3xl font-bold text-gray-800 flex items-center">
+                  <FaRupeeSign className="mr-2" /> {totalEarnings.balance || 0}
+                </p>
               </div>
               <div className="bg-blue-100 p-3 rounded-full">
                 <FaWallet className="text-blue-600 text-2xl" />
@@ -118,13 +117,9 @@ console.log(withdrawalRequests)
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-600 mb-1">Pending Withdrawals</h2>
-                {loading.requests ? (
-                  <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
-                ) : (
-                  <p className="text-3xl font-bold text-gray-800">
-                    {withdrawalRequests.filter(r => !r.is_processed).length}
-                  </p>
-                )}
+                <p className="text-3xl font-bold text-gray-800">
+                  {withdrawalRequests.filter(r => !r.is_processed).length}
+                </p>
               </div>
               <div className="bg-yellow-100 p-3 rounded-full">
                 <FaClock className="text-yellow-600 text-2xl" />
@@ -141,11 +136,7 @@ console.log(withdrawalRequests)
             </h2>
           </div>
           
-          {loading.requests ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : withdrawalRequests.length === 0 ? (
+          {withdrawalRequests.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No withdrawal requests found</p>
           ) : (
             <div className="overflow-x-auto">
@@ -220,11 +211,7 @@ console.log(withdrawalRequests)
             </h2>
           </div>
           
-          {loading.transactions ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : transactions.length === 0 ? (
+          {transactions.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No transactions found</p>
           ) : (
             <div className="overflow-x-auto">

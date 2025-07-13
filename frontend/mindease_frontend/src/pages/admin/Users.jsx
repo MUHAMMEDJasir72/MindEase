@@ -3,7 +3,6 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import { getUsers } from '../../api/admin';
 import { Link } from 'react-router-dom';
 
-
 function Users() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,6 +11,7 @@ function Users() {
     status: 'all',
     gender: 'all'
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   // Filter and sort users
   const filteredUsers = users
@@ -20,14 +20,11 @@ function Users() {
         (user.fullname && user.fullname.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
    
-      
       const matchesStatus = 
         filters.status === 'all' || user.is_user_active === (filters.status === 'active');
       
       const matchesGender = 
         filters.gender === 'all' || (user.gender && user.gender.toLowerCase() === filters.gender.toLowerCase());
-      
-
       
       return matchesSearch && matchesStatus && matchesGender;
     })
@@ -71,11 +68,24 @@ function Users() {
         }
       } catch (error) {
         console.error('Error fetching users:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
   
     fetchUsers();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className='flex min-h-screen bg-gray-50'>
+        <AdminSidebar />
+        <div className='flex-1 ml-[200px] p-6 flex items-center justify-center'>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex h-screen bg-gray-100'>
@@ -129,8 +139,6 @@ function Users() {
                 <option value='other'>Other</option>
               </select>
             </div>
-            
-            
           </div>
         </div>
         

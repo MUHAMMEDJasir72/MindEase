@@ -8,22 +8,28 @@ function SpecializeManage() {
   const [specializations, setSpecializations] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [specializationName, setSpecializationName] = useState('');
-  const [currentSpecialization, setCurrentSpecialization] = useState(null); // for editing
+  const [currentSpecialization, setCurrentSpecialization] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchSpecializations();
   }, []);
 
   const fetchSpecializations = async () => {
+    setIsLoading(true);
     try {
       const info = await getSpecializations();
       if (info.success) {
         setSpecializations(info.data);
       } else {
         console.error('Failed to fetch:', info.error);
+        showToast('Failed to load specializations', 'error');
       }
     } catch (error) {
       console.error('Error fetching specializations:', error);
+      showToast('Error loading specializations', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,15 +74,29 @@ function SpecializeManage() {
   };
 
   const handleDelete = async (id) => {
-    const response = await deleteSpecialize(id);
-
-    if (response.success) {
-      showToast(response.message, 'success');
-      fetchSpecializations();
-    } else {
-      showToast(response.error || 'Failed to delete specialization', 'error');
+    try {
+      const response = await deleteSpecialize(id);
+      if (response.success) {
+        showToast(response.message, 'success');
+        fetchSpecializations();
+      } else {
+        showToast(response.error || 'Failed to delete specialization', 'error');
+      }
+    } catch (error) {
+      showToast('Error deleting specialization', 'error');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className='flex min-h-screen bg-gray-100'>
+        <AdminSidebar />
+        <div className='flex-1 ml-[200px] p-6 flex items-center justify-center'>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex h-screen bg-gray-100'>
@@ -98,37 +118,43 @@ function SpecializeManage() {
 
         {/* Specializations List */}
         <div className='bg-white rounded-lg shadow overflow-hidden'>
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Name</th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Actions</th>
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {specializations.map((spec) => (
-                <tr key={spec.id}>
-                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                    {spec.specialization}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-                    <button
-                      onClick={() => handleEdit(spec)}
-                      className='text-indigo-600 hover:text-indigo-900 mr-4'
-                    >
-                      <FiEdit />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(spec.id)}
-                      className='text-red-600 hover:text-red-900'
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </td>
+          {specializations.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              No specializations found. Add your first specialization.
+            </div>
+          ) : (
+            <table className='min-w-full divide-y divide-gray-200'>
+              <thead className='bg-gray-50'>
+                <tr>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Name</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {specializations.map((spec) => (
+                  <tr key={spec.id}>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                      {spec.specialization}
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                      <button
+                        onClick={() => handleEdit(spec)}
+                        className='text-indigo-600 hover:text-indigo-900 mr-4'
+                      >
+                        <FiEdit />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(spec.id)}
+                        className='text-red-600 hover:text-red-900'
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Add/Edit Modal */}

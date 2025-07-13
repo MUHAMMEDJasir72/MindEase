@@ -151,7 +151,6 @@ function Appointments() {
     }
   };
 
-  console.log(appointments)
 
   return (
     <div className="flex min-h-screen bg-gray-50">

@@ -9,9 +9,8 @@ function Therapists() {
   const [therapists, setTherapists] = useState([]);
   const [activeTab, setActiveTab] = useState('therapists');
   const [selectedTherapist, setSelectedTherapist] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate()
-
-
 
   useEffect(() => {
     const fetchTherpists = async () => {
@@ -24,6 +23,7 @@ function Therapists() {
           setSelectedTherapist(info.data[0]);
         }
       }
+      setIsLoading(false);
     };
   
     fetchTherpists();
@@ -32,6 +32,17 @@ function Therapists() {
   const handleTherapistSelect = (therapist) => {
     setSelectedTherapist(therapist);
   };
+
+  if (isLoading) {
+    return (
+      <div className='flex min-h-screen bg-gray-50'>
+        <AdminSidebar />
+        <div className='flex-1 ml-[200px] p-6 flex items-center justify-center'>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   console.log('ttt',therapists)
 

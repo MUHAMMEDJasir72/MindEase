@@ -10,7 +10,8 @@ import { showToast } from '../../utils/toast';
 function TherapistAppointments() {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("today");
   const [searchDate, setSearchDate] = useState("");
@@ -27,6 +28,7 @@ function TherapistAppointments() {
   const handleConfirmCancel = async (reason) => {
     if (!selectedId) return;
 
+    setIsProcessing(true);
     const current_role = localStorage.getItem('current_role');
     
     try {
@@ -45,6 +47,7 @@ function TherapistAppointments() {
     } catch (err) {
       showToast('An error occurred while cancelling the session', 'error');
     } finally {
+      setIsProcessing(false);
       setIsDialogOpen(false);
       setSelectedId(null);
     }
@@ -53,7 +56,7 @@ function TherapistAppointments() {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        setLoading(true);
+        setIsLoading(true);
         const response = await getTherapistAppointments();
         setAppointments(response.data || []);
         setError(null);
@@ -61,7 +64,7 @@ function TherapistAppointments() {
         console.error("Error fetching appointments:", error);
         setError("Failed to load appointments. Please try again later.");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -69,13 +72,20 @@ function TherapistAppointments() {
   }, []);
 
   const handleCompleteSession = async (id) => {
-    const res = await makeCompleted(id);
-    if (res.success) {
-      showToast(res.message, 'success');
-      const response = await getTherapistAppointments();
-      setAppointments(response.data);
-    } else {
-      showToast(res.message, 'error');
+    setIsProcessing(true);
+    try {
+      const res = await makeCompleted(id);
+      if (res.success) {
+        showToast(res.message, 'success');
+        const response = await getTherapistAppointments();
+        setAppointments(response.data);
+      } else {
+        showToast(res.message, 'error');
+      }
+    } catch (error) {
+      showToast('An error occurred while completing the session', 'error');
+    } finally {
+      setIsProcessing(false);
     }
   }
 
@@ -228,15 +238,12 @@ function TherapistAppointments() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <TherapistSidebar />
-        <div className="flex-1 p-6 flex items-center justify-center">
-          <div className="animate-pulse flex flex-col items-center gap-2">
-            <div className="h-8 w-8 bg-blue-500 rounded-full"></div>
-            <div className="text-gray-500">Loading appointments...</div>
-          </div>
+        <div className="flex-1 ml-[200px] p-6 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
         </div>
       </div>
     );
@@ -246,7 +253,7 @@ function TherapistAppointments() {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <TherapistSidebar />
-        <div className="flex-1 p-6 flex items-center justify-center">
+        <div className="flex-1 ml-[200px] p-6 flex items-center justify-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 max-w-md text-center">
             <div className="flex justify-center mb-2">
               <X className="h-6 w-6" />
@@ -377,16 +384,24 @@ function TherapistAppointments() {
                             {session.status === 'Scheduled' && !isSessionLive(session) && (
                               <button
                                 onClick={() => handleCancelClick(session.id)}
-                                className="px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-md flex items-center gap-1"
+                                disabled={isProcessing}
+                                className="px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-md flex items-center gap-1 disabled:opacity-50"
                               >
-                                <X size={14} />
-                                Cancel
+                                {isProcessing && session.id === selectedId ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-400"></div>
+                                ) : (
+                                  <>
+                                    <X size={14} />
+                                    Cancel
+                                  </>
+                                )}
                               </button>
                             )}
                             
                             {session.status === 'Scheduled' && isSessionLive(session) && (
                               <button
                                 onClick={() => handleCompleteSession(session.id)}
+                                disabled={isProcessing || session.status === 'Completed'}
                                 className={`
                                   px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
                                   ${
@@ -396,10 +411,15 @@ function TherapistAppointments() {
                                   }
                                   disabled:opacity-70 disabled:cursor-not-allowed
                                 `}
-                                disabled={session.status === 'Completed'}
                               >
-                                <Check size={16} />
-                                {session.status === 'Completed' ? 'Session Completed' : 'Mark as Completed'}
+                                {isProcessing && session.id === selectedId ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                                ) : (
+                                  <>
+                                    <Check size={16} />
+                                    {session.status === 'Completed' ? 'Session Completed' : 'Mark as Completed'}
+                                  </>
+                                )}
                               </button>
                             )}
                           </div>
@@ -478,6 +498,7 @@ function TherapistAppointments() {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onConfirm={handleConfirmCancel}
+        isLoading={isProcessing}
       />
     </div>
   );

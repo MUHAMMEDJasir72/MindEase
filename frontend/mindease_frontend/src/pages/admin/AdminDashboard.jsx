@@ -13,7 +13,7 @@ import AdminNotification from '../../components/admin/AdminNotifications';
 
 const AdminDashboard = () => {
   const [data, setData] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchInfo = async () => {
@@ -21,13 +21,22 @@ const AdminDashboard = () => {
       if (res.success) {
         setData(res.data);
       }
-      setLoading(false);
+      setIsLoading(false);
     };
 
     fetchInfo();
   }, []);
 
-  if (loading) return <div className="loading">Loading Dashboard...</div>;
+  if (isLoading) {
+    return (
+      <div className='flex min-h-screen bg-gray-50'>
+        <AdminSidebar />
+        <div className='flex-1 ml-[200px] p-6 flex items-center justify-center'>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
@@ -362,16 +371,6 @@ const AdminDashboard = () => {
           margin-left: 220px; /* This should match the width of your sidebar */
           font-family: Arial, sans-serif;
           max-width: calc(1400px - 220px); /* Adjust max-width to account for sidebar */
-        }
-        
-        .loading {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          font-size: 1.5rem;
-          margin-left: 220px;
-          width: calc(100% - 220px);
         }
         
         .dashboard-section {

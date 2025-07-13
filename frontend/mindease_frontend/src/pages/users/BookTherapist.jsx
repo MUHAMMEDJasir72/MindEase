@@ -16,15 +16,13 @@ function BookTherapist() {
   const [therapyMode, setTherapyMode] = useState('');
   const [therapyType, setTherapyType] = useState('new');
   const [showSummary, setShowSummary] = useState(false);
-
   const [selectedDateId, setSelectedDateId] = useState('');
   const [selectedTimeId, setSelectedTimeId] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const stripe = useStripe();
   const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  console.log('therapist',therapist)
-
 
   // Pricing based on therapy mode
   const pricing = {
@@ -36,9 +34,17 @@ function BookTherapist() {
   // Fetch therapist data
   useEffect(() => {
     const fetchTherapistInfo = async () => {
-      const info = await getTherapistInformation(id);
-      if (info.success) {
-        setTherapist(info.data);
+      setIsLoading(true);
+      try {
+        const info = await getTherapistInformation(id);
+        if (info.success) {
+          setTherapist(info.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch therapist:", error);
+        showToast("Failed to load therapist information", "error");
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -50,33 +56,29 @@ function BookTherapist() {
   const handleDateSelect = (date) => {
     const selectedSlot = therapist.availabilities?.find(slot => slot.date === date);
     setSelectedDate(date);
-    setSelectedDateId(selectedSlot?.id); // Assuming `id` is available in slot
+    setSelectedDateId(selectedSlot?.id);
     setSelectedTime('');
     setSelectedTimeId('');
     setTherapyMode('');
     setTherapyType('new');
     setShowSummary(false);
   };
-  
 
   const handleTimeSelect = (time) => {
     const selectedSlot = therapist.availabilities?.find(slot => slot.date === selectedDate);
     const selectedTime = selectedSlot?.available_times?.find(t => t.time === time);
     setSelectedTime(time);
-    setSelectedTimeId(selectedTime?.id); // Assuming `id` is available in time slot
+    setSelectedTimeId(selectedTime?.id);
     setShowSummary(true);
   };
-  
 
   const handleContinue = async () => {
     if (!stripe || !elements) {
-      return; // Stripe.js or Elements not ready
+      return;
     }
   
-    setLoading(true);
+    setIsProcessingPayment(true);
    
-    
-  
     const appointment = {
       therapist: therapist.id,
       date: selectedDateId,
@@ -87,14 +89,13 @@ function BookTherapist() {
     };
   
     try {
-      
       // Step 1: Create the payment intent and get clientSecret
       const res = await createPayment(appointment.price);
       if (!res.success) {
         throw new Error(res.message || "Payment creation failed.");
       }
   
-      const { clientSecret } = res; // Use clientSecret from the response
+      const { clientSecret } = res;
   
       // Step 2: Confirm the card payment
       const result = await stripe.confirmCardPayment(clientSecret, {
@@ -104,31 +105,26 @@ function BookTherapist() {
       });
   
       if (result.error) {
-        alert(result.error.message); // Handle payment failure
+        showToast(result.error.message, "error");
       } else {
         if (result.paymentIntent.status === "succeeded") {
-          // alert("Payment Successful!"); // Handle successful payment
+          // Step 3: Create the appointment if payment was successful
+          const response = await createAppointment(appointment);
+          if (response.success) {
+            showToast(response.message, 'success');
+            navigate('/appointments');
+          } else {
+            showToast(response.message, 'error');
+          }
         }
       }
-  
-      // Step 3: Create the appointment if payment was successful
-      const response = await createAppointment(appointment);
-      if (response.success) {
-        showToast(response.message, 'success');
-        navigate('/appointments'); // Redirect to appointments page
-      } else {
-        showToast(response.message, 'error');
-      }
-  
     } catch (error) {
-      alert(error.message || "An error occurred during payment.");
+      showToast(error.message || "An error occurred during payment.", "error");
     } finally {
-      setLoading(false);
+      setIsProcessingPayment(false);
     }
   };
   
-  
-
   // Therapy mode options
   const therapyModes = [
     { value: 'video', label: 'Video Call', icon: Video },
@@ -142,7 +138,24 @@ function BookTherapist() {
     { value: 'followup', label: 'Follow Up Session' }
   ];
 
-  console.log('appointment', therapist);
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Back button for mobile */}
+        <button 
+          onClick={() => navigate(-1)}
+          className="md:hidden fixed top-4 left-4 z-10 bg-white p-2 rounded-full shadow"
+        >
+          <ArrowLeft size={24} />
+        </button>
+
+        {/* Loading spinner */}
+        <div className="flex-1 flex justify-center items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -279,7 +292,7 @@ function BookTherapist() {
               </div>
 
               {/* Time Slots Section */}
-                {selectedDate && (
+              {selectedDate && (
                 <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
                   <div className="p-6 border-b border-gray-100">
                     <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
@@ -307,7 +320,7 @@ function BookTherapist() {
                 </div>
               )}
 
-              {/* Therapy Mode Selection (appears after time is selected) */}
+              {/* Therapy Mode Selection */}
               {selectedTime && (
                 <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
                   <div className="p-6 border-b border-gray-100">
@@ -333,7 +346,7 @@ function BookTherapist() {
                 </div>
               )}
 
-              {/* Therapy Type Selection (appears after time is selected) */}
+              {/* Therapy Type Selection */}
               {selectedTime && (
                 <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
                   <div className="p-6 border-b border-gray-100">
@@ -358,7 +371,7 @@ function BookTherapist() {
               )}
             </div>
 
-            {/* Right Column - Booking Summary (shown after time selection) */}
+            {/* Right Column - Booking Summary */}
             {showSummary && (
               <div className="lg:w-80 flex-shrink-0">
                 <div className="bg-white rounded-xl shadow-md overflow-hidden sticky top-6">
@@ -414,23 +427,25 @@ function BookTherapist() {
                     <CardElement />
                     <button
                       onClick={handleContinue}
-                      disabled={!therapyMode || loading}  // disable when therapyMode is not selected OR loading
+                      disabled={!therapyMode || isProcessingPayment}
                       className={`w-full mt-6 px-6 py-3 rounded-lg font-medium ${
-                        therapyMode && !loading
-                          ? 'bg-teal-600 hover:bg-teal-700 text-white'  // active
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'  // disabled
+                        therapyMode && !isProcessingPayment
+                          ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       }`}
                     >
-                      {loading ? 'Processing...' : 'Continue to Payment'}
+                      {isProcessingPayment ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </div>
+                      ) : 'Continue to Payment'}
                     </button>
-
-
                   </div>
                 </div>
               </div>
             )}
           </div>
-
         </div>
       </div>
     </div>
