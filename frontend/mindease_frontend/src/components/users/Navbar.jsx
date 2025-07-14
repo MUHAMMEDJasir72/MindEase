@@ -14,7 +14,7 @@ function Navbar() {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/profile', icon: User, label: 'Profile' },
     { path: '/appointments', icon: CalendarCheck, label: 'Appointments' },
-    { path: '/billing', icon: Wallet, label: 'Billing' }
+    // { path: '/billing', icon: Wallet, label: 'Billing' }
   ];
 
   return (
