@@ -89,7 +89,7 @@ function TherapistProfile() {
               {/* Profile Image */}
               <div className="relative">
                 <img 
-                  src={therapistData.profile_image ? `${baseUrl}${therapistData.profile_image}` : '/default_profile-2.png'}
+                  src={therapistData.profile_image ? `${import.meta.env.VITE_BASE_URL}${therapistData.profile_image}` : '/default_profile-2.png'}
                   alt="Profile" 
                   className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-md"
                 />
