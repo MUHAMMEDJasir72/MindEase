@@ -57,11 +57,10 @@ class GetTherapistsInformationView(APIView):
 
 
 class GetUsersView(APIView):
-    # Uncomment this when authentication is needed
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        users = User.objects.all()
+        users = User.objects.filter(is_staff=False, is_superuser=False)
         serializer = UsersSerializer(users, many=True)
         return Response({
             "success": True,
