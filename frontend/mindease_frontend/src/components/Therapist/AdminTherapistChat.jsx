@@ -69,16 +69,17 @@ function AdminTherapistChat({ roomName, sender, receiver }) {
 
     ws.current = new WebSocket(`${routerBaseUrl}wss/chatAdminTherapist/${roomName}/`);
 
-    ws.current.onmessage = (e) => {
+   ws.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      // Normalize incoming WebSocket messages
       const normalizedMessage = {
         ...data,
         sender: String(data.sender),
-        receiver: String(data.receiver)
+        receiver: String(data.receiver),
+        timestamp: data.timestamp || new Date().toISOString(), 
       };
       setMessages((prev) => [...prev, normalizedMessage]);
     };
+
 
     return () => {
       if (ws.current) {

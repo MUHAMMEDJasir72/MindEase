@@ -262,6 +262,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 from .models import AdminTherapistChat, UserDetails, AdminNotification  # make sure these imports are correct
+from django.utils.timezone import now
 
 class ChatAdminTherapistConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -280,10 +281,13 @@ class ChatAdminTherapistConsumer(AsyncWebsocketConsumer):
         sender_id = data['sender']
         receiver_id = data['receiver']
 
+        # Get current timestamp
+        timestamp = now().isoformat()
+
         # Save message and create notification
         await self.save_message_and_notify(sender_id, receiver_id, message)
 
-        # Broadcast to WebSocket group
+        # Broadcast to WebSocket group with timestamp
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -291,15 +295,19 @@ class ChatAdminTherapistConsumer(AsyncWebsocketConsumer):
                 'message': message,
                 'sender': sender_id,
                 'receiver': receiver_id,
+                'timestamp': timestamp,
             }
         )
+
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
             'message': event['message'],
             'sender': event['sender'],
-            'receiver': event['receiver']
+            'receiver': event['receiver'],
+            'timestamp': event['timestamp'],  
         }))
+
 
     @database_sync_to_async
     def save_message_and_notify(self, sender_id, receiver_id, message):
