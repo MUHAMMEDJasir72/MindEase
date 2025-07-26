@@ -48,11 +48,13 @@ const GoogleAuth = ({ mode = 'login' }) => {
       localStorage.setItem('loginMethod', 'google');
 
       const decoded = jwt_decode(access);
-      localStorage.setItem('current_role', 'user');
+      
 
       if (decoded.role === 'admin') {
+        localStorage.setItem('current_role', 'admin');
         navigate('/adminDashboard');
       } else {
+        localStorage.setItem('current_role', 'user');
         navigate('/');
       }
     } catch (error) {

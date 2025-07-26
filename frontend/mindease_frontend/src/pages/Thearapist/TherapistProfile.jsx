@@ -13,7 +13,7 @@ function TherapistProfile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [rate, setRate] = useState(0);
   const [loading, setLoading] = useState(true);
-  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const baseUrl = import.meta.env.VITE_API_URL;
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -313,7 +313,11 @@ function TherapistProfile() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {therapistData.governmentIssuedID && (
-                <a href={`${baseUrl}${therapistData.governmentIssuedID}`} target="_blank" rel="noopener noreferrer" className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <a href={`${baseUrl}/therapists/therapist-secure-documents/${therapistData.governmentIssuedID.replace(/^\/?media\//, '').replace(/\/$/, '')}`} 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                >
                   <div className="flex flex-col items-center text-center">
                     <FaIdCard className="text-gray-600 text-3xl mb-2" />
                     <span className="text-sm font-medium text-gray-700">Government ID</span>
@@ -323,7 +327,10 @@ function TherapistProfile() {
               )}
               
               {therapistData.professionalLicense && (
-                <a href={`${baseUrl}${therapistData.professionalLicense}`} target="_blank" rel="noopener noreferrer" className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <a href={`${baseUrl}/therapists/therapist-secure-documents/${therapistData.professionalLicense.replace(/^\/?media\//, '').replace(/\/$/, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex flex-col items-center text-center">
                     <FaFileAlt className="text-gray-600 text-3xl mb-2" />
                     <span className="text-sm font-medium text-gray-700">Professional License</span>
@@ -333,7 +340,10 @@ function TherapistProfile() {
               )}
               
               {therapistData.educationalCertificate && (
-                <a href={`${baseUrl}${therapistData.educationalCertificate}`} target="_blank" rel="noopener noreferrer" className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <a href={`${baseUrl}/therapists/therapist-secure-documents/${therapistData.educationalCertificate.replace(/^\/?media\//, '').replace(/\/$/, '')}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex flex-col items-center text-center">
                     <FaGraduationCap className="text-gray-600 text-3xl mb-2" />
                     <span className="text-sm font-medium text-gray-700">Educational Certificate</span>
@@ -343,7 +353,10 @@ function TherapistProfile() {
               )}
               
               {therapistData.additionalCertificationDocument && (
-                <a href={`${baseUrl}${therapistData.additionalCertificationDocument}`} target="_blank" rel="noopener noreferrer" className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <a href={`${baseUrl}/therapists/therapist-secure-documents/${therapistData.additionalCertificationDocument.replace(/^\/?media\//, '').replace(/\/$/, '')}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex flex-col items-center text-center">
                     <FaFileAlt className="text-gray-600 text-3xl mb-2" />
                     <span className="text-sm font-medium text-gray-700">Additional Certifications</span>

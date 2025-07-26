@@ -86,7 +86,7 @@ function ForgotPassword() {
     
         setIsLoading(true);
         try {
-            const response = await verifyOtp(email.trim(), otp.trim());
+            const response = await verifyOtp(otp.trim(), email.trim(),);
             if (response.success) {
                 showToast("OTP verified successfully", "success");
                 setStep(3);

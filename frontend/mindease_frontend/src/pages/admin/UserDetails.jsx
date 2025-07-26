@@ -4,6 +4,7 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import { format } from 'date-fns';
 import {changeUserStatus, getUserInfo} from '../../api/admin'
 import { showToast } from '../../utils/toast';
+import ConfirmDialog from '../../utils/ConfirmDialog';
 
 const UserDetails = () => {
   const { id } = useParams();
@@ -13,6 +14,7 @@ const UserDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [feedbackDeleting, setFeedbackDeleting] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
 
   // Fetch user details and bookings
@@ -43,7 +45,7 @@ const UserDetails = () => {
     fetchData();
   }, [id]);
 
-   const handleBlock = async (id) =>{
+   const handleBlock = async () =>{
         const res = await changeUserStatus(id);
         if (res.success){
           showToast('Changed successfully', 'success');
@@ -57,6 +59,7 @@ const UserDetails = () => {
         }else{
           showToast('Something went wrong', 'error');
         }
+        setShowConfirm(false)
       }
 
   // Handle feedback deletion
@@ -153,7 +156,7 @@ const UserDetails = () => {
           Back to Users
         </button>
         <button
-            onClick={() => handleBlock(user.id)}
+            onClick={() => setShowConfirm(true)}
             type="button"
             className={`
               focus:outline-none 
@@ -392,6 +395,16 @@ const UserDetails = () => {
             </div>
           )}
         </section>
+        <ConfirmDialog
+        isOpen={showConfirm}
+        title={user?.is_user_active ? "Block User?" : "Unblock User?"}
+        message={user?.is_user_active 
+          ? "Are you sure you want to block this user? They will not be able to access their account."
+          : "Are you sure you want to unblock this user?"}
+        onConfirm={handleBlock}
+        onCancel={() => setShowConfirm(false)}
+      />
+
       </main>
     </div>
   );

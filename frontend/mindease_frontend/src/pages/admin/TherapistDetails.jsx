@@ -1,16 +1,25 @@
 import React from 'react'
-import { approveTherapist, changeTherapistStatus, getTherapistInformation } from '../../api/admin';
+import { approveTherapist, changeTherapistStatus, getTherapistInformation, rejectTherapist } from '../../api/admin';
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { showToast } from '../../utils/toast';
 import { basicUrl } from '../../api/axiosInstance';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import { differenceInYears } from 'date-fns';
+import ConfirmDialog from '../../utils/ConfirmDialog';
 
 function TherapistDetails() {
     const { id } = useParams();
     const [details, setDetails] = useState({})
     const [isLoading, setIsLoading] = useState(true)
     const navigate = useNavigate()
+    const [confirmConfig, setConfirmConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    });
+
     
     useEffect(() => {
       const fetchTherpistInfo = async () => {
@@ -30,29 +39,56 @@ function TherapistDetails() {
     }, [id]);
 
     const handleApproveTherapist = async () => {
+        setIsLoading(true);
       const info = await approveTherapist(id)
       if (info.success){
         console.log('success')
+        setIsLoading(false);
         navigate('/therapists')
       }else{
         console.log("error")
       }
     }
 
-    const handleBlock = async (id) => {
-      const res = await changeTherapistStatus(id);
-      if (res.success){
-        showToast('Changed successfully', 'success');
-        const info = await getTherapistInformation(id);
-        if (info.success) {
-            setDetails(info.data)
-          console.log("success");
-        } else {
-          console.log("error");
+   const rejectRequest = async () => {
+    const info = await rejectTherapist(id);
+    if (info.success) {
+        showToast(info.message, 'success');
+        navigate('/therapists');
+    } else {
+        showToast(info.message, 'error');
+    }
+}
+
+
+    const handleBlock = async () => {
+        try {
+            const res = await changeTherapistStatus(id);
+            if (res.success) {
+            showToast('Status changed successfully', 'success');
+
+            const info = await getTherapistInformation(id);
+            if (info.success) {
+                setDetails(info.data);
+            } else {
+                showToast('Failed to fetch updated details.', 'error');
+            }
+            } else {
+            showToast('Something went wrong while updating status.', 'error');
+            }
+        } catch (error) {
+            console.error("Error while changing status:", error);
+            showToast('An unexpected error occurred.', 'error');
+        } finally {
+            setShowConfirm(false);
         }
-      }else{
-        showToast('Something went wrong', 'error');
-      }
+        };
+
+
+    function calculateAge(dateOfBirth) {
+    const dob = new Date(dateOfBirth);
+    const today = new Date();
+    return differenceInYears(today, dob);
     }
 
     if (isLoading) {
@@ -65,7 +101,7 @@ function TherapistDetails() {
             </div>
         );
     }
-
+    console.log(id)
     return (
         <div className='flex min-h-screen bg-gray-50'>
             <AdminSidebar />
@@ -85,7 +121,14 @@ function TherapistDetails() {
                         <p className='text-indigo-100 font-medium'>{details.professionalTitle}</p>
                         <div className='absolute top-7 right-14'>
                             <button
-                                onClick={() => handleBlock(details?.id)}
+                                onClick={() =>
+                                setConfirmConfig({
+                                    isOpen: true,
+                                    title: details?.user?.is_therapist_active ? 'Block Therapist' : 'Unblock Therapist',
+                                    message: `Are you sure you want to ${details?.user?.is_therapist_active ? 'block' : 'unblock'} this therapist?`,
+                                    onConfirm: handleBlock,
+                                })
+                                }
                                 type="button"
                                 className={`
                                     focus:outline-none 
@@ -120,8 +163,8 @@ function TherapistDetails() {
                                 </h2>
                                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                                     <InfoItem label="Full Name" value={details.fullname} />
-                                    <InfoItem label="Email" value={details.email} />
-                                    <InfoItem label="Age" value={details.age} />
+                                    <InfoItem label="Email" value={details.user.email} />
+                                    <InfoItem label="Age" value={`${calculateAge(details.dateOfBirth)} years`} />
                                     <InfoItem label="Gender" value={details.gender} />
                                     <InfoItem label="Mobile Number" value={details.phone} />
                                     <InfoItem label="Languages" value={details.languages?.map((lang) => lang.languages).join(', ')} />
@@ -179,7 +222,7 @@ function TherapistDetails() {
                                     <DocumentItem label="Government ID Proof" fileUrl={details.governmentIssuedID} />
                                     <DocumentItem label="Professional License" fileUrl={details.professionalLicense} />
                                     <DocumentItem label="Educational Certificate" fileUrl={details.educationalCertificate} />
-                                    {details.additional_certification_document && (
+                                    {details.additionalCertificationDocument && (
                                         <DocumentItem label="Additional Certifications" fileUrl={details.additionalCertificationDocument} />
                                     )}
                                 </div>
@@ -190,26 +233,48 @@ function TherapistDetails() {
                         { details.role !== 'therapist' &&
                         <div className='mt-8 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3'>
                             <button className='flex-1 bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center'
-                            onClick={handleApproveTherapist}>
+                           onClick={() =>
+                            setConfirmConfig({
+                                isOpen: true,
+                                title: 'Approve Therapist',
+                                message: 'Are you sure you want to approve this therapist?',
+                                onConfirm: handleApproveTherapist,
+                                })
+                                }
+                                >
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                                 Approve Therapist
                             </button>
-                            <button className='flex-1 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center'>
+                            <button className='flex-1 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center'
+                            onClick={() =>
+                            setConfirmConfig({
+                                isOpen: true,
+                                title: 'Reject Therapist',
+                                message: 'Are you sure you want to reject this therapist?',
+                                onConfirm: rejectRequest,
+                            })
+                            }
+                            >
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                                 Reject Application
                             </button>
-                            <button className='flex-1 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center'>
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                Send Message
-                            </button>
+                          
                         </div>
                         }
+                        <ConfirmDialog
+                        isOpen={confirmConfig.isOpen}
+                        title={confirmConfig.title}
+                        message={confirmConfig.message}
+                        onConfirm={() => {
+                            confirmConfig.onConfirm();
+                            setConfirmConfig({ ...confirmConfig, isOpen: false });
+                        }}
+                        onCancel={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+                        />
                     </div>
                 </div>
             </div>
@@ -229,9 +294,12 @@ function InfoItem({ label, value }) {
 
 // Reusable component for document items
 function DocumentItem({ label, fileUrl }) {
-    const fullUrl = fileUrl?.startsWith("http")
-        ? fileUrl
-        : `${basicUrl}${fileUrl}`;
+    const fullUrl = `${import.meta.env.VITE_API_URL}/admin/secure-documents/${
+     fileUrl.replace(/^\/?media\//, '').replace(/\/$/, '')
+   }`;
+
+
+
 
     return (
         <div className="border rounded-md p-4 bg-gray-50 shadow-sm flex flex-col">
@@ -251,5 +319,9 @@ function DocumentItem({ label, fileUrl }) {
         </div>
     );
 }
+
+
+
+
 
 export default TherapistDetails

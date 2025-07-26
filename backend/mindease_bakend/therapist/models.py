@@ -28,6 +28,7 @@ class TherapistDetails(models.Model):
     educationalCertificate = models.FileField(upload_to='documents/')
     additionalCertificationDocument = models.FileField(upload_to='documents/', blank=True, null=True)
     profile_image = models.ImageField(upload_to='therapist_profile_images/', max_length=255, blank=True, null=True)
+    rejected = models.BooleanField(default=False)
 
     def __str__(self):
         return self.fullname

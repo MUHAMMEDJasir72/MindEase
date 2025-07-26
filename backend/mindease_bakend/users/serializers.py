@@ -1,8 +1,8 @@
 # users/serializers.py
 from rest_framework import serializers
-from .models import UserDetails, TherapySession, Notification
+from .models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from therapist.models import TherapistDetails, AvailableDate, AvailableTimes
+from therapist.models import *
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -95,4 +95,41 @@ class MessageSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ['id', 'message', 'read', 'time', 'title', 'type']
+        fields = '__all__'
+
+
+class SpecializationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Specializations
+        fields = ['specializations']
+
+
+class LanguageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Languages
+        fields = ['languages']
+
+class GetTherapistProfileSerializer(serializers.ModelSerializer):
+    specializations = SpecializationSerializer(many=True, read_only=True)
+    languages = LanguageSerializer(many=True, read_only=True)
+    average_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TherapistDetails
+        fields = [
+            'id',
+            'fullname',
+            'yearsOfExperience',
+            'professionalTitle',
+            'profile_image',
+            'specializations',
+            'languages',
+            'average_rating',
+        ]
+    def get_average_rating(self, obj):
+        from django.db.models import Avg
+        # TherapistDetails has OneToOneField to User, sessions use UserDetails
+        return TherapySession.objects.filter(
+            therapist=obj.user,
+            rating__isnull=False
+        ).aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0

@@ -18,6 +18,7 @@ function logoutUser() {
   console.warn('[Logout] Clearing tokens and redirecting to login');
   localStorage.removeItem('access');
   localStorage.removeItem('refresh');
+  localStorage.clear()
   window.location.href = '/login/';  // Redirect to login page
 }
 
@@ -27,7 +28,6 @@ axiosInstance.interceptors.request.use(
     const accessToken = localStorage.getItem('access');
     if (accessToken) {
       config.headers['Authorization'] = 'Bearer ' + accessToken;
-      console.log('[Request] Attached access token');
     }
     return config;
   },
@@ -46,6 +46,10 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    if (originalRequest.url.includes('/users/login/token/')) {
+      return Promise.reject(error);
+    }
+
     // ✅ 1. If therapist is blocked (403 Forbidden)
     if (error.response?.status === 403) {
       console.warn('[Response] 403 Forbidden detected. User may be blocked.');
@@ -59,6 +63,7 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem('refresh');
+      console.log('jasir...........',refreshToken)
       if (!refreshToken) {
         console.warn('[Refresh] No refresh token found. Logging out.');
         logoutUser();

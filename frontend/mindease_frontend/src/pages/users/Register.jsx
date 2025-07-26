@@ -7,8 +7,6 @@ import { registerUser } from "../../api/auth";
 import { validateForm } from "../../utils/validateForm";
 import GoogleAuth from "../../components/users/GoogleAuth";
 
-
-
 function Register() {
   const [formData, setFormData] = useState({
     username: "",
@@ -82,7 +80,7 @@ function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="hidden md:block fixed inset-0 overflow-hidden opacity-20">
         <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-blue-600"></div>
       </div>
@@ -91,17 +89,17 @@ function Register() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative w-full max-w-md mx-4 bg-white rounded-xl shadow-xl overflow-hidden z-10"
+        className="relative w-full max-w-md mx-auto bg-white rounded-xl shadow-xl overflow-hidden z-10"
       >
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-teal-400 to-blue-500"></div>
         
-        <div className="px-10 py-5">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">Create Account</h2>
-            <p className="text-gray-500 mt-2">Join us today</p>
+        <div className="px-6 py-8 sm:px-10 sm:py-10">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Create Account</h2>
+            <p className="text-gray-500 mt-1 sm:mt-2 text-sm sm:text-base">Join us today</p>
           </div>
           
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-3 sm:space-y-4" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
                 Username
@@ -115,7 +113,7 @@ function Register() {
                   onChange={handleChange}
                   onFocus={() => handleFocus('username')}
                   onBlur={() => handleBlur('username')}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
+                  className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
                   placeholder="Enter your username"
                   required
                 />
@@ -135,7 +133,7 @@ function Register() {
                   onChange={handleChange}
                   onFocus={() => handleFocus('email')}
                   onBlur={() => handleBlur('email')}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
+                  className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
                   placeholder="Enter your email"
                   required
                 />
@@ -155,7 +153,7 @@ function Register() {
                   onChange={handleChange}
                   onFocus={() => handleFocus('password1')}
                   onBlur={() => handleBlur('password1')}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
+                  className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
                   placeholder="Create a password"
                   required
                 />
@@ -175,7 +173,7 @@ function Register() {
                   onChange={handleChange}
                   onFocus={() => handleFocus('password2')}
                   onBlur={() => handleBlur('password2')}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
+                  className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
                   placeholder="Confirm your password"
                   required
                 />
@@ -187,7 +185,7 @@ function Register() {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
-              className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 shadow-md'}`}
+              className={`w-full py-2 sm:py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 shadow-md'}`}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
@@ -201,7 +199,7 @@ function Register() {
             </motion.button>
           </form>
 
-          <div className="mt-6">
+          <div className="mt-5 sm:mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -211,12 +209,12 @@ function Register() {
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-5 sm:mt-6">
              <GoogleAuth mode="register"/>
             </div>
           </div>
 
-          <div className="mt-6 text-center">
+          <div className="mt-5 sm:mt-6 text-center">
             <p className="text-gray-600 text-sm">
               Already have an account?{' '}
               <Link to="/login" className="font-medium text-teal-600 hover:text-teal-500">

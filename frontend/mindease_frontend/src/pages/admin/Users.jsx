@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { getUsers } from '../../api/admin';
 import { Link } from 'react-router-dom';
+import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -12,6 +13,8 @@ function Users() {
     gender: 'all'
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(5);
 
   // Filter and sort users
   const filteredUsers = users
@@ -29,7 +32,6 @@ function Users() {
       return matchesSearch && matchesStatus && matchesGender;
     })
     .sort((a, b) => {
-      // Handle null/undefined values
       const aValue = a[sortConfig.key] || '';
       const bValue = b[sortConfig.key] || '';
       
@@ -41,6 +43,12 @@ function Users() {
       }
       return 0;
     });
+
+  // Pagination logic
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   const requestSort = (key) => {
     let direction = 'ascending';
@@ -56,6 +64,102 @@ function Users() {
       ...filters,
       [name]: value
     });
+    setCurrentPage(1);
+  };
+
+  const PaginationControls = () => {
+    const maxVisiblePages = 5;
+    let startPage, endPage;
+
+    if (totalPages <= maxVisiblePages) {
+      startPage = 1;
+      endPage = totalPages;
+    } else {
+      const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+      const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+      
+      if (currentPage <= maxPagesBeforeCurrent) {
+        startPage = 1;
+        endPage = maxVisiblePages;
+      } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+        startPage = totalPages - maxVisiblePages + 1;
+        endPage = totalPages;
+      } else {
+        startPage = currentPage - maxPagesBeforeCurrent;
+        endPage = currentPage + maxPagesAfterCurrent;
+      }
+    }
+
+    const pageNumbers = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-4 bg-white px-4 py-3 rounded-b-lg shadow">
+        <div className="text-sm text-gray-700 mb-2 sm:mb-0">
+          Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{' '}
+          <span className="font-medium">
+            {Math.min(indexOfLastUser, filteredUsers.length)}
+          </span> of{' '}
+          <span className="font-medium">{filteredUsers.length}</span> users
+        </div>
+        
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className="p-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="First page"
+          >
+            <FiChevronsLeft />
+          </button>
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="p-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Previous page"
+          >
+            <FiChevronLeft />
+          </button>
+
+          {startPage > 1 && (
+            <span className="px-2 py-1">...</span>
+          )}
+
+          {pageNumbers.map(number => (
+            <button
+              key={number}
+              onClick={() => setCurrentPage(number)}
+              className={`px-3 py-1 rounded-md border ${currentPage === number ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300'}`}
+            >
+              {number}
+            </button>
+          ))}
+
+          {endPage < totalPages && (
+            <span className="px-2 py-1">...</span>
+          )}
+
+          <button
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="p-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Next page"
+          >
+            <FiChevronRight />
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="p-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Last page"
+          >
+            <FiChevronsRight />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -63,7 +167,6 @@ function Users() {
       try {
         const info = await getUsers();
         if (info.success) {
-          console.log('Fetched data:', info.data);
           setUsers(info.data);
         }
       } catch (error) {
@@ -75,6 +178,10 @@ function Users() {
   
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   if (isLoading) {
     return (
@@ -102,7 +209,7 @@ function Users() {
               <input
                 type='text'
                 id='search'
-                placeholder='Search by name, email or phone...'
+                placeholder='Search by name or email...'
                 className='w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -212,8 +319,8 @@ function Users() {
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
+                {currentUsers.length > 0 ? (
+                  currentUsers.map((user) => (
                     <tr key={user.id} className='hover:bg-gray-50'>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='flex items-center'>
@@ -248,9 +355,11 @@ function Users() {
                           {user.is_user_active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <Link to={`/userDetails/${user.id}`}><td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-                        <button className='text-blue-600 hover:text-blue-900 mr-3'>View</button>
-                      </td></Link>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                        <Link to={`/userDetails/${user.id}`}>
+                          <button className='text-blue-600 hover:text-blue-900 mr-3'>View</button>
+                        </Link>
+                      </td>
                     </tr>
                   ))
                 ) : (
@@ -263,25 +372,12 @@ function Users() {
               </tbody>
             </table>
           </div>
+          
+          {/* Pagination Controls */}
+          {filteredUsers.length > 0 && (
+            <PaginationControls />
+          )}
         </div>
-        
-        {/* Pagination would go here */}
-        {filteredUsers.length > 0 && (
-          <div className='mt-4 flex justify-between items-center bg-white px-4 py-3 rounded-b-lg shadow'>
-            <div className='text-sm text-gray-700'>
-              Showing <span className='font-medium'>1</span> to <span className='font-medium'>{filteredUsers.length}</span> of{' '}
-              <span className='font-medium'>{users.length}</span> results
-            </div>
-            <div className='flex space-x-2'>
-              <button className='px-3 py-1 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50'>
-                Previous
-              </button>
-              <button className='px-3 py-1 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50'>
-                Next
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

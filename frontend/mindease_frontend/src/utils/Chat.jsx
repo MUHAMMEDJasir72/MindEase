@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTherapistInfo, getUserInfo } from '../api/therapist';
 import { basicUrl, routerBaseUrl } from '../api/axiosInstance';
+import { markAsAttended } from '../api/user';
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -22,7 +23,7 @@ function Chat() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const { userId, therapistId } = useParams();
+  const { userId, therapistId, sessionId } = useParams();
   const roomName = `${userId}-${therapistId}`;
   const role = localStorage.getItem('current_role');
 
@@ -129,6 +130,16 @@ function Chat() {
       setIsConnected(false);
       setError('Connection error. Messages may not be delivered.');
     };
+
+    const markSessionAttend = async () => {
+            const info = await markAsAttended(sessionId,current_role);
+            if (info.success) {
+              console.log('marked as attended')
+            } else {
+              console.log('Failed to load therapist information.');
+            }
+          };
+    markSessionAttend()
 
     socketRef.current.onclose = () => {
       setIsConnected(false);
@@ -282,7 +293,7 @@ function Chat() {
         return (
           <div className="mt-2 rounded-lg overflow-hidden">
             <img 
-              src={`${import.meta.env.VITE_BASE_URL}{msg.media.replace('/media/media/', '/media/')}`}  
+              src={`${import.meta.env.VITE_BASE_URL}${msg.media.replace('/media/media/', '/media/')}`}  
               alt="Sent image" 
               className="max-w-full max-h-64 object-contain rounded-lg"
             />

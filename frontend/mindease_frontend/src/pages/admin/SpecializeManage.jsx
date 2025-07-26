@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
-import { FiEdit, FiTrash2, FiPlus } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { createSpecialize, deleteSpecialize, getSpecializations, editSpecialize } from '../../api/admin';
 import { showToast } from '../../utils/toast';
+import ConfirmDialog from '../../utils/ConfirmDialog';
 
 function SpecializeManage() {
   const [specializations, setSpecializations] = useState([]);
@@ -10,6 +11,14 @@ function SpecializeManage() {
   const [specializationName, setSpecializationName] = useState('');
   const [currentSpecialization, setCurrentSpecialization] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmConfig, setConfirmConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   useEffect(() => {
     fetchSpecializations();
@@ -31,6 +40,106 @@ function SpecializeManage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = specializations.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(specializations.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const PaginationControls = () => {
+    const maxVisiblePages = 5;
+    let startPage, endPage;
+
+    if (totalPages <= maxVisiblePages) {
+      startPage = 1;
+      endPage = totalPages;
+    } else {
+      const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+      const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+      
+      if (currentPage <= maxPagesBeforeCurrent) {
+        startPage = 1;
+        endPage = maxVisiblePages;
+      } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+        startPage = totalPages - maxVisiblePages + 1;
+        endPage = totalPages;
+      } else {
+        startPage = currentPage - maxPagesBeforeCurrent;
+        endPage = currentPage + maxPagesAfterCurrent;
+      }
+    }
+
+    const pageNumbers = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-sm text-gray-700">
+          Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
+          <span className="font-medium">{Math.min(indexOfLastItem, specializations.length)}</span> of{' '}
+          <span className="font-medium">{specializations.length}</span> specializations
+        </div>
+        <div className="flex space-x-1">
+          <button
+            onClick={() => paginate(1)}
+            disabled={currentPage === 1}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="First page"
+          >
+            <FiChevronsLeft />
+          </button>
+          <button
+            onClick={() => paginate(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Previous page"
+          >
+            <FiChevronLeft />
+          </button>
+
+          {startPage > 1 && (
+            <span className="px-3 py-1">...</span>
+          )}
+
+          {pageNumbers.map(number => (
+            <button
+              key={number}
+              onClick={() => paginate(number)}
+              className={`px-3 py-1 rounded-md border ${currentPage === number ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300'}`}
+            >
+              {number}
+            </button>
+          ))}
+
+          {endPage < totalPages && (
+            <span className="px-3 py-1">...</span>
+          )}
+
+          <button
+            onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Next page"
+          >
+            <FiChevronRight />
+          </button>
+          <button
+            onClick={() => paginate(totalPages)}
+            disabled={currentPage === totalPages}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Last page"
+          >
+            <FiChevronsRight />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -79,6 +188,10 @@ function SpecializeManage() {
       if (response.success) {
         showToast(response.message, 'success');
         fetchSpecializations();
+        // Reset to first page if the last item on current page was deleted
+        if (currentItems.length === 1 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        }
       } else {
         showToast(response.error || 'Failed to delete specialization', 'error');
       }
@@ -123,37 +236,49 @@ function SpecializeManage() {
               No specializations found. Add your first specialization.
             </div>
           ) : (
-            <table className='min-w-full divide-y divide-gray-200'>
-              <thead className='bg-gray-50'>
-                <tr>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Name</th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Actions</th>
-                </tr>
-              </thead>
-              <tbody className='bg-white divide-y divide-gray-200'>
-                {specializations.map((spec) => (
-                  <tr key={spec.id}>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                      {spec.specialization}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-                      <button
-                        onClick={() => handleEdit(spec)}
-                        className='text-indigo-600 hover:text-indigo-900 mr-4'
-                      >
-                        <FiEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(spec.id)}
-                        className='text-red-600 hover:text-red-900'
-                      >
-                        <FiTrash2 />
-                      </button>
-                    </td>
+            <>
+              <table className='min-w-full divide-y divide-gray-200'>
+                <thead className='bg-gray-50'>
+                  <tr>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Name</th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className='bg-white divide-y divide-gray-200'>
+                  {currentItems.map((spec) => (
+                    <tr key={spec.id}>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                        {spec.specialization}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                        <button
+                          onClick={() => handleEdit(spec)}
+                          className='text-indigo-600 hover:text-indigo-900 mr-4'
+                        >
+                          <FiEdit />
+                        </button>
+                        <button
+                          onClick={() =>
+                            setConfirmConfig({
+                              isOpen: true,
+                              title: 'Delete Specialization',
+                              message: 'Are you sure you want to delete this specialization?',
+                              onConfirm: () => handleDelete(spec.id),
+                            })
+                          }
+                          className='text-red-600 hover:text-red-900'
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-6 py-4">
+                <PaginationControls />
+              </div>
+            </>
           )}
         </div>
 
@@ -183,11 +308,7 @@ function SpecializeManage() {
                   <div className='flex justify-end gap-3'>
                     <button
                       type='button'
-                      onClick={() => {
-                        setIsModalOpen(false);
-                        setCurrentSpecialization(null);
-                        setSpecializationName('');
-                      }}
+                      onClick={() => setIsModalOpen(false)}
                       className='bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded'
                     >
                       Cancel
@@ -204,6 +325,17 @@ function SpecializeManage() {
             </div>
           </div>
         )}
+
+        <ConfirmDialog
+          isOpen={confirmConfig.isOpen}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          onConfirm={() => {
+            confirmConfig.onConfirm();
+            setConfirmConfig({ ...confirmConfig, isOpen: false });
+          }}
+          onCancel={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        />
       </div>
     </div>
   );

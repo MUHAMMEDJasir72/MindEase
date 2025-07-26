@@ -143,8 +143,10 @@ const RequestForm = () => {
     try {
       const response = await registerTherapist(formData);
       if (response.success) {
-        showToast('Application submitted successfully!', 'success');
-        navigate('/submited'); 
+        showToast(response.message, 'success');
+        setTimeout(() => {
+        navigate('/submited');
+        }, 1000); 
       } else {
         showToast(response.error || 'Submission failed. Please try again.', 'error');
       }
@@ -583,12 +585,7 @@ const RequestForm = () => {
               ))}
             </div>
             
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
-              <h4 className="font-semibold text-blue-800 mb-2">Need help?</h4>
-              <p className="text-sm text-gray-600">
-                If you have any questions about the application process, please contact our support team at support@therapyplatform.com
-              </p>
-            </div>
+         
           </div>
         </div>
       </div>

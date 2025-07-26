@@ -3,25 +3,18 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import { 
   FaRupeeSign, 
   FaHistory, 
-  FaWallet, 
-  FaUser, 
-  FaCheckCircle, 
-  FaClock,
-  FaExchangeAlt,
-  FaTimes
+  FaWallet
 } from 'react-icons/fa';
 import { getTransactions, getWalletAmount } from '../../api/therapist';
-import { getWithdrawRequests, processWithdraw } from '../../api/admin';
 import { showToast } from '../../utils/toast';
 import moment from 'moment';
 
 function AdminEarnings() {
   const [totalEarnings, setTotalEarnings] = useState({});
   const [transactions, setTransactions] = useState([]);
-  const [withdrawalRequests, setWithdrawalRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,10 +26,6 @@ function AdminEarnings() {
         // Fetch transactions
         const transactionsRes = await getTransactions();
         setTransactions(transactionsRes.data);
-        
-        // Fetch withdrawal requests
-        const requestsRes = await getWithdrawRequests();
-        setWithdrawalRequests(requestsRes.data);
       } catch (error) {
         console.error('Error fetching data:', error);
         showToast('Failed to load data', 'error');
@@ -48,33 +37,108 @@ function AdminEarnings() {
     fetchData();
   }, []);
 
-  const openConfirmationModal = (request) => {
-    setSelectedRequest(request);
-    setShowConfirmationModal(true);
-  };
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentTransactions = transactions.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
 
-  const closeConfirmationModal = () => {
-    setShowConfirmationModal(false);
-    setSelectedRequest(null);
-  };
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const handleProcessRequest = async () => {
-    if (!selectedRequest) return;
+  const PaginationControls = () => {
+    const maxVisiblePages = 5;
+    let startPage, endPage;
 
-    try {
-      const res = await processWithdraw(selectedRequest.id);
-      if (res.success) {
-        showToast(res.message, 'success');
-        closeConfirmationModal();
-        // Refresh data
-        const requestsRes = await getWithdrawRequests();
-        setWithdrawalRequests(requestsRes.data);
+    if (totalPages <= maxVisiblePages) {
+      startPage = 1;
+      endPage = totalPages;
+    } else {
+      const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+      const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+      
+      if (currentPage <= maxPagesBeforeCurrent) {
+        startPage = 1;
+        endPage = maxVisiblePages;
+      } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+        startPage = totalPages - maxVisiblePages + 1;
+        endPage = totalPages;
+      } else {
+        startPage = currentPage - maxPagesBeforeCurrent;
+        endPage = currentPage + maxPagesAfterCurrent;
       }
-    } catch (error) {
-      console.error('Error processing request:', error);
-      showToast('Failed to process request', 'error');
-      closeConfirmationModal();
     }
+
+    const pageNumbers = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <nav className="flex items-center justify-between mt-6">
+        <div>
+          <p className="text-sm text-gray-700">
+            Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
+            <span className="font-medium">
+              {Math.min(indexOfLastItem, transactions.length)}
+            </span> of{' '}
+            <span className="font-medium">{transactions.length}</span> transactions
+          </p>
+        </div>
+        <div className="flex space-x-1">
+          <button
+            onClick={() => paginate(1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-md ${currentPage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
+            aria-label="First page"
+          >
+            «
+          </button>
+          <button
+            onClick={() => paginate(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-md ${currentPage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
+            aria-label="Previous page"
+          >
+            ‹
+          </button>
+
+          {startPage > 1 && (
+            <span className="px-3 py-1 text-gray-700">...</span>
+          )}
+
+          {pageNumbers.map(number => (
+            <button
+              key={number}
+              onClick={() => paginate(number)}
+              className={`px-3 py-1 rounded-md border border-gray-300 ${currentPage === number ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+            >
+              {number}
+            </button>
+          ))}
+
+          {endPage < totalPages && (
+            <span className="px-3 py-1 text-gray-700">...</span>
+          )}
+
+          <button
+            onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-md ${currentPage === totalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
+            aria-label="Next page"
+          >
+            ›
+          </button>
+          <button
+            onClick={() => paginate(totalPages)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-md ${currentPage === totalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'}`}
+            aria-label="Last page"
+          >
+            »
+          </button>
+        </div>
+      </nav>
+    );
   };
 
   if (isLoading) {
@@ -111,96 +175,6 @@ function AdminEarnings() {
               </div>
             </div>
           </div>
-          
-          {/* Pending Requests Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-600 mb-1">Pending Withdrawals</h2>
-                <p className="text-3xl font-bold text-gray-800">
-                  {withdrawalRequests.filter(r => !r.is_processed).length}
-                </p>
-              </div>
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <FaClock className="text-yellow-600 text-2xl" />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Withdrawal Requests Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-              <FaExchangeAlt className="mr-2 text-blue-500" /> Withdrawal Requests
-            </h2>
-          </div>
-          
-          {withdrawalRequests.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No withdrawal requests found</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Therapist</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UPI ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {withdrawalRequests.map((request) => (
-                    <tr key={request.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <FaUser className="text-gray-500" />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{request.therapist}</div>
-                            {request.therapist.email && (
-                              <div className="text-sm text-gray-500">{request.therapist.email}</div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ₹{request.amount}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {request.upi_id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {moment(request.created_at).format('DD MMM YYYY, h:mm A')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          request.is_processed 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {request.is_processed ? 'Processed' : 'Pending'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {!request.is_processed && (
-                          <button
-                            onClick={() => openConfirmationModal(request)}
-                            className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-md text-sm"
-                          >
-                            Mark as Processed
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
         
         {/* Transaction History Section */}
@@ -214,98 +188,52 @@ function AdminEarnings() {
           {transactions.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No transactions found</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {transactions.map((transaction) => (
-                    <tr key={transaction.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {moment(transaction.created_at).format('DD MMM YYYY, h:mm A')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          transaction.transaction_type === 'CREDIT' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {transaction.transaction_type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {transaction.description || 'N/A'}
-                      </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                        transaction.transaction_type === 'CREDIT' 
-                          ? 'text-green-600' 
-                          : 'text-red-600'
-                      }`}>
-                        {transaction.transaction_type === 'CREDIT' ? '+' : '-'}₹{transaction.amount}
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {currentTransactions.map((transaction) => (
+                      <tr key={transaction.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {moment(transaction.created_at).format('DD MMM YYYY, h:mm A')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            transaction.transaction_type === 'CREDIT' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {transaction.transaction_type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {transaction.description || 'N/A'}
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                          transaction.transaction_type === 'CREDIT' 
+                            ? 'text-green-600' 
+                            : 'text-red-600'
+                        }`}>
+                          {transaction.transaction_type === 'CREDIT' ? '+' : '-'}₹{transaction.amount}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <PaginationControls />
+            </>
           )}
         </div>
-
-        {/* Confirmation Modal */}
-        {showConfirmationModal && selectedRequest && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">Confirm Processing</h3>
-                <button 
-                  onClick={closeConfirmationModal}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-              
-              <div className="mb-6">
-                <p className="mb-2">You are about to mark this withdrawal request as processed:</p>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex items-center mb-2">
-                    <FaUser className="text-gray-500 mr-2" />
-                    <span className="font-medium">{selectedRequest.therapist}</span>
-                  </div>
-                  <div className="flex items-center mb-2">
-                    <FaRupeeSign className="text-gray-500 mr-2" />
-                    <span>Amount: ₹{selectedRequest.amount}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <FaWallet className="text-gray-500 mr-2" />
-                    <span>UPI ID: {selectedRequest.upi_id}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={closeConfirmationModal}
-                  className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleProcessRequest}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Confirm Processing
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

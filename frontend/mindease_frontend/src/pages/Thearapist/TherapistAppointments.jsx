@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TherapistSidebar from '../../components/Therapist/TherapistSidebar';
-import { Video, MessageCircle, Mic, Calendar, User, Clock, X, Check, Star } from 'lucide-react';
+import { Video, MessageCircle, Mic, Calendar, User, Clock, X, Check, Star, AlertTriangle } from 'lucide-react';
+import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { getTherapistAppointments, makeCompleted } from '../../api/therapist';
 import { Link, useNavigate } from 'react-router-dom';
 import { CancelConfirmationDialog } from '../../components/users/CancelConfirmationDialog';
@@ -16,7 +17,7 @@ function TherapistAppointments() {
   const [activeTab, setActiveTab] = useState("today");
   const [searchDate, setSearchDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const appointmentsPerPage = 10;
+  const appointmentsPerPage = 1;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
@@ -36,11 +37,7 @@ function TherapistAppointments() {
     
       if (response.success) {
         showToast(response.message, 'success');
-        setAppointments(prev =>
-          prev.map(apt =>
-            apt.id === selectedId ? { ...apt, status: 'Cancelled' } : apt
-          )
-        );
+        fetchAppointments();
       } else {
         showToast(response.message || 'Failed to cancel session', 'error');
       }
@@ -53,21 +50,21 @@ function TherapistAppointments() {
     }
   };
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        setIsLoading(true);
-        const response = await getTherapistAppointments();
-        setAppointments(response.data || []);
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-        setError("Failed to load appointments. Please try again later.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchAppointments = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getTherapistAppointments();
+      setAppointments(response.data || []);
+      setError(null);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      setError("Failed to load appointments. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchAppointments();
   }, []);
 
@@ -87,7 +84,7 @@ function TherapistAppointments() {
     } finally {
       setIsProcessing(false);
     }
-  }
+  };
 
   const parseAppointmentDate = (dateStr, timeStr) => {
     try {
@@ -146,12 +143,13 @@ function TherapistAppointments() {
         if (activeTab === "upcoming") return appDate >= todayEnd;
         if (activeTab === "completed") return app.status === 'Completed';
         if (activeTab === "cancelled") return app.status === 'Cancelled';
+        if (activeTab === "absences") return ['Absent - Client', 'Absent - Therapist', 'No Show - Both'].includes(app.status);
         return false;
       })
       .sort((a, b) => {
         const dateA = parseAppointmentDate(a.date_value, a.time_value);
         const dateB = parseAppointmentDate(b.date_value, b.time_value);
-        return activeTab === "completed" || activeTab === "cancelled" ? dateB - dateA : dateA - dateB;
+        return activeTab === "completed" || activeTab === "cancelled" || activeTab === "absences" ? dateB - dateA : dateA - dateB;
       });
   };
 
@@ -161,6 +159,98 @@ function TherapistAppointments() {
     (currentPage - 1) * appointmentsPerPage,
     currentPage * appointmentsPerPage
   );
+
+  const PaginationControls = () => {
+    const maxVisiblePages = 5;
+    let startPage, endPage;
+
+    if (totalPages <= maxVisiblePages) {
+      startPage = 1;
+      endPage = totalPages;
+    } else {
+      const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+      const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+      
+      if (currentPage <= maxPagesBeforeCurrent) {
+        startPage = 1;
+        endPage = maxVisiblePages;
+      } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+        startPage = totalPages - maxVisiblePages + 1;
+        endPage = totalPages;
+      } else {
+        startPage = currentPage - maxPagesBeforeCurrent;
+        endPage = currentPage + maxPagesAfterCurrent;
+      }
+    }
+
+    const pageNumbers = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <div className="flex flex-col sm:flex-row justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50 gap-4">
+        <div className="text-sm text-gray-700">
+          Showing <span className="font-medium">{(currentPage - 1) * appointmentsPerPage + 1}</span> to{' '}
+          <span className="font-medium">{Math.min(currentPage * appointmentsPerPage, filteredAppointments.length)}</span> of{' '}
+          <span className="font-medium">{filteredAppointments.length}</span> appointments
+        </div>
+        <div className="flex space-x-1">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            aria-label="First page"
+          >
+            <FiChevronsLeft size={16} />
+          </button>
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            aria-label="Previous page"
+          >
+            <FiChevronLeft size={16} />
+          </button>
+
+          {startPage > 1 && (
+            <span className="px-3 py-1 flex items-center">...</span>
+          )}
+
+          {pageNumbers.map(number => (
+            <button
+              key={number}
+              onClick={() => setCurrentPage(number)}
+              className={`px-3 py-1 rounded-md border ${currentPage === number ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300'}`}
+            >
+              {number}
+            </button>
+          ))}
+
+          {endPage < totalPages && (
+            <span className="px-3 py-1 flex items-center">...</span>
+          )}
+
+          <button
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            aria-label="Next page"
+          >
+            <FiChevronRight size={16} />
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            aria-label="Last page"
+          >
+            <FiChevronsRight size={16} />
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   const renderSessionMode = (mode) => {
     const modes = {
@@ -195,6 +285,9 @@ function TherapistAppointments() {
       Completed: "bg-green-100 text-green-800",
       Cancelled: "bg-red-100 text-red-800",
       Ongoing: "bg-yellow-100 text-yellow-800",
+      'Absent - Client': "bg-orange-100 text-orange-800",
+      'Absent - Therapist': "bg-orange-100 text-orange-800",
+      'No Show - Both': "bg-purple-100 text-purple-800",
     };
     
     return (
@@ -238,6 +331,35 @@ function TherapistAppointments() {
     }
   };
 
+  const renderAbsenceDetails = (session) => {
+    if (!['Absent - Client', 'Absent - Therapist', 'No Show - Both'].includes(session.status)) {
+      return null;
+    }
+
+    let message = '';
+    if (session.status === 'Absent - Client') {
+      message = `${session.client_name} didn't attend this session`;
+    } else if (session.status === 'Absent - Therapist') {
+      message = 'You didn\'t attend this session';
+    } else {
+      message = 'Both you and the client didn\'t attend this session';
+    }
+
+    return (
+      <div className="mt-3 bg-orange-50 p-3 rounded-lg border border-orange-100">
+        <div className="flex items-start gap-2">
+          <AlertTriangle className="text-orange-500 mt-0.5 flex-shrink-0" size={16} />
+          <div>
+            <p className="text-sm font-medium text-orange-700">{message}</p>
+            {session.cancel_reason && (
+              <p className="text-sm text-orange-600 mt-1">{session.cancel_reason}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
@@ -279,7 +401,7 @@ function TherapistAppointments() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Appointments</h1>
-            <div className="relative w-full md:w-auto">
+            {/* <div className="relative w-full md:w-auto">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Calendar className="text-gray-400" size={18} />
               </div>
@@ -293,12 +415,12 @@ function TherapistAppointments() {
                 }}
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-64"
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200 mb-6">
-            {['today', 'upcoming', 'completed', 'cancelled'].map((tab) => (
+          <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
+            {['today', 'upcoming', 'completed', 'cancelled', 'absences'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => {
@@ -306,9 +428,9 @@ function TherapistAppointments() {
                   setSearchDate('');
                   setCurrentPage(1);
                 }}
-                className={`px-4 py-2 font-medium text-sm capitalize transition-colors ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300'}`}
+                className={`px-4 py-2 font-medium text-sm capitalize transition-colors whitespace-nowrap ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300'}`}
               >
-                {tab}
+                {tab === 'absences' ? 'Absences' : tab}
               </button>
             ))}
           </div>
@@ -335,7 +457,7 @@ function TherapistAppointments() {
                           
                           {/* Client */}
                           <button 
-                            onClick={() => navigate(`/therapist/client/${session.client_id}`)}
+                            onClick={() => navigate(`/clientDetails/${session.client}`)}
                             className="flex items-center gap-3 text-left group"
                           >
                             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
@@ -371,7 +493,7 @@ function TherapistAppointments() {
                               <Link 
                                 to={
                                   session.session_mode === 'message'
-                                    ? `/chat/${session.client}/${session.therapist}`
+                                    ? `/chat/${session.client}/${session.therapist}/${session.id}`
                                     : `/videoCall/${session.therapist}/${session.id}/${session.session_mode}`
                                 }
                                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md flex items-center gap-1"
@@ -440,6 +562,9 @@ function TherapistAppointments() {
                         </div>
                       )}
 
+                      {/* Absence Details */}
+                      {renderAbsenceDetails(session)}
+
                       {/* Feedback Display */}
                       {session.status === 'Completed' && renderFeedback(session.feedback, session.rating)}
                     </div>
@@ -448,29 +573,7 @@ function TherapistAppointments() {
 
                 {/* Pagination */}
                 {filteredAppointments.length > appointmentsPerPage && (
-                  <div className="flex flex-col sm:flex-row justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50 gap-4">
-                    <div className="text-sm text-gray-700">
-                      Showing {(currentPage - 1) * appointmentsPerPage + 1} to{' '}
-                      {Math.min(currentPage * appointmentsPerPage, filteredAppointments.length)} of{' '}
-                      {filteredAppointments.length} appointments
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 flex items-center gap-1"
-                      >
-                        Previous
-                      </button>
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 flex items-center gap-1"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
+                  <PaginationControls />
                 )}
               </>
             ) : (
@@ -486,6 +589,7 @@ function TherapistAppointments() {
                     : activeTab === 'upcoming' ? "You don't have any upcoming sessions"
                     : activeTab === 'completed' ? "No completed sessions to display"
                     : activeTab === 'cancelled' ? "No cancelled sessions to display"
+                    : activeTab === 'absences' ? "No absence records found"
                     : "No sessions found for the selected date"}
                 </p>
               </div>

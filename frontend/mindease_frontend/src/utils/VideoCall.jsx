@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
+import { markAsAttended } from '../api/user';
 
 const VideoCall = () => {
   const { userId, roomId, type } = useParams();
@@ -73,6 +74,17 @@ const VideoCall = () => {
       `;
       document.head.appendChild(styleTag);
     }
+
+    const markSessionAttend = async () => {
+          const current_role = localStorage.getItem('current_role')
+          const info = await markAsAttended(roomId,current_role);
+          if (info.success) {
+            console.log('marked as attended')
+          } else {
+            console.log('Failed to load therapist information.');
+          }
+        };
+    markSessionAttend()
 
     // ✅ Cleanup on unmount
     return () => {

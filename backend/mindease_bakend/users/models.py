@@ -10,8 +10,6 @@ class UserDetails(AbstractUser):
         ('therapist', 'Therapist'),
         ('admin', 'Admin'),
     )
-    otp_code = models.CharField(max_length=6, blank=True, null=True)
-    otp_created_at = models.DateTimeField(blank=True, null=True)
     fullname = models.CharField(max_length=100,blank=True,null=True)
     age = models.CharField(max_length=200,blank=True,null=True)
     place = models.CharField(max_length=100,blank=True,null=True)
@@ -26,14 +24,23 @@ class UserDetails(AbstractUser):
 
 
 
-    def is_otp_expired(self):
-        if not self.otp_created_at:
-            return True
-        expiry_time = self.otp_created_at + timedelta(minutes=5)
-        return now() > expiry_time
+   
     
     def __str__(self):
         return self.username
+    
+# models.py
+class TemporaryUser(models.Model):
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=150)
+    password = models.CharField(max_length=128)  # Consider hashing before saving
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_otp_expired(self):
+        expiry_time = self.created_at + timedelta(minutes=5)
+        return now() > expiry_time
+
     
     
 class TherapySession(models.Model):
@@ -41,6 +48,9 @@ class TherapySession(models.Model):
         ('Scheduled', 'Scheduled'),
         ('Completed', 'Completed'),
         ('Cancelled', 'Cancelled'),
+        ('Absent - Client', 'Absent - Client'),
+        ('Absent - Therapist', 'Absent - Therapist'),
+        ('No Show - Both', 'No Show - Both'),
     )
 
     CANCEL_PERSON = (
@@ -60,6 +70,8 @@ class TherapySession(models.Model):
     rating = models.IntegerField(blank=True, null=True)
     cancel_reason = models.TextField(blank=True, null=True)
     canceled_person = models.CharField(max_length=100, choices=CANCEL_PERSON, blank=True, null=True)
+    user_attended = models.BooleanField(default=False)
+    therapist_attended = models.BooleanField(default=False)
 
 
 
@@ -71,6 +83,7 @@ class Notification(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=100)
     type = models.CharField(max_length=100)
+    location = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"To {self.user.username}: {self.message[:20]}"
@@ -137,6 +150,16 @@ class WalletTransaction(models.Model):
     def __str__(self):
         return f"{self.wallet.user.username} - {self.transaction_type} - ₹{self.amount}"
 
+class ClientWithdrawalRequest(models.Model):
+    client = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
+    amount = models.PositiveIntegerField()
+    upi_id = models.CharField(max_length=100)
+    is_processed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.client.username} - ₹{self.amount}"
 
 # therapist/models.py
 class WithdrawalRequest(models.Model):
@@ -172,6 +195,7 @@ class TherapistNotification(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=100)
     type = models.CharField(max_length=100)
+    location = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"To {self.user.username}: {self.message[:20]}"
@@ -184,6 +208,7 @@ class AdminNotification(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=100)
     type = models.CharField(max_length=100)
+    location = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"To {self.user.username}: {self.message[:20]}"

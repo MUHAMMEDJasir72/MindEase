@@ -30,7 +30,6 @@ def create_user_wallet(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=TherapistNotification)
 def send_notification_on_save(sender, instance, created, **kwargs):
-    print('📤 Signal triggered')  # <== Add this
     if created:
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -49,7 +48,6 @@ def send_notification_on_save(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=AdminNotification)
 def send_notification_on_save(sender, instance, created, **kwargs):
-    print('📤 Signal triggered')
     if created:
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(

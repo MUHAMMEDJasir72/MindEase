@@ -174,5 +174,36 @@ export const markAllNotifications = async () => {
 };
 
 
-
+ export const markAsAttended = async (id,role) => {
+    try {
+      const response = await API.post('/users/mark-as-attended/', { id, role });
+      return { success: true };  // Consider returning response data if needed
+    } catch (error) {
+      // Check if error response has message and return it
+      const errorMessage = error.response?.data?.message || 'An error occurred';
+      return { success: false, message: errorMessage };
+    }
+  };
   
+
+
+export const requestClientWithdraw = async (data) => {
+  try {
+    const response = await API.post(`/users/request-client-withdraw/`, data);
+    return { success: true, message: response.data.message };  // <-- FIXED
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || error.message || 'An error occurred';
+    return { success: false, message: errorMessage };
+  }
+};
+
+
+export const getTherapsitProfile= async (id) => {
+    try {
+      const response = await API.get(`/users/get-therapist-profile/${id}/`);
+      return { success: true, profile_info: response.data.profile_info};
+    } catch (error) {
+      return { success: false };
+    }
+  };

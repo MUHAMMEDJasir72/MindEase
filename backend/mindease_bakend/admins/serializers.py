@@ -5,7 +5,7 @@ from .models import SpecializationsList
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from users.models import WithdrawalRequest, TherapySession, AdminNotification
+from users.models import WithdrawalRequest, TherapySession, AdminNotification, ClientWithdrawalRequest
 
 User = get_user_model()
 
@@ -93,13 +93,17 @@ class SpecializationsListSerializer(serializers.ModelSerializer):
         fields = ['id', 'specialization']
 
 
-class WithdrawalRequestSerializer(serializers.ModelSerializer):
+class TherapistWithdrawalRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WithdrawalRequest
         fields =  '__all__'
 
+class ClientWithdrawalRequestSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = ClientWithdrawalRequest
+        fields =  '__all__'
 
 
 

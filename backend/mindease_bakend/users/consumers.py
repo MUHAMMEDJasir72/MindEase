@@ -315,13 +315,15 @@ class ChatAdminTherapistConsumer(AsyncWebsocketConsumer):
                 user=receiver,
                 message=message,
                 title="New Message from Admin",
-                type="chat"
+                type="chat",
+                location="/chatToAdmin"
             )
         else:
             AdminNotification.objects.create(
                 user=receiver,
                 message=message,
                 title=f"New Message from {sender.therapist_details.fullname}",
-                type="chat"
+                type="chat",
+                location="/chatToTherapists"
             )
 

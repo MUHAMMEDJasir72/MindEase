@@ -12,7 +12,7 @@ export const getTherapist = async () => {
 
 export const getAllTherapist = async () => {
     try {
-      const response = await API.get('/admin/get_all_therapist/');
+      const response = await API.get('/admin/get-all-therapist/');
       return { success: true, data: response.data.data };
     } catch (error) {
       return { success: false, error: error.response?.data || error.message };
@@ -48,12 +48,21 @@ export const getAllTherapist = async () => {
 
   export const approveTherapist = async (id) => {
     try {
-      const response = await API.patch(`/admin/approve_therapist/${id}/`);
+      const response = await API.patch(`/admin/approve-therapist/${id}/`);
       return { success: true};
     } catch (error) {
       return { success: false, error: error.response?.data || error.message };
     }
   };
+export const rejectTherapist = async (id) => {
+  try {
+    const response = await API.patch(`/admin/reject-therapist/${id}/`);
+    return { success: true, message: response.data.message };
+  } catch (error) {
+    return { success: false, message: error.response?.data || error.message };
+  }
+};
+
 
 
 
@@ -142,9 +151,18 @@ export const getAllTherapist = async () => {
 
   
  
-  export const getWithdrawRequests = async () => {
+  export const therapistWithdrawalRequests = async () => {
     try {
-      const response = await API.get(`/admin/get_withdraw_requests/`);
+      const response = await API.get(`/admin/get-therapist-withdraw-requests/`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return { success: false, error: error.response?.data || error.message };
+    }
+  };
+
+  export const clientWithdrawalRequests = async () => {
+    try {
+      const response = await API.get(`/admin/get-client-withdraw-requests/`);
       return { success: true, data: response.data };
     } catch (error) {
       return { success: false, error: error.response?.data || error.message };
@@ -152,9 +170,21 @@ export const getAllTherapist = async () => {
   };
 
 
-  export const processWithdraw = async (id) => {
+  export const processTherapistWithdraw = async (id) => {
     try {
-      const response = await API.patch(`/admin/process_withdraw/${id}/`);
+      const response = await API.patch(`/admin/process-therapist-withdraw/${id}/`);
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || error.message,
+      };
+    }
+  };
+
+  export const processClientWithdraw = async (id) => {
+    try {
+      const response = await API.patch(`/admin/process-client-withdraw/${id}/`);
       return { success: true, message: response.data.message };
     } catch (error) {
       return {
@@ -194,3 +224,24 @@ export const getAdminNotifications = async () => {
     return { success: false, message: errorMessage };
   }
 };
+
+export const markAdminNotification = async (id) => {
+  try {
+    const response = await API.patch('/admin/mark-admin-notification/', { id }); // send as an object
+    return { success: true };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 'An error occurred';
+    return { success: false, message: errorMessage };
+  }
+};
+
+
+export const markAllAdminNotifications = async () => {
+  try {
+    const response = await API.patch('/admin/mark-all-admin-notifications/');
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || 'An error occurred' };
+  }
+};
+

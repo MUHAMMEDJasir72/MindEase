@@ -3,6 +3,9 @@ import TherapistSidebar from '../../components/Therapist/TherapistSidebar';
 import { getAvailableDates, getAvailableSlots, addSlot, removeSlot } from '../../api/therapist';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { showToast } from '../../utils/toast';
+import ConfirmDialog from '../../utils/ConfirmDialog';
+import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 
 function Availability() {
     const [availableDates, setAvailableDates] = useState([]);
@@ -14,6 +17,18 @@ function Availability() {
     const [availableTimesForModal, setAvailableTimesForModal] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isFetchingTimes, setIsFetchingTimes] = useState(false);
+    const [tempDateForSlot, setTempDateForSlot] = useState(new Date());
+    const [confirmConfig, setConfirmConfig] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null,
+        onCancel: null
+    });
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [datesPerPage] = useState(5); // Show 5 dates per page
 
     // Format date as "23, April, 2025"
     const formatDisplayDate = (dateString) => {
@@ -50,47 +65,47 @@ function Availability() {
 
     const allTimeSlots = generateTimeSlots();
 
-    const getAvailableTimesForModal = async () => {
-        if (!selectedDateForSlot) return allTimeSlots;
+    const getAvailableTimesForModal = async (date = selectedDateForSlot) => {
+    if (!date) return allTimeSlots;
 
-        setIsFetchingTimes(true);
-        const dateStr = selectedDateForSlot.toISOString().split('T')[0];
-        const isToday = dateStr === new Date().toISOString().split('T')[0];
-        const now = new Date();
+    setIsFetchingTimes(true);
+    const dateStr = date.toISOString().split('T')[0];
+    const isToday = dateStr === new Date().toISOString().split('T')[0];
+    const now = new Date();
 
-        try {
-            const response = await getAvailableSlots(dateStr);
+    try {
+        const response = await getAvailableSlots(dateStr);
 
-            if (response.success) {
-                const existingTimes = response.data.map(slot =>
-                    slot.time.substring(0, 5) // HH:MM
-                );
+        if (response.success) {
+            const existingTimes = response.data.map(slot =>
+                slot.time.substring(0, 5)
+            );
 
-                let filteredSlots = allTimeSlots.filter(slot =>
-                    !existingTimes.includes(slot.value.substring(0, 5))
-                );
+            let filteredSlots = allTimeSlots.filter(slot =>
+                !existingTimes.includes(slot.value.substring(0, 5))
+            );
 
-                // Further filter out past times if selected date is today
-                if (isToday) {
-                    filteredSlots = filteredSlots.filter(slot => {
-                        const [slotHour, slotMinute] = slot.value.split(':').map(Number);
-                        const slotTime = new Date();
-                        slotTime.setHours(slotHour, slotMinute, 0, 0);
-                        return slotTime > now;
-                    });
-                }
-
-                return filteredSlots;
+            if (isToday) {
+                filteredSlots = filteredSlots.filter(slot => {
+                    const [slotHour, slotMinute] = slot.value.split(':').map(Number);
+                    const slotTime = new Date();
+                    slotTime.setHours(slotHour, slotMinute, 0, 0);
+                    return slotTime > now;
+                });
             }
 
-            return allTimeSlots;
-        } catch (error) {
-            console.error('Error fetching existing slots:', error);
-            return allTimeSlots;
-        } finally {
-            setIsFetchingTimes(false);
+            return filteredSlots;
         }
-    };
+
+        return allTimeSlots;
+    } catch (error) {
+        console.error('Error fetching existing slots:', error);
+        return allTimeSlots;
+    } finally {
+        setIsFetchingTimes(false);
+    }
+};
+
 
     const handleRemoveTimeSlot = async (timeSlotId) => {
         try {
@@ -98,6 +113,7 @@ function Availability() {
             const response = await removeSlot(timeSlotId);
             
             if (response.success) {
+                showToast(response.message, 'success')
                 // Refresh the data from the server after successful removal
                 const info = await getAvailableDates();
                 
@@ -109,6 +125,8 @@ function Availability() {
                         const updatedSelectedDate = info.data.find(date => date.id === selectedDate.id);
                         setSelectedDate(updatedSelectedDate || (info.data.length > 0 ? info.data[0] : null));
                     }
+                }else{
+                    showToast(info.message, 'error')
                 }
                 
                 // Refresh modal times if modal is open
@@ -116,6 +134,8 @@ function Availability() {
                     const times = await getAvailableTimesForModal();
                     setAvailableTimesForModal(times);
                 }
+            }else{
+                showToast(response.message, 'error');
             }
         } catch (error) {
             console.error('Error removing time slot:', error);
@@ -129,17 +149,20 @@ function Availability() {
     };
 
     const handleAddSlot = async () => {
-        setSelectedDateForSlot(new Date());
-        setSelectedTimes([]);
-        setShowAddSlotModal(true);
-        setIsFetchingTimes(true);
-        try {
-            const times = await getAvailableTimesForModal();
-            setAvailableTimesForModal(times);
-        } finally {
-            setIsFetchingTimes(false);
-        }
-    };
+    const today = new Date();
+    setSelectedDateForSlot(today);  // Keep it for submission
+    setTempDateForSlot(today);      // Local edit
+    setSelectedTimes([]);
+    setShowAddSlotModal(true);
+    setIsFetchingTimes(true);
+    try {
+        const times = await getAvailableTimesForModal(today);
+        setAvailableTimesForModal(times);
+    } finally {
+        setIsFetchingTimes(false);
+    }
+};
+
 
     const toggleTimeSelection = (time) => {
         setSelectedTimes(prev =>
@@ -150,55 +173,149 @@ function Availability() {
     };
 
     const handleSubmitNewSlot = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-    
-        try {
-            const newDateStr = selectedDateForSlot.toISOString().split('T')[0];
-    
-            const newSlots = selectedTimes.map(time => ({
-                time: time
-            }));
-    
-            // Call the API to add slots
-            const response = await addSlot({
-                date: newDateStr,
-                available_times: newSlots
-            });
-    
-            if (!response.success) {
-                throw new Error(response.message || 'Failed to add slots');
-            }
-    
-            // Refresh data from server after successful addition
-            const info = await getAvailableDates();
-            
-            if (info.success) {
-                const sortedDates = [...info.data]
-                    .sort((a, b) => new Date(a.date) - new Date(b.date))
-                    .map(date => ({
-                        ...date,
-                        available_times: [...date.available_times].sort((a, b) =>
-                            a.time.localeCompare(b.time)
-                        )
-                    }));
-                
-                setAvailableDates(sortedDates);
-                
-                // Select the date we just added slots to
-                const updatedDate = sortedDates.find(d => d.date === newDateStr);
-                if (updatedDate) {
-                    setSelectedDate(updatedDate);
-                }
-            }
-            
-            setShowAddSlotModal(false);
-    
-        } catch (error) {
-            console.error('Error adding slots:', error);
-        } finally {
-            setIsSubmitting(false);
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+        const newDateStr = tempDateForSlot.toISOString().split('T')[0];
+        setSelectedDateForSlot(tempDateForSlot);  // Commit here
+
+        const newSlots = selectedTimes.map(time => ({
+            time: time
+        }));
+
+        const response = await addSlot({
+            date: newDateStr,
+            available_times: newSlots
+        });
+
+        if (response.success) {
+            showToast(response.message, 'success');
         }
+
+        const info = await getAvailableDates();
+        if (info.success) {
+            const sortedDates = [...info.data]
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .map(date => ({
+                    ...date,
+                    available_times: [...date.available_times].sort((a, b) =>
+                        a.time.localeCompare(b.time)
+                    )
+                }));
+
+            setAvailableDates(sortedDates);
+            const updatedDate = sortedDates.find(d => d.date === newDateStr);
+            if (updatedDate) {
+                setSelectedDate(updatedDate);
+            }
+        }
+
+        setShowAddSlotModal(false);
+    } catch (error) {
+        console.error('Error adding slots:', error);
+    } finally {
+        setIsSubmitting(false);
+    }
+};
+
+
+    // Pagination controls
+    const indexOfLastDate = currentPage * datesPerPage;
+    const indexOfFirstDate = indexOfLastDate - datesPerPage;
+    const currentDates = availableDates.slice(indexOfFirstDate, indexOfLastDate);
+    const totalPages = Math.ceil(availableDates.length / datesPerPage);
+
+    const PaginationControls = () => {
+        const maxVisiblePages = 5;
+        let startPage, endPage;
+
+        if (totalPages <= maxVisiblePages) {
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+            const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+            
+            if (currentPage <= maxPagesBeforeCurrent) {
+                startPage = 1;
+                endPage = maxVisiblePages;
+            } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+                startPage = totalPages - maxVisiblePages + 1;
+                endPage = totalPages;
+            } else {
+                startPage = currentPage - maxPagesBeforeCurrent;
+                endPage = currentPage + maxPagesAfterCurrent;
+            }
+        }
+
+        const pageNumbers = [];
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+
+        return (
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-4 border-t pt-4">
+                <div className="text-sm text-gray-700 mb-2 sm:mb-0">
+                    Showing <span className="font-medium">{indexOfFirstDate + 1}</span> to{' '}
+                    <span className="font-medium">{Math.min(indexOfLastDate, availableDates.length)}</span> of{' '}
+                    <span className="font-medium">{availableDates.length}</span> dates
+                </div>
+                <div className="flex space-x-1">
+                    <button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        aria-label="First page"
+                    >
+                        <FiChevronsLeft size={16} />
+                    </button>
+                    <button
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        aria-label="Previous page"
+                    >
+                        <FiChevronLeft size={16} />
+                    </button>
+
+                    {startPage > 1 && (
+                        <span className="px-3 py-1 flex items-center">...</span>
+                    )}
+
+                    {pageNumbers.map(number => (
+                        <button
+                            key={number}
+                            onClick={() => setCurrentPage(number)}
+                            className={`px-3 py-1 rounded-md border ${currentPage === number ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300'}`}
+                        >
+                            {number}
+                        </button>
+                    ))}
+
+                    {endPage < totalPages && (
+                        <span className="px-3 py-1 flex items-center">...</span>
+                    )}
+
+                    <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        aria-label="Next page"
+                    >
+                        <FiChevronRight size={16} />
+                    </button>
+                    <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        aria-label="Last page"
+                    >
+                        <FiChevronsRight size={16} />
+                    </button>
+                </div>
+            </div>
+        );
     };
 
     // Fetch available dates on component mount and when needed
@@ -282,20 +399,25 @@ function Availability() {
                             </button>
                         </div>
                         {availableDates.length > 0 ? (
-                            <ul className='space-y-2'>
-                                {availableDates.map((dateObj) => (
-                                    <li 
-                                        key={dateObj.id}
-                                        onClick={() => handleDateSelect(dateObj)}
-                                        className={`p-3 rounded cursor-pointer ${selectedDate?.id === dateObj.id ? 'bg-blue-100 border-l-4 border-blue-500' : 'hover:bg-gray-100'}`}
-                                    >
-                                        <div className='font-medium'>{formatDisplayDate(dateObj.date)}</div>
-                                        <div className='text-sm text-gray-500'>
-                                            {dateObj.available_times.length} slot{dateObj.available_times.length !== 1 ? 's' : ''} available
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+                            <>
+                                <ul className='space-y-2'>
+                                    {currentDates.map((dateObj) => (
+                                        <li 
+                                            key={dateObj.id}
+                                            onClick={() => handleDateSelect(dateObj)}
+                                            className={`p-3 rounded cursor-pointer ${selectedDate?.id === dateObj.id ? 'bg-blue-100 border-l-4 border-blue-500' : 'hover:bg-gray-100'}`}
+                                        >
+                                            <div className='font-medium'>{formatDisplayDate(dateObj.date)}</div>
+                                            <div className='text-sm text-gray-500'>
+                                                {dateObj.available_times.length} slot{dateObj.available_times.length !== 1 ? 's' : ''} available
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                                {availableDates.length > datesPerPage && (
+                                    <PaginationControls />
+                                )}
+                            </>
                         ) : (
                             <p className="text-gray-500">No available dates. Click "Add Slot" to create one.</p>
                         )}
@@ -327,7 +449,14 @@ function Availability() {
                                                 </div>
                                                 {!timeSlot.is_booked && (
                                                     <button
-                                                        onClick={() => handleRemoveTimeSlot(timeSlot.id)}
+                                                        onClick={() =>
+                                                        setConfirmConfig({
+                                                            isOpen: true,
+                                                            title: 'Remove Slot',
+                                                            message: `Are you sure you want to Remove Slot ${timeSlot.time}?`,
+                                                            onConfirm: () => handleRemoveTimeSlot(timeSlot.id),
+                                                        })
+                                                        }
                                                         disabled={isSubmitting}
                                                         className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-lg disabled:opacity-50"
                                                         title="Remove time slot"
@@ -368,12 +497,12 @@ function Availability() {
                                     </label>
                                     <div className='border rounded p-2'>
                                         <DatePicker
-                                            selected={selectedDateForSlot}
+                                            selected={tempDateForSlot}
                                             onChange={(date) => {
-                                                setSelectedDateForSlot(date);
+                                                setTempDateForSlot(date);
                                                 setSelectedTimes([]);
                                                 setIsFetchingTimes(true);
-                                                getAvailableTimesForModal().then(times => {
+                                                getAvailableTimesForModal(date).then(times => {
                                                     setAvailableTimesForModal(times);
                                                     setIsFetchingTimes(false);
                                                 });
@@ -382,6 +511,7 @@ function Availability() {
                                             minDate={new Date()}
                                             className="w-full"
                                         />
+
                                     </div>
                                 </div>
                                 
@@ -444,6 +574,16 @@ function Availability() {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmConfig.isOpen}
+                title={confirmConfig.title}
+                message={confirmConfig.message}
+                onConfirm={() => {
+                    confirmConfig.onConfirm();
+                    setConfirmConfig({ ...confirmConfig, isOpen: false });
+                }}
+                onCancel={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+            />
         </div>
     );
 }

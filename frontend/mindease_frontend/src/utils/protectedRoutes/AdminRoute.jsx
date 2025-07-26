@@ -4,7 +4,7 @@ import jwtDecode from "jwt-decode";
 
 const AdminRoute = ({ children }) => {
   const token = localStorage.getItem("access");
-
+  const role = localStorage.getItem("current_role")
 
   if (!token) {
     return <Navigate to="/login" />;
@@ -12,9 +12,9 @@ const AdminRoute = ({ children }) => {
 
   try {
     const decoded = jwtDecode(token);
-    if (decoded.role === 'admin') {
+    if (role === 'admin') {
       return children; // user is admin
-    } else if (decoded.role === 'therapist') {
+    } else if (role === 'therapist') {
       return <Navigate to="/therapistHome" />; // not admin, redirect
     }else{
       return <Navigate to="/" />

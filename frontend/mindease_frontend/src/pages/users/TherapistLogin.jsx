@@ -19,7 +19,6 @@ function TherapistLogin() {
     });
     const navigate = useNavigate();
 
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -53,21 +52,21 @@ function TherapistLogin() {
                 showToast("Login successful!", "success");
                 localStorage.setItem('access', response.data.access);
                 localStorage.setItem('refresh', response.data.refresh);
-                localStorage.setItem('current_role', 'therapist');
                 const decoded = jwt_decode(response.data.access);
-                localStorage.setItem('id',decoded.id)
+                localStorage.setItem('id', decoded.id);
                 if (decoded.role === 'admin') {
+                    localStorage.setItem('current_role', 'admin');
                     navigate('/adminDashboard');
-                }else if(decoded.role === 'therapist'){
-                    navigate('/therapistHome')
-                }
-                else{
-                    const res = await checkRequested()
-                    console.log('jasir',res.success)
+                } else if(decoded.role === 'therapist') {
+                    localStorage.setItem('current_role', 'therapist');
+                    navigate('/therapistHome');
+                } else {
+                    const res = await checkRequested();
+                    console.log('jasir', res.success);
 
-                    if (res.success){
-                         navigate('/submited');
-                    }else{
+                    if (res.success) {
+                        navigate('/submited');
+                    } else {
                         navigate('/therapistDashboard');
                     }
                 }
@@ -83,7 +82,7 @@ function TherapistLogin() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
             <div className="hidden md:block fixed inset-0 overflow-hidden opacity-20">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600"></div>
             </div>
@@ -92,22 +91,22 @@ function TherapistLogin() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="relative w-full max-w-md mx-4 bg-white rounded-xl shadow-xl overflow-hidden z-10"
+                className="relative w-full max-w-md mx-auto bg-white rounded-xl shadow-xl overflow-hidden z-10"
             >
                 <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-400 to-purple-500"></div>
                 
-                <div className="px-10 py-12">
-                    <div className="text-center mb-8">
-                        <div className="flex justify-center mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="px-6 py-8 sm:px-10 sm:py-12">
+                    <div className="text-center mb-6 sm:mb-8">
+                        <div className="flex justify-center mb-3 sm:mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 sm:h-12 w-10 sm:w-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-800">Therapist Portal</h2>
-                        <p className="text-gray-500 mt-2">Sign in to your professional account</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Therapist Portal</h2>
+                        <p className="text-gray-500 mt-1 sm:mt-2 text-sm sm:text-base">Sign in to your professional account</p>
                     </div>
                     
-                    <form className="space-y-6" onSubmit={handleSubmit}>
+                    <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
                         <div>
                             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
                                 Username
@@ -121,7 +120,7 @@ function TherapistLogin() {
                                     onChange={handleChange}
                                     onFocus={() => handleFocus('username')}
                                     onBlur={() => handleBlur('username')}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors duration-200"
+                                    className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors duration-200"
                                     placeholder="Enter your username"
                                     required
                                 />
@@ -141,7 +140,7 @@ function TherapistLogin() {
                                     onChange={handleChange}
                                     onFocus={() => handleFocus('password')}
                                     onBlur={() => handleBlur('password')}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors duration-200"
+                                    className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors duration-200"
                                     placeholder="Enter your password"
                                     required
                                 />
@@ -153,11 +152,11 @@ function TherapistLogin() {
                             whileTap={{ scale: 0.98 }}
                             type="submit" 
                             disabled={isLoading}
-                            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md'}`}
+                            className={`w-full py-2 sm:py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-md'}`}
                         >
                             {isLoading ? (
                                 <span className="flex items-center justify-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <svg className="animate-spin -ml-1 mr-2 sm:mr-3 h-4 sm:h-5 w-4 sm:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
@@ -167,15 +166,15 @@ function TherapistLogin() {
                         </motion.button>
                     </form>
 
-                    <div className="mt-6 text-center space-y-3">
+                    <div className="mt-4 sm:mt-6 text-center space-y-2 sm:space-y-3">
                         <p className="text-gray-600 text-sm">
                             Don't have an account?{' '}
-                            <Link to="/therapistRegister" className="font-medium text-indigo-600 hover:text-indigo-500">
+                            <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
                                 Register
                             </Link>
                         </p>
                         <p className="text-gray-600 text-sm">
-                            login as client?{' '}
+                            Login as client?{' '}
                             <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
                                 Client login
                             </Link>

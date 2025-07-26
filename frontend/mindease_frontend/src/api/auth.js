@@ -11,14 +11,21 @@ export const registerUser = async (userData) => {
 
 
 export const loginUser = async (userData) => {
- 
-    try {
-        const response = await API.post("/users/login/token/", userData);
-        return { success: true, data: response.data };
-    } catch (error) {
-        return { success: false, message: error.response?.data?.message || "Login failed!" };
-    }
+  try {
+    const response = await API.post("/users/login/token/", userData);
+    return { success: true, data: response.data };
+  } catch (error) {
+    const message =
+      error.response?.data?.detail ||
+      error.response?.data?.non_field_errors?.[0] ||
+      error.message ||
+      "Login failed!";
+      
+    return { success: false, message };
+  }
 };
+
+
 
 export const logoutUser = async () => {
     try {

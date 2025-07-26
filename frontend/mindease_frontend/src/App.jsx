@@ -36,12 +36,17 @@ import ChatToAdmin from "./pages/Thearapist/ChatToAdmin";
 import ChatToTherapists from "./pages/admin/ChatToTherapists";
 import AppointmentManagement from "./pages/admin/AppointmentManagement";
 import TherapistApplicationSubmitted from "./pages/Thearapist/Submited"
+import ClientDetails from "./pages/Thearapist/ClientDetails"
+import Wallet from "./pages/users/Wallet";
+import WithdrawalRequests from "./pages/admin/WithdrawalRequests";
 
 function App() {
   return (
     <BrowserRouter>
-        <ToastContainer />
+         <ToastContainer />
+        
       <Routes>
+   
 
         {/* auth routes */}
         <Route path="/register" element={<Register />} />
@@ -58,7 +63,8 @@ function App() {
         <Route path="/bookTherapist/:id" element={<UserRoute><StripeProvider><BookTherapist/></StripeProvider></UserRoute>} />
         <Route path="/appointments" element={<UserRoute><Appointments/></UserRoute>} />
         <Route path="/videoCall/:userId/:roomId/:type" element={<VideoCall/>} />
-        <Route path="/chat/:userId/:therapistId" element={<Chat/>} />
+        <Route path="/chat/:userId/:therapistId/:sessionId" element={<Chat/>} />
+        <Route path="/wallet" element={<Wallet/>} />
        
         {/* therapist routes */}
         <Route path="/therapistDashboard" element={< ThearapistDashboard/>} />
@@ -70,6 +76,7 @@ function App() {
         <Route path="/availability" element={<TherapistRoute><Availability /></TherapistRoute>} />
         <Route path="/earnings" element={<TherapistRoute><Earnings /></TherapistRoute>} />
         <Route path="/chatToAdmin" element={<TherapistRoute><ChatToAdmin /></TherapistRoute>} />
+        <Route path="/clientDetails/:clientId" element={<TherapistRoute><ClientDetails /></TherapistRoute>} />
 
         {/* admin routes */}
         <Route path="/therapists" element={<AdminRoute>< Therapists/></AdminRoute>} />
@@ -81,6 +88,7 @@ function App() {
         <Route path="/adminEarnings" element={<AdminRoute><AdminEarnings/></AdminRoute>} />
         <Route path="/chatToTherapists" element={<AdminRoute><ChatToTherapists/></AdminRoute>} />
         <Route path="/sessionDetails" element={<AdminRoute><AppointmentManagement/></AdminRoute>} />
+        <Route path="/withdrawalReguests" element={<AdminRoute><WithdrawalRequests/></AdminRoute>} />
       </Routes>
     </BrowserRouter>
   );

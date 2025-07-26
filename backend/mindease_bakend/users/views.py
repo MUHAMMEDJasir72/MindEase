@@ -12,8 +12,8 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 
-from .serializers import UserSerializer,TherapySessionSerializer, NotificationSerializer
-from .models import UserDetails, TherapySession, Notification, Wallet
+from .serializers import *
+from .models import *
 from therapist.models import AvailableDate, AvailableTimes, TherapistDetails
 
 
@@ -59,52 +59,31 @@ class RegisterUserView(APIView):
         if User.objects.filter(username=username).exists():
             return Response({"error": "Username already taken"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(email=email, username=username, password=password)
+        
+        if TemporaryUser.objects.filter(email=email).exists():
+            return Response({"error": "User already pending verification"}, status=400)
 
         otp_code = random.randint(100000, 999999)
-  
+
+        TemporaryUser.objects.create(
+            email=email,
+            username=username,
+            password=password,  # or hash it if preferred
+            otp=otp_code
+        )
+        
         send_mail(
-            'Your OTP Code',
-            f'Your OTP code is {otp_code}',
+            'Your MindEase Verification Code',
+            f'''Dear User,\n\nYour One-Time Password (OTP) for MindEase is:\n**{otp_code}**\n\nThis code expires in 5 minutes.
+                Please do not share it with anyone.\n\nIf you didn’t request this code, please secure your account by changing your password immediately or contacting our support team at [jasirsnr72@gmail.com].\n\nThank you,\nThe MindEase Team''',
             config('EMAIL_HOST_USER'),
             [email],
             fail_silently=False
         )
-        user.otp_code = str(otp_code)
-        user.otp_created_at = now()
-        user.save()
+     
 
         return Response({"message": "User registered successfully. Please verify your OTP."}, status=status.HTTP_201_CREATED)
     
-
-# class LoginUserView(APIView):
-#     permission_classes = [AllowAny]
-#     def post(self, request):
-#         username = request.data.get('username')
-#         password = request.data.get('password')
-
-#         if not username or not password:
-#             return Response({"message": "Both username and password are required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-#         user = authenticate(request, username=username, password=password)
-
-#         if user is not None:
-#             refresh = RefreshToken.for_user(user)
-#             therapist_details = getattr(user, 'therapist_details', None)
-#             is_therapist = getattr(therapist_details, 'isTherapist', False)
-#             is_registered = hasattr(user, 'therapist_details')
-
-#             return Response({
-#                 "message": "Login successful",
-#                 "access": str(refresh.access_token),
-#                 "refresh": str(refresh),
-#                 "isStaff": user.is_staff,
-#                 "isTherapist": is_therapist,
-#                 "isRegistered":is_registered
-#             }, status=status.HTTP_200_OK)
-
-        
-#         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -134,31 +113,29 @@ class LogoutView(APIView):
 
 
 class VerifyOtp(APIView):
-    def post(self,request):
+    def post(self, request):
         user_otp = request.data.get('otp')
         email = request.data.get('email')
 
-        print('ot',user_otp)
-
         if not email or not user_otp:
             return Response({"message": "Email and OTP are required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user = get_object_or_404(User, email=email)
- 
-        if user.otp_code is None:
-            return Response({"message": "OTP has expired. Please request a new one."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if user.is_otp_expired():
-            return Response({"message": "OTP has expired"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        if str(user_otp) == str(user.otp_code):
-            user.otp_code = None
-            user.otp_created_at = None
-            user.save()
-            return Response({"message": "OTP verified successfully"}, status=status.HTTP_200_OK)
-        else:
-            return Response({"message": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        try:
+            temp_user = TemporaryUser.objects.get(email=email, otp=user_otp)
+        except TemporaryUser.DoesNotExist:
+            return Response({"message": "Invalid OTP"}, status=400)
+
+        if temp_user.is_otp_expired():
+            return Response({"message": "OTP has expired. Please request a new one."}, status=400)
+
+        # Create real user
+        User.objects.create_user(email=temp_user.email, username=temp_user.username, password=temp_user.password)
+
+        # Optionally delete temp user
+        temp_user.delete()
+
+        return Response({"message": "OTP verified successfully"}, status=200)
+
 
 class ResendOtp(APIView):
     def post(self, request):
@@ -187,6 +164,16 @@ class ResendOtp(APIView):
         )
 
         return Response({"message": "New OTP sent to your email."}, status=status.HTTP_200_OK)
+    
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class RefreshTokenView(APIView):
     def post(self, request):
@@ -195,12 +182,26 @@ class RefreshTokenView(APIView):
             return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            refresh = RefreshToken(refresh_token)
-            new_access_token = str(refresh.access_token)
-            new_refresh_token = str(refresh)
-            return Response({"access": new_access_token, "refresh": new_refresh_token}, status=status.HTTP_200_OK)
-        except Exception as e:
+            old_refresh = RefreshToken(refresh_token)
+
+            # Get user from user_id in token payload
+            user_id = old_refresh.payload.get('user_id')
+            user = User.objects.get(id=user_id)
+
+            # Create new rotated refresh token
+            new_refresh = RefreshToken.for_user(user)
+
+            return Response({
+                "access": str(new_refresh.access_token),
+                "refresh": str(new_refresh)
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+        except TokenError:
             return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -208,7 +209,6 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated, IsNotBlockedUser]
 
     def get(self, request):
-        print('workkkk')
         user = request.user
         profile_data = {
             "username": user.username,
@@ -336,10 +336,9 @@ class VerifyEmailView(APIView):
     
 
 class CreateAppointment(APIView):
+    permission_classes = [IsAuthenticated, IsNotBlockedUser]
     def post(self, request):
         data = request.data
-
-
         client = request.user
         therapist_id = data.get('therapist')
         date_id = data.get('date')
@@ -348,21 +347,13 @@ class CreateAppointment(APIView):
         session_mode = data.get('mode')
         session_type = data.get('type')
 
-
-        # Get related model instances
         therapistInstance = TherapistDetails.objects.get(id=therapist_id)
         therapist = UserDetails.objects.get(id=therapistInstance.user.id)
         
-
-
         get_date = get_object_or_404(AvailableDate, id=date_id)
         get_time = get_object_or_404(AvailableTimes, id=time_id, date=get_date)
         get_time.is_booked = True
         get_time.save()
-
-
-
-        
 
         date = AvailableDate.objects.get(id=date_id)
         time = AvailableTimes.objects.get(id=time_id)
@@ -371,8 +362,6 @@ class CreateAppointment(APIView):
         else:
             session_type = True
          
-
-        # Create the session
         session = TherapySession.objects.create(
             client=client,
             therapist=therapist,
@@ -382,19 +371,41 @@ class CreateAppointment(APIView):
             session_mode=session_mode,
             is_new = session_type
         )
+        admin_user = UserDetails.objects.filter(is_superuser=True).first()
+        admin_wallet = Wallet.objects.get(user=admin_user)
+        admin_share = price * 20 // 100
+        admin_wallet.balance += admin_share
+        admin_wallet.save()
 
-        
-
-
-
+        WalletTransaction.objects.create(
+            wallet=admin_wallet,
+            transaction_type='CREDIT',
+            amount=admin_share,
+            description=f"Admin commission from session #{session.id}"
+        )
         Notification.objects.create(
         user=client,
         title="New Appointment",
-        message=f"You have a new appointment with {therapist} on {date.date} at {time.time}.",
-        type="success"
+        message=f"You have a new appointment with therapist {therapist} on {date.date.strftime('%B %d, %Y')} at {time.time.strftime('%I:%M %p')}.",
+        type="success",
+        location="/appointments"
         )
+        TherapistNotification.objects.create(
+        user=therapist,
+        title="Slot Booked",
+        message=f"You have a new appointment with client {client} on {date.date.strftime('%B %d, %Y')} at {time.time.strftime('%I:%M %p')}.",
+        type="success",
+        location="/therapistAppointments"
 
+        )
+        AdminNotification.objects.create(
+        user=admin_user,
+        title="New Commision added to wallet",
+        message=f"Recieved {admin_share} to wallet by Commision from session #{session.id}",
+        type="success",
+        location="/adminEarnings"
 
+        )
         return Response({"message": "Appointment created successfully"}, status=status.HTTP_201_CREATED)
 
 
@@ -409,8 +420,7 @@ from django.db.models import Q
 from django.utils.timezone import localtime
 
 class GetAppointment(APIView):
-    permission_classes = [IsAuthenticated]
-
+    permission_classes = [IsAuthenticated, IsNotBlockedUser]
     def get(self, request):
 
         sessions = TherapySession.objects.filter(status='Scheduled')
@@ -427,8 +437,15 @@ class GetAppointment(APIView):
 
           
 
-            if now > session_datetime + timedelta(hours=2):
-                session.status = 'Cancelled'
+            if now > session_datetime + timedelta(hours=1):
+                if not session.user_attended and not session.therapist_attended:
+                    session.status = 'No Show - Both'
+                elif not session.user_attended:
+                    session.status = 'Absent - Client'
+                elif not session.therapist_attended:
+                    session.status = 'Absent - Therapist'
+                else:
+                    session.status = 'Completed'
                 session.save()
 
         user = request.user
@@ -469,6 +486,16 @@ class CancelSession(APIView):
                 recipient = session.therapist
                 cancelled_by = "Therapist"
 
+            admin_user = UserDetails.objects.filter(is_superuser=True).first()
+            admin_wallet = Wallet.objects.get(user=admin_user)
+            client_wallet = Wallet.objects.get(user=session.client)
+            admin_share = session.price * 0.2 #admin get 20% of session price , so remove that 
+            client_wallet.balance += session.price
+            admin_wallet.balance -= admin_share
+            client_wallet.save()
+            admin_wallet.save()
+
+
             session.status = 'Cancelled'
             session.cancel_reason = reason
             session.save()
@@ -477,9 +504,18 @@ class CancelSession(APIView):
             Notification.objects.create(
                 user=recipient,
                 title="Session Cancelled",
-                message=f"Your session on {session_date} at {session_time.strftime('%I:%M %p')} was cancelled by the {cancelled_by}.",
+                message=f"Your cancelled appointment on {session_date} at {session_time.strftime('%I:%M %p')}.",
                 type="warning",
-                read=False
+                read=False,
+                location="/appointments"
+            )
+            TherapistNotification.objects.create(
+                user=recipient,
+                title="Session Cancelled",
+                message=f"Your canceled appointment on {session_date} at {session_time.strftime('%I:%M %p')}.",
+                type="warning",
+                read=False,
+                location="/therapistAppointments"
             )
 
             return Response({"message": "Session cancelled successfully."}, status=status.HTTP_200_OK)
@@ -498,24 +534,32 @@ from django.http import JsonResponse
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 from django.views.decorators.csrf import csrf_exempt
+import json
+from django.utils.decorators import method_decorator
 
-# views.py
-@csrf_exempt
-def create_payment_intent(request):
-    if request.method == 'POST':
+@method_decorator(csrf_exempt, name='dispatch')
+
+class CreatePaymenIntent(APIView):
+    permission_classes = [IsAuthenticated, IsNotBlockedUser]
+    def post(self, request):
         try:
-            import json
             data = json.loads(request.body)
-            amount = data['amount']
+            amount = data.get('amount')
 
+            if not amount:
+                return JsonResponse({'error': 'Amount is required'}, status=400)
+
+            # Stripe expects smallest currency unit (e.g., cents for USD, paise for INR)
             intent = stripe.PaymentIntent.create(
-                amount=amount,
-                currency='usd',  # or 'inr' or your currency
+                amount=int(amount),  # Multiply by 100 if you're passing in rupees/dollars
+                currency='usd',      # Change to 'inr' if using INR
                 automatic_payment_methods={'enabled': True},
             )
             return JsonResponse({'clientSecret': intent['client_secret']})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+
 
 @csrf_exempt
 def stripe_webhook(request):
@@ -620,6 +664,7 @@ class ConversationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+from datetime import time
 
 from rest_framework.decorators import api_view, permission_classes
 
@@ -628,6 +673,7 @@ from rest_framework.decorators import api_view, permission_classes
 def get_notifications(request):
     user = request.user
     Notification.objects.filter(user=user, read=True).delete()
+
     notifications = Notification.objects.filter(user=user).order_by('-time')
     serializer = NotificationSerializer(notifications, many=True)
     return Response(serializer.data)
@@ -759,3 +805,64 @@ def upload_media(request):
         'media_url': os.path.join('/media/chat_media', filename),
         'media_type': media_type
     })
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import TherapySession  # Make sure this import is correct
+
+class MarkAsAttended(APIView):
+    def post(self, request):
+        session_id = request.data.get('id')
+        role = request.data.get('role')
+
+        try:
+            session = TherapySession.objects.get(id=session_id)
+        except TherapySession.DoesNotExist:
+            return Response({'message': 'Session not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if role == 'user':
+            session.user_attended = True
+        else:
+            session.therapist_attended = True
+
+        session.save()
+        return Response({'message': 'Marked as attended'}, status=status.HTTP_200_OK)
+
+
+
+class ClientWithdrawRequest(APIView):
+    def post(self,request):
+        user = request.user
+        amount = request.data.get('amount')
+        upi_id = request.data.get('upi_id')
+
+        if amount < 500:
+            return Response({"message": "Minimum withdrawal amount is ₹500."}, status=status.HTTP_400_BAD_REQUEST)
+
+        ClientWithdrawalRequest.objects.create(
+                client=user,
+                amount=amount,
+                upi_id=upi_id
+            )
+        admin_user = UserDetails.objects.filter(is_superuser=True).first()
+
+        AdminNotification.objects.create(
+        user=admin_user,
+        title="Withdraw Request",
+        message=f"You have a withdrawal request of ₹{amount} from client {user.fullname if user.fullname else user.username}",
+        type="success",
+        location="/adminEarnings"
+
+        )
+        return Response({'message': 'Withdrawal request submitted successfully'}, status=status.HTTP_201_CREATED)    
+
+
+class GetTherapistProfile(APIView):
+    def get(self,request,id):
+        therapist=TherapistDetails.objects.get(id=id)
+        serializer=GetTherapistProfileSerializer(therapist)
+        return Response({'profile_info': serializer.data})
+
+        

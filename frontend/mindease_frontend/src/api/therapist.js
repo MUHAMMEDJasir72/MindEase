@@ -112,7 +112,7 @@ export const getAvailableSlots = async (date) => {
 export const removeSlot = async (timeSlotId) => {
   try {
     const response = await API.delete(`/therapists/remove_slots/${timeSlotId}/`);
-    return { success: true, data: response.data };
+    return { success: true, data: response.data, message: response.data.message };
   } catch (error) {
     return {
       success: false,
@@ -144,12 +144,15 @@ export const updateProfile = async (data) => {
 
 export const makeCompleted = async (id) => {
   try {
-    const response = await API.patch('/therapists/make_completed/', { id })
-    return { success: true, message: response.data.message }
+    const response = await API.patch('/therapists/make_completed/', { id });
+    return { success: true, message: response.data.message };
   } catch (error) {
-    return { success: false, message: error.message }
+    const message =
+      error.response?.data?.message || "Something went wrong. Please try again.";
+    return { success: false, message };
   }
-}
+};
+
   
   
 
@@ -261,3 +264,24 @@ export const getTotalRating = async (id) => {
     return { success: false, message: errorMessage };
   }
 };
+
+export const markTherapistNotificationAsRead = async (id) => {
+  try {
+    const response = await API.patch('/therapists/mark-therapist-notification/', { id }); // send as an object
+    return { success: true };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 'An error occurred';
+    return { success: false, message: errorMessage };
+  }
+};
+
+
+export const markAllTherapistNotifications = async () => {
+  try {
+    const response = await API.patch('/therapists/mark-alltherapist-notifications/');
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || 'An error occurred' };
+  }
+};
+

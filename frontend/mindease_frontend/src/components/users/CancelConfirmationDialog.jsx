@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { showToast } from '../../utils/toast';
 
 export function CancelConfirmationDialog({ isOpen, onClose, onConfirm }) {
   const [reason, setReason] = useState('');
@@ -7,14 +8,14 @@ export function CancelConfirmationDialog({ isOpen, onClose, onConfirm }) {
 
   const handleConfirm = () => {
     if (reason.trim() === '') {
-      alert('Please provide a reason for cancelling.');
+      showToast('Please provide a reason for cancelling.', "error")
       return;
     }
     onConfirm(reason); // pass the reason back
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-30 z-50">
       <div className="bg-white rounded-lg shadow-lg w-96 p-6">
         <h2 className="text-xl font-semibold text-gray-800">Cancel Appointment</h2>
         <p className="text-gray-600 mt-4">Please provide a reason for cancelling this appointment:</p>

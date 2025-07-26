@@ -33,7 +33,7 @@ function TherapistSidebar() {
     try {
       const response = await logoutUser();
       if (response.success) {
-        navigate('/login');
+        navigate('/therapistLogin');
         localStorage.clear()
         showToast(response.message, 'success');
       } else {

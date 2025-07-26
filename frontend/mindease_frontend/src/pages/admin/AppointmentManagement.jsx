@@ -6,6 +6,10 @@ function AppointmentManagement() {
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState('Scheduled');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5); // You can adjust this number
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -26,9 +30,27 @@ function AppointmentManagement() {
   }, []);
 
   // Filter appointments based on active tab
-  const filteredAppointments = appointments.filter(app => 
-    activeTab === 'All' ? true : app.status === activeTab
-  );
+  const filteredAppointments = appointments.filter(app => {
+    if (activeTab === 'All') return true;
+    if (activeTab === 'Absentees') {
+      return app.status.includes('Absent') || app.status === 'No Show - Both';
+    }
+    return app.status === activeTab;
+  });
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredAppointments.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Reset to first page when tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   // Function to delete feedback
   const deleteFeedback = (appointmentId) => {
@@ -68,7 +90,7 @@ function AppointmentManagement() {
         {/* Tabs for categorization */}
         <div className="mb-6 border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
-            {['Scheduled', 'Completed', 'Cancelled'].map((tab) => (
+            {['Scheduled', 'Completed', 'Cancelled', 'Absentees'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -78,13 +100,18 @@ function AppointmentManagement() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                {tab} ({appointments.filter(a => a.status === tab).length})
+                {tab} (
+                  {tab === 'Absentees' 
+                    ? appointments.filter(a => a.status.includes('Absent') || a.status === 'No Show - Both').length 
+                    : appointments.filter(a => a.status === tab).length
+                  }
+                )
               </button>
             ))}
           </nav>
         </div>
         
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white shadow rounded-lg overflow-hidden mb-4">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -101,11 +128,14 @@ function AppointmentManagement() {
                   {activeTab === 'Cancelled' && (
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">Cancel Reason</th>
                   )}
+                  {activeTab === 'Absentees' && (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Absentee Details</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAppointments.length > 0 ? (
-                  filteredAppointments.map((appointment) => (
+                {currentItems.length > 0 ? (
+                  currentItems.map((appointment) => (
                     <tr key={appointment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{appointment.id}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{appointment.clientName}</td>
@@ -135,12 +165,6 @@ function AppointmentManagement() {
                                     </svg>
                                   ))}
                                 </div>
-                                <button 
-                                  onClick={() => deleteFeedback(appointment.id)}
-                                  className="text-red-500 hover:text-red-700 text-xs"
-                                >
-                                  Delete
-                                </button>
                               </div>
                             </div>
                           ) : (
@@ -157,11 +181,29 @@ function AppointmentManagement() {
                           )}
                         </td>
                       )}
+                      {activeTab === 'Absentees' && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            appointment.status === 'Absent - Client' ? 'bg-red-100 text-red-800' :
+                            appointment.status === 'Absent - Therapist' ? 'bg-orange-100 text-orange-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {appointment.status}
+                          </span>
+                          {appointment.status === 'No Show - Both' && (
+                            <p className="mt-1 text-xs text-gray-500">Neither party attended</p>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={activeTab === 'Completed' || activeTab === 'Cancelled' ? 7 : 6} className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan={
+                      activeTab === 'Completed' ? 7 : 
+                      activeTab === 'Cancelled' ? 7 : 
+                      activeTab === 'Absentees' ? 7 : 6
+                    } className="px-6 py-4 text-center text-sm text-gray-500">
                       No {activeTab.toLowerCase()} appointments found
                     </td>
                   </tr>
@@ -170,6 +212,91 @@ function AppointmentManagement() {
             </table>
           </div>
         </div>
+
+        {/* Pagination controls */}
+        {filteredAppointments.length > itemsPerPage && (
+          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-b-lg">
+            <div className="flex flex-1 justify-between sm:hidden">
+              <button
+                onClick={() => paginate(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
+                  <span className="font-medium">
+                    {Math.min(indexOfLastItem, filteredAppointments.length)}
+                  </span>{' '}
+                  of <span className="font-medium">{filteredAppointments.length}</span> results
+                </p>
+              </div>
+              <div>
+                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <button
+                    onClick={() => paginate(1)}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                  >
+                    <span className="sr-only">First</span>
+                    &laquo;
+                  </button>
+                  <button
+                    onClick={() => paginate(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                  >
+                    <span className="sr-only">Previous</span>
+                    &lsaquo;
+                  </button>
+                  
+                  {/* Page numbers */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      onClick={() => paginate(number)}
+                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                        currentPage === number
+                          ? 'bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                          : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                      }`}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                  >
+                    <span className="sr-only">Next</span>
+                    &rsaquo;
+                  </button>
+                  <button
+                    onClick={() => paginate(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                  >
+                    <span className="sr-only">Last</span>
+                    &raquo;
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

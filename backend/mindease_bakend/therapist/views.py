@@ -93,7 +93,17 @@ class RegisterTherapistView(APIView):
             for lang in lang_data:
                 Languages.objects.create(therapist_details=therapist, languages=lang)
 
-            return Response({'success': True}, status=status.HTTP_201_CREATED)
+            admin_user = UserDetails.objects.filter(is_superuser=True).first()
+            AdminNotification.objects.create(
+            user=admin_user,
+            title="New Therapist Request",
+            message=f"New Therapist Request from {therapist.fullname} ",
+            type="success",
+            location=f"/therapistDetails/{therapist.id}"
+
+            )
+
+            return Response({'success': True, "message":"form subimtted successfully"}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             print('Error:', e)
@@ -108,7 +118,8 @@ class CheckRequestedView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.user.role != 'therapist' or not hasattr(request.user, 'therapist_details'):
+        user = request.user
+        if user.role != 'therapist' and not getattr(user, 'therapist_details', None):
             return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"success": True}, status=status.HTTP_200_OK)
 
@@ -155,12 +166,12 @@ from rest_framework import status
 from .models import AvailableDate, AvailableTimes
 
 class AddSlotView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsNotBlockedTherapist]
 
     def post(self, request):
         date = request.data.get('date')
         available_times = request.data.get('available_times')
-
+        
         
         if date is None:
             return Response({'message': "Please select a date"}, status=status.HTTP_400_BAD_REQUEST)
@@ -176,13 +187,16 @@ class AddSlotView(APIView):
         for time_slot in available_times:
             time_value = time_slot.get('time')
 
+            if AvailableTimes.objects.filter(date=available_date_obj, time=time_value).exists():
+                continue
+
             # Save the time slot
             AvailableTimes.objects.create(
                 time=time_value,
                 date=available_date_obj
             )
 
-        return Response({"message": "Slots saved successfully."}, status=status.HTTP_201_CREATED)
+        return Response({"message": f"New slots successfully created."}, status=status.HTTP_201_CREATED)
         
 
 from datetime import date
@@ -191,6 +205,7 @@ from .serializers import AvailableDateSerializer
 from django.utils import timezone
 
 class GetAvailabilityView(APIView):
+    permission_classes = [IsAuthenticated, IsNotBlockedTherapist]
     def get(self, request):
         user = request.user
         today = timezone.now().date()
@@ -212,7 +227,7 @@ from django.db.models import Q
 from django.utils.timezone import localtime
 
 class GetTherapistAppointment(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsNotBlockedTherapist]
 
     def get(self, request):
         now = timezone.now()
@@ -230,8 +245,15 @@ class GetTherapistAppointment(APIView):
             now = localtime(timezone.now())  # This converts to your current timezone (e.g., IST)
 
         
-            if now > session_datetime + timedelta(hours=2):
-                session.status = 'Cancelled'
+            if now > session_datetime + timedelta(hours=1):
+                if not session.user_attended and not session.therapist_attended:
+                    session.status = 'No Show - Both'
+                elif not session.user_attended:
+                    session.status = 'Absent - Client'
+                elif not session.therapist_attended:
+                    session.status = 'Absent - Therapist'
+                else:
+                    session.status = 'Completed'
                 session.save()
 
         user = request.user
@@ -293,7 +315,7 @@ class RemoveSlotView(APIView):
 
             # Prevent removal if already booked
             if time_slot.is_booked:
-                return Response({'message': 'Cannot remove a booked time slot'}, status=400)
+                return Response({"message": "This slot already booked, You can't remove"}, status=400)
 
             time_slot.delete()
 
@@ -314,10 +336,10 @@ from .models import TherapistDetails, Specializations, Languages
 import re
 
 class UpdateTherapistProfile(APIView):
+    permission_classes = [IsAuthenticated, IsNotBlockedTherapist]
     def put(self, request):
         data = request.data
         user = request.user
-        print('sended dataaaaaaaaa:',data)
 
         try:
             details = TherapistDetails.objects.get(user=user)
@@ -395,36 +417,35 @@ class MakeCompleted(APIView):
         
         try:
             session = TherapySession.objects.get(id=session_id)
+            if not session.therapist_attended:
+                return Response({"message": "You Should Attend The Session"}, status=status.HTTP_404_NOT_FOUND)
+            if not session.user_attended:
+                return Response({"message": "Client Didn't Attend The Session"}, status=status.HTTP_404_NOT_FOUND)
+            
             session.status = 'Completed'
             session.save()
 
-            total = session.price
-            admin_share = total * 10 // 100
-            therapist_share = total - admin_share
-
-            admin_user = UserDetails.objects.filter(is_superuser=True).first()
-
-            admin_wallet = Wallet.objects.get(user=admin_user)
-            therapist_wallet = Wallet.objects.get(user=session.therapist)
-
-            admin_wallet.balance += admin_share
+            therapist_share = session.price * 0.8 #find 80%, admin getting 20%
+            try:
+                therapist_wallet = Wallet.objects.get(user=session.therapist)
+            except Wallet.DoesNotExist:
+                return Response({"message": "Wallet not found for therapist"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             therapist_wallet.balance += therapist_share
-
-            admin_wallet.save()
             therapist_wallet.save()
-
-            WalletTransaction.objects.create(
-                wallet=admin_wallet,
-                transaction_type='CREDIT',
-                amount=admin_share,
-                description=f"Admin commission from session #{session.id}"
-            )
 
             WalletTransaction.objects.create(
                 wallet=therapist_wallet,
                 transaction_type='CREDIT',
                 amount=therapist_share,
                 description=f"Earning from session #{session.id}"
+            )
+            TherapistNotification.objects.create(
+                user=session.therapist,
+                title=f"₹{therapist_share} Credited to Your Wallet",
+                message=f"You've earned ₹{therapist_share} from session #{session.id}.",
+                type="success",
+                read=False,
+                location="/earnings"
             )
             
             return Response({"message": "Session Completed"}, status=status.HTTP_200_OK)
@@ -478,6 +499,7 @@ class RequestWithdrawalAPIView(APIView):
     
 
 class GetWalletAmount(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
         try:
@@ -493,6 +515,7 @@ class GetWalletAmount(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
 class GetTransactions(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
         try:
@@ -513,12 +536,26 @@ class RequestWithdraw(APIView):
         amount = request.data.get('amount')
         upi_id = request.data.get('upi_id')
 
+        if amount < 500:
+            return Response({"message": "Minimum withdrawal amount is ₹500."}, status=status.HTTP_400_BAD_REQUEST)
+
         WithdrawalRequest.objects.create(
                 therapist=user,
                 amount=amount,
                 upi_id=upi_id
             )
-        return Response({'message': 'Withdrawal request submitted'}, status=status.HTTP_201_CREATED)
+        admin_user = UserDetails.objects.filter(is_superuser=True).first()
+        therapist= TherapistDetails.objects.get(user=user)
+
+        AdminNotification.objects.create(
+        user=admin_user,
+        title="Withdraw Request",
+        message=f"You have a withdrawal request of ₹{amount} from therapist {therapist.fullname if therapist.fullname else user.username}",
+        type="success",
+        location="/adminEarnings"
+
+        )
+        return Response({'message': 'Withdrawal request submitted successfully'}, status=status.HTTP_201_CREATED)
 
 from django.forms.models import model_to_dict
 
@@ -542,110 +579,111 @@ def get_chat_history(request, sender_id, receiver_id):
         'timestamp': chat.timestamp.isoformat(),
     } for chat in chats]
 
-    print('jjjjjjjjjjjjjjjjjjjjjjjjjj',chat_data)
 
     return JsonResponse(chat_data, safe=False)
 
 from calendar import month_name
 from django.db.models import Sum, Count
 
-def ReportForTherapistDashboard(request, therapist_id):
-    now = timezone.now()
-    today = now.date()
-    current_year = today.year
-    current_month = today.month
+class ReportForTherapistDashboard(APIView):
+    permission_classes = [IsAuthenticated, IsNotBlockedTherapist]
+    def get(self,request,therapist_id):
+        now = timezone.now()
+        today = now.date()
+        current_year = today.year
+        current_month = today.month
 
-    therapist_sessions = TherapySession.objects.filter(therapist_id=therapist_id)
+        therapist_sessions = TherapySession.objects.filter(therapist_id=therapist_id)
 
-    # Session counts
-    total_completed_sessions = therapist_sessions.filter(status='Completed').count()
-    today_completed = therapist_sessions.filter(status='Completed', date__date=today).count()
-    month_completed = therapist_sessions.filter(status='Completed', date__date__month=current_month, date__date__year=current_year).count()
-    year_completed = therapist_sessions.filter(status='Completed', date__date__year=current_year).count()
-    total_scheduled = therapist_sessions.filter(status='Scheduled').count()
-    total_cancelled = therapist_sessions.filter(status='Cancelled').count()
+        # Session counts
+        total_completed_sessions = therapist_sessions.filter(status='Completed').count()
+        today_completed = therapist_sessions.filter(status='Completed', date__date=today).count()
+        month_completed = therapist_sessions.filter(status='Completed', date__date__month=current_month, date__date__year=current_year).count()
+        year_completed = therapist_sessions.filter(status='Completed', date__date__year=current_year).count()
+        total_scheduled = therapist_sessions.filter(status='Scheduled').count()
+        total_cancelled = therapist_sessions.filter(status='Cancelled').count()
 
-    # Today's sessions
-    todays_sessions = therapist_sessions.filter(date__date=today)
-    today_sessions_data = []
-    for session in todays_sessions:
-        time_value = session.time.time  # from AvailableTimes
-        client_name = session.client.fullname or session.client.username
-        status = session.status.lower()
+        # Today's sessions
+        todays_sessions = therapist_sessions.filter(date__date=today)
+        today_sessions_data = []
+        for session in todays_sessions:
+            time_value = session.time.time  # from AvailableTimes
+            client_name = session.client.fullname or session.client.username
+            status = session.status.lower()
 
-        today_sessions_data.append({
-            'time': time_value.strftime('%I:%M %p') if time_value else 'N/A',
-            'client': client_name,
-            'status': status
-        })
+            today_sessions_data.append({
+                'time': time_value.strftime('%I:%M %p') if time_value else 'N/A',
+                'client': client_name,
+                'status': status
+            })
 
-    # Monthly trend data
-    monthly_trend = []
-    for month in range(1, 13):
-        completed_count = therapist_sessions.filter(
-            status='Completed',
-            date__date__month=month,
-            date__date__year=current_year
-        ).count()
-        cancelled_count = therapist_sessions.filter(
-            status='Cancelled',
-            date__date__month=month,
-            date__date__year=current_year
-        ).count()
-        monthly_trend.append({
-            'month': month_name[month][:3],
-            'completed': completed_count,
-            'cancelled': cancelled_count
-        })
+        # Monthly trend data
+        monthly_trend = []
+        for month in range(1, 13):
+            completed_count = therapist_sessions.filter(
+                status='Completed',
+                date__date__month=month,
+                date__date__year=current_year
+            ).count()
+            cancelled_count = therapist_sessions.filter(
+                status='Cancelled',
+                date__date__month=month,
+                date__date__year=current_year
+            ).count()
+            monthly_trend.append({
+                'month': month_name[month][:3],
+                'completed': completed_count,
+                'cancelled': cancelled_count
+            })
 
-    # Revenue calculations
-    therapist_wallets = Wallet.objects.filter(user=therapist_id)
-    credit_transactions = WalletTransaction.objects.filter(
-        transaction_type='CREDIT',
-        wallet__in=therapist_wallets
-    )
+        # Revenue calculations
+        therapist_wallets = Wallet.objects.filter(user=therapist_id)
+        credit_transactions = WalletTransaction.objects.filter(
+            transaction_type='CREDIT',
+            wallet__in=therapist_wallets
+        )
 
-    total_revenue = credit_transactions.aggregate(total=Sum('amount'))['total'] or 0
-    today_revenue = credit_transactions.filter(created_at__date=today).aggregate(total=Sum('amount'))['total'] or 0
-    month_revenue = credit_transactions.filter(created_at__year=current_year, created_at__month=current_month).aggregate(total=Sum('amount'))['total'] or 0
-    year_revenue = credit_transactions.filter(created_at__year=current_year).aggregate(total=Sum('amount'))['total'] or 0
+        total_revenue = credit_transactions.aggregate(total=Sum('amount'))['total'] or 0
+        today_revenue = credit_transactions.filter(created_at__date=today).aggregate(total=Sum('amount'))['total'] or 0
+        month_revenue = credit_transactions.filter(created_at__year=current_year, created_at__month=current_month).aggregate(total=Sum('amount'))['total'] or 0
+        year_revenue = credit_transactions.filter(created_at__year=current_year).aggregate(total=Sum('amount'))['total'] or 0
 
-    monthly_revenue = []
-    for month in range(1, 13):
-        revenue = credit_transactions.filter(
-            created_at__year=current_year,
-            created_at__month=month
-        ).aggregate(total=Sum('amount'))['total'] or 0
-        monthly_revenue.append({
-            'month': month_name[month][:3],
-            'revenue': revenue
-        })
+        monthly_revenue = []
+        for month in range(1, 13):
+            revenue = credit_transactions.filter(
+                created_at__year=current_year,
+                created_at__month=month
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            monthly_revenue.append({
+                'month': month_name[month][:3],
+                'revenue': revenue
+            })
 
-    # Final data dictionary
-    data = {
-        'totalCompleted': total_completed_sessions,
-        'todayCompleted': today_completed,
-        'monthCompleted': month_completed,
-        'yearCompleted': year_completed,
-        'pending': total_scheduled,
-        'cancelled': total_cancelled,
-        'todaySessions': today_sessions_data,
-        'sessionStatus': [
-            { 'name': 'Completed', 'value': total_completed_sessions },
-            { 'name': 'Cancelled', 'value': total_cancelled },
-            { 'name': 'Scheduled', 'value': total_scheduled },
-        ],
-        'monthlyTrend': monthly_trend,
-        'revenue': {
-            'total': total_revenue,
-            'today': today_revenue,
-            'month': month_revenue,
-            'year': year_revenue,
-            'monthlyRevenue': monthly_revenue
+        # Final data dictionary
+        data = {
+            'totalCompleted': total_completed_sessions,
+            'todayCompleted': today_completed,
+            'monthCompleted': month_completed,
+            'yearCompleted': year_completed,
+            'pending': total_scheduled,
+            'cancelled': total_cancelled,
+            'todaySessions': today_sessions_data,
+            'sessionStatus': [
+                { 'name': 'Completed', 'value': total_completed_sessions },
+                { 'name': 'Cancelled', 'value': total_cancelled },
+                { 'name': 'Scheduled', 'value': total_scheduled },
+            ],
+            'monthlyTrend': monthly_trend,
+            'revenue': {
+                'total': total_revenue,
+                'today': today_revenue,
+                'month': month_revenue,
+                'year': year_revenue,
+                'monthlyRevenue': monthly_revenue
+            }
         }
-    }
 
-    return JsonResponse(data)
+        return JsonResponse(data)
 
 from rest_framework.decorators import api_view, permission_classes
 
@@ -657,7 +695,6 @@ def get_notifications(request):
     Notification.objects.filter(user=user, read=True).delete()
     notifications = TherapistNotification.objects.filter(user=user).order_by('-time')
     serializer = TherapistNotificationSerializer(notifications, many=True)
-    print('s',serializer.data)
     return Response(serializer.data)
 
 
@@ -675,3 +712,39 @@ class Get_total_rating(APIView):
         avg_rating = sessions.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
 
         return JsonResponse({'rate': avg_rating})
+    
+
+
+from django.http import FileResponse, Http404
+from django.contrib.auth.decorators import login_required
+import os
+from django.conf import settings
+@login_required
+def Therapist_protected_document_view(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if not os.path.exists(file_path):
+        raise Http404("File not found")
+
+    return FileResponse(open(file_path, 'rb'))
+
+
+class MarkTherapistNotification(APIView):
+    def patch(self,request):      
+            notification_id = request.data.get('id')
+
+            if not notification_id:
+                return Response({"message": "Notification ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                notification = TherapistNotification.objects.get(id=notification_id, user=request.user)
+                notification.read = True
+                notification.save()
+                return Response({"message": "Notification marked as read."}, status=status.HTTP_200_OK)
+            except Notification.DoesNotExist:
+                return Response({"message": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
+            
+
+class MarkAllTherapistNotifications(APIView):
+    def patch(self, request):
+        TherapistNotification.objects.filter(user=request.user, read=False).update(read=True)
+        return Response({"message": "All notifications marked as read."}, status=status.HTTP_200_OK)

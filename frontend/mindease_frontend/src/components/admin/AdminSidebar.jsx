@@ -32,6 +32,7 @@ const menuItems = [
   
   // Management sections
   { key: 'specializeManage', label: 'Specializations', icon: <Settings size={19} />, path: '/specializeManage' },
+  { key: 'withdrawalReguests', label: 'Withdrawal Reguests', icon: <Settings size={19} />, path: '/withdrawalReguests' },
   
   // Logout
   { key: 'logout', label: 'Logout', icon: <LogOut size={19} />, type: 'logout' }
