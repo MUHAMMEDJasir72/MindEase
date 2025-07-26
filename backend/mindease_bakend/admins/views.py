@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.models import *
 from decouple import config
 from django.core.mail import send_mail
-
+from .models import Prices
 
 
 User = get_user_model()
@@ -543,3 +543,11 @@ class MarkAllAdminNotifications(APIView):
     def patch(self, request):
         AdminNotification.objects.filter(user=request.user, read=False).update(read=True)
         return Response({"message": "All notifications marked as read."}, status=status.HTTP_200_OK)
+    
+
+class GetPrices(APIView):
+    def get(self, request):
+        prices = Prices.objects.all()
+        serializer = PricesSerializer(prices, many=True)
+        return Response({"prices": serializer.data}, status=status.HTTP_200_OK)
+

@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { createSpecialize, deleteSpecialize, getSpecializations, editSpecialize } from '../../api/admin';
+import { createSpecialize, deleteSpecialize, getSpecializations, editSpecialize, getPrices } from '../../api/admin';
 import { showToast } from '../../utils/toast';
 import ConfirmDialog from '../../utils/ConfirmDialog';
 
 function SpecializeManage() {
   const [specializations, setSpecializations] = useState([]);
+  const [prices, setPrices] = useState({
+    video_call: 0,
+    voice_call: 0,
+    message: 0
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [specializationName, setSpecializationName] = useState('');
   const [currentSpecialization, setCurrentSpecialization] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPriceLoading, setIsPriceLoading] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState({
     isOpen: false,
     title: '',
@@ -22,6 +29,7 @@ function SpecializeManage() {
 
   useEffect(() => {
     fetchSpecializations();
+    fetchPrices();
   }, []);
 
   const fetchSpecializations = async () => {
@@ -39,6 +47,47 @@ function SpecializeManage() {
       showToast('Error loading specializations', 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchPrices = async () => {
+    setIsPriceLoading(true);
+    try {
+      const response = await getPrices();
+      if (response.success) {
+        setPrices(response.data);
+      } else {
+        console.error('Failed to fetch prices:', response.error);
+        showToast('Failed to load prices', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching prices:', error);
+      showToast('Error loading prices', 'error');
+    } finally {
+      setIsPriceLoading(false);
+    }
+  };
+
+  const handlePriceChange = (e) => {
+    const { name, value } = e.target;
+    setPrices(prev => ({
+      ...prev,
+      [name]: parseInt(value) || 0
+    }));
+  };
+
+  const savePrices = async () => {
+    try {
+      const response = await updatePrices(prices);
+      if (response.success) {
+        showToast('Prices updated successfully', 'success');
+        setIsPriceModalOpen(false);
+      } else {
+        showToast(response.error || 'Failed to update prices', 'error');
+      }
+    } catch (error) {
+      console.error('Error saving prices:', error);
+      showToast('Error saving prices', 'error');
     }
   };
 
@@ -200,7 +249,7 @@ function SpecializeManage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isPriceLoading) {
     return (
       <div className='flex min-h-screen bg-gray-100'>
         <AdminSidebar />
@@ -215,6 +264,36 @@ function SpecializeManage() {
     <div className='flex h-screen bg-gray-100'>
       <AdminSidebar />
       <div className='flex-1 p-8 overflow-y-auto ml-[220px]'>
+        {/* Price Management Section */}
+        <div className='mb-8 bg-white rounded-lg shadow overflow-hidden'>
+          <div className='p-6 border-b border-gray-200'>
+            <div className='flex justify-between items-center'>
+              <h2 className='text-xl font-bold text-gray-800'>Service Prices</h2>
+              <button
+                onClick={() => setIsPriceModalOpen(true)}
+                className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2'
+              >
+                <FiEdit /> Edit Prices
+              </button>
+            </div>
+            <div className='mt-4 grid grid-cols-1 md:grid-cols-3 gap-4'>
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <h3 className='font-medium text-gray-700'>Video Call</h3>
+                <p className='text-2xl font-bold text-gray-900'>${prices.video_call}</p>
+              </div>
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <h3 className='font-medium text-gray-700'>Voice Call</h3>
+                <p className='text-2xl font-bold text-gray-900'>${prices.voice_call}</p>
+              </div>
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <h3 className='font-medium text-gray-700'>Message</h3>
+                <p className='text-2xl font-bold text-gray-900'>${prices.message_call}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Specializations Section */}
         <div className='flex justify-between items-center mb-6'>
           <h1 className='text-2xl font-bold text-gray-800'>Manage Specializations</h1>
           <button
@@ -282,7 +361,7 @@ function SpecializeManage() {
           )}
         </div>
 
-        {/* Add/Edit Modal */}
+        {/* Add/Edit Specialization Modal */}
         {isModalOpen && (
           <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
             <div className='bg-white rounded-lg shadow-xl w-full max-w-md'>
@@ -321,6 +400,77 @@ function SpecializeManage() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Prices Modal */}
+        {isPriceModalOpen && (
+          <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
+            <div className='bg-white rounded-lg shadow-xl w-full max-w-md'>
+              <div className='p-6'>
+                <h2 className='text-xl font-semibold mb-4'>Edit Service Prices</h2>
+                <div className='space-y-4'>
+                  <div>
+                    <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='video_call'>
+                      Video Call Price ($)
+                    </label>
+                    <input
+                      type='number'
+                      id='video_call'
+                      name='video_call'
+                      value={prices.video_call}
+                      onChange={handlePriceChange}
+                      className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='voice_call'>
+                      Voice Call Price ($)
+                    </label>
+                    <input
+                      type='number'
+                      id='voice_call'
+                      name='voice_call'
+                      value={prices.voice_call}
+                      onChange={handlePriceChange}
+                      className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+                      min="0"
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='message_call'>
+                      Message Price ($)
+                    </label>
+                    <input
+                      type='number'
+                      id='message_call'
+                      name='message_call'
+                      value={prices.message_call}
+                      onChange={handlePriceChange}
+                      className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+                      min="0"
+                    />
+                  </div>
+                </div>
+                <div className='flex justify-end gap-3 mt-6'>
+                  <button
+                    type='button'
+                    onClick={() => setIsPriceModalOpen(false)}
+                    className='bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded'
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type='button'
+                    onClick={savePrices}
+                    className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded'
+                  >
+                    Save Prices
+                  </button>
+                </div>
               </div>
             </div>
           </div>

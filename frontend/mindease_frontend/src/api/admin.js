@@ -245,3 +245,18 @@ export const markAllAdminNotifications = async () => {
   }
 };
 
+
+ export const getPrices = async () => {
+    try {
+      const response = await API.get(`/admin/get-prices/`);
+      return {
+        success: true,
+        data: response.data.prices,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || error.message,
+      };
+    }
+  };

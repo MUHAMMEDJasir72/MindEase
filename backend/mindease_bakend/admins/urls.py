@@ -24,6 +24,7 @@ urlpatterns = [
     path('get-client-withdraw-requests/', GetClientWithdrawRequestsView.as_view(), name='get_withdraw_requests'),
     path('process-therapist-withdraw/<int:id>/', ProcessTherapistWithdraw.as_view(), name='process_withdraw'),
     path('process-client-withdraw/<int:id>/', ProcessClientWithdraw.as_view(), name='process_withdraw'),
+    path('get-prices/', GetPrices.as_view(), name='get-prices'),
 
 
 ]

@@ -1,7 +1,7 @@
 # therapists/serializers.py
 from rest_framework import serializers
 from therapist.models import TherapistDetails, Specializations, Languages, AvailableDate, AvailableTimes
-from .models import SpecializationsList
+from .models import SpecializationsList, Prices
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
@@ -164,4 +164,11 @@ class ReportSerializer(serializers.ModelSerializer):
 class FetchAllTherapistSerializer(serializers.ModelSerializer):
     class Meta:
         model = TherapistDetails
+        fields = '__all__'
+
+
+
+class PricesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prices
         fields = '__all__'
