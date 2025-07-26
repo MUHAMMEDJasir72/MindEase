@@ -7,11 +7,8 @@ import ConfirmDialog from '../../utils/ConfirmDialog';
 
 function SpecializeManage() {
   const [specializations, setSpecializations] = useState([]);
-  const [prices, setPrices] = useState({
-    video_call: 0,
-    voice_call: 0,
-    message: 0
-  });
+  const [prices, setPrices] = useState({});
+  console.log(prices)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [specializationName, setSpecializationName] = useState('');
@@ -55,6 +52,7 @@ function SpecializeManage() {
     try {
       const response = await getPrices();
       if (response.success) {
+        console.log('j',response)
         setPrices(response.data);
       } else {
         console.error('Failed to fetch prices:', response.error);

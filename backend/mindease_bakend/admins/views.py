@@ -548,6 +548,6 @@ class MarkAllAdminNotifications(APIView):
 class GetPrices(APIView):
     def get(self, request):
         prices = Prices.objects.all()
-        serializer = PricesSerializer(prices, many=True)
+        serializer = PricesSerializer(prices)
         return Response({"prices": serializer.data}, status=status.HTTP_200_OK)
 
