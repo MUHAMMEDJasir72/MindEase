@@ -207,3 +207,13 @@ export const getTherapsitProfile= async (id) => {
       return { success: false };
     }
   };
+
+
+export const getSessionPrices= async () => {
+    try {
+      const response = await API.get(`/users/get-session-prices/`);
+      return { success: true, prices: response.data.prices};
+    } catch (error) {
+      return { success: false };
+    }
+  };

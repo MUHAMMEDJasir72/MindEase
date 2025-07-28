@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
-import { createSpecialize, deleteSpecialize, getSpecializations, editSpecialize, getPrices } from '../../api/admin';
+import { createSpecialize, deleteSpecialize, getSpecializations, editSpecialize, getPrices, changePrice } from '../../api/admin';
 import { showToast } from '../../utils/toast';
 import ConfirmDialog from '../../utils/ConfirmDialog';
 
 function SpecializeManage() {
   const [specializations, setSpecializations] = useState([]);
-  const [prices, setPrices] = useState({});
-  console.log(prices)
+  const [prices, setPrices] = useState({
+    video_call: 0,
+    voice_call: 0,
+    message: 0
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [specializationName, setSpecializationName] = useState('');
@@ -52,7 +55,6 @@ function SpecializeManage() {
     try {
       const response = await getPrices();
       if (response.success) {
-        console.log('j',response)
         setPrices(response.data);
       } else {
         console.error('Failed to fetch prices:', response.error);
@@ -68,18 +70,30 @@ function SpecializeManage() {
 
   const handlePriceChange = (e) => {
     const { name, value } = e.target;
-    setPrices(prev => ({
-      ...prev,
-      [name]: parseInt(value) || 0
-    }));
+    // Only update if the value is a valid number or empty string
+    if (value === '' || !isNaN(value)) {
+      setPrices(prev => ({
+        ...prev,
+        [name]: value === '' ? '' : parseInt(value)
+      }));
+    }
   };
 
   const savePrices = async () => {
     try {
-      const response = await updatePrices(prices);
+      // Convert empty strings to 0 before sending
+      const pricesToSend = {
+        video_call: prices.video_call === '' ? 0 : parseInt(prices.video_call),
+        voice_call: prices.voice_call === '' ? 0 : parseInt(prices.voice_call),
+        message: prices.message === '' ? 0 : parseInt(prices.message)
+      };
+      
+      const response = await changePrice(pricesToSend);
       if (response.success) {
-        showToast('Prices updated successfully', 'success');
+        showToast(response.message, 'success');
         setIsPriceModalOpen(false);
+        // Update local state with the validated prices
+        setPrices(pricesToSend);
       } else {
         showToast(response.error || 'Failed to update prices', 'error');
       }
@@ -277,15 +291,15 @@ function SpecializeManage() {
             <div className='mt-4 grid grid-cols-1 md:grid-cols-3 gap-4'>
               <div className='bg-gray-50 p-4 rounded-lg'>
                 <h3 className='font-medium text-gray-700'>Video Call</h3>
-                <p className='text-2xl font-bold text-gray-900'>${prices.video_call}</p>
+                <p className='text-2xl font-bold text-gray-900'>₹{prices.video_call || '0'}</p>
               </div>
               <div className='bg-gray-50 p-4 rounded-lg'>
                 <h3 className='font-medium text-gray-700'>Voice Call</h3>
-                <p className='text-2xl font-bold text-gray-900'>${prices.voice_call}</p>
+                <p className='text-2xl font-bold text-gray-900'>₹{prices.voice_call || '0'}</p>
               </div>
               <div className='bg-gray-50 p-4 rounded-lg'>
                 <h3 className='font-medium text-gray-700'>Message</h3>
-                <p className='text-2xl font-bold text-gray-900'>${prices.message_call}</p>
+                <p className='text-2xl font-bold text-gray-900'>₹{prices.message || '0'}</p>
               </div>
             </div>
           </div>
@@ -376,7 +390,13 @@ function SpecializeManage() {
                       type='text'
                       id='name'
                       value={specializationName}
-                      onChange={(e) => setSpecializationName(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Allow only letters (both uppercase and lowercase) and spaces
+                        if (/^[a-zA-Z\s]*$/.test(value)) {
+                          setSpecializationName(value);
+                        }
+                      }}
                       className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
                       required
                       autoFocus
@@ -412,13 +432,13 @@ function SpecializeManage() {
                 <div className='space-y-4'>
                   <div>
                     <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='video_call'>
-                      Video Call Price ($)
+                      Video Call Price (₹)
                     </label>
                     <input
                       type='number'
                       id='video_call'
                       name='video_call'
-                      value={prices.video_call}
+                      value={prices.video_call === 0 ? '' : prices.video_call}
                       onChange={handlePriceChange}
                       className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
                       min="0"
@@ -426,27 +446,27 @@ function SpecializeManage() {
                   </div>
                   <div>
                     <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='voice_call'>
-                      Voice Call Price ($)
+                      Voice Call Price (₹)
                     </label>
                     <input
                       type='number'
                       id='voice_call'
                       name='voice_call'
-                      value={prices.voice_call}
+                      value={prices.voice_call === 0 ? '' : prices.voice_call}
                       onChange={handlePriceChange}
                       className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
                       min="0"
                     />
                   </div>
                   <div>
-                    <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='message_call'>
-                      Message Price ($)
+                    <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='message'>
+                      Message Price (₹)
                     </label>
                     <input
                       type='number'
-                      id='message_call'
-                      name='message_call'
-                      value={prices.message_call}
+                      id='message'
+                      name='message'
+                      value={prices.message === 0 ? '' : prices.message}
                       onChange={handlePriceChange}
                       className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
                       min="0"

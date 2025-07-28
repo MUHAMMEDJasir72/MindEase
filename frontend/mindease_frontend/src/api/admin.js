@@ -248,7 +248,7 @@ export const markAllAdminNotifications = async () => {
 
  export const getPrices = async () => {
     try {
-      const response = await API.get(`/admin/get-prices/`);
+      const response = await API.get(`/admin/prices/`);
       return {
         success: true,
         data: response.data.prices,
@@ -260,3 +260,13 @@ export const markAllAdminNotifications = async () => {
       };
     }
   };
+
+export const changePrice = async (data) => {
+  try {
+    const response = await API.patch('/admin/prices/', data);
+    return { success: true, message: response.data.message };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 'An error occurred';
+    return { success: false, message: errorMessage };
+  }
+};

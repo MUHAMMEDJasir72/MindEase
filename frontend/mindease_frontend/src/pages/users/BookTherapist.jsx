@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Clock, Calendar, User, ArrowLeft, Video, Phone, MessageSquare, Lock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getTherapistInformation } from '../../api/admin';
-import { createAppointment, createPayment } from '../../api/user';
+import { createAppointment, createPayment, getSessionPrices } from '../../api/user';
 import { showToast } from '../../utils/toast';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { getUserInfo } from '../../api/therapist';
@@ -27,12 +27,14 @@ function BookTherapist() {
   const stripe = useStripe();
   const elements = useElements();
 
-  // Pricing based on therapy mode
-  const pricing = {
-    video: 1500,
-    voice: 1000,
-    message: 500,
-  };
+  // // Pricing based on therapy mode
+  // const  = {
+  //   video: 1500,
+  //   voice: 1000,
+  //   message: 500,
+  // };
+
+  const [pricing, setPricing] = useState({})
 
   const cardElementOptions = {
     style: {
@@ -88,10 +90,25 @@ function BookTherapist() {
         setIsLoading(false);
       }
     };
+    const fetchPrices = async () => {
+      setIsLoading(true);
+      try {
+        const info = await getSessionPrices();
+        if (info.success) {
+          setPricing(info.prices);
+        }
+      } catch (error) {
+        console.error('Failed to fetch therapist:', error);
+        showToast('Failed to load price information', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     if (id) {
       fetchTherapistInfo();
       fetchUserapistInfo()
+      fetchPrices()
     }
   }, [id]);
 
@@ -210,7 +227,7 @@ function BookTherapist() {
       </div>
     );
   }
-
+console.log(pricing)
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Back button for mobile */}
