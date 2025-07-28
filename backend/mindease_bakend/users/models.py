@@ -33,7 +33,7 @@ class UserDetails(AbstractUser):
 class TemporaryUser(models.Model):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150)
-    password = models.CharField(max_length=128, blank=True, null=True)  # Consider hashing before saving
+    password = models.CharField(max_length=128, blank=True, null=True) 
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
 

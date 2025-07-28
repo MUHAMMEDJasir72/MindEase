@@ -262,7 +262,7 @@ const UserDetails = () => {
         </header>
         
         {/* Booking History Section */}
-        <section className="bg-white rounded-xl shadow-sm overflow-hidden">
+        {/* <section className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-800">Booking History</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -275,7 +275,6 @@ const UserDetails = () => {
               {bookings.map((booking) => (
                 <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors duration-150">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    {/* Booking Info */}
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <h3 className="font-medium text-gray-800">
@@ -316,7 +315,6 @@ const UserDetails = () => {
                         </div>
                       </div>
                       
-                      {/* Feedback Section */}
                       {booking.feedback && (
                         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                           <div className="flex justify-between items-start">
@@ -370,7 +368,6 @@ const UserDetails = () => {
                       )}
                     </div>
                     
-                    {/* Booking Actions */}
                     <div className="flex flex-col gap-2">
                       <button className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-sm font-medium hover:bg-blue-100">
                         View Details
@@ -394,7 +391,7 @@ const UserDetails = () => {
               <p className="mt-1 text-sm text-gray-500">This user hasn't made any appointments yet.</p>
             </div>
           )}
-        </section>
+        </section> */}
         <ConfirmDialog
         isOpen={showConfirm}
         title={user?.is_user_active ? "Block User?" : "Unblock User?"}
