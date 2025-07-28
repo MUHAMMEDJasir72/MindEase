@@ -4,7 +4,7 @@ import { ToastContainer } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { changeForgotPassword, verifyEmail } from '../../api/user';
 import { validateForm } from '../../utils/validateForm';
-import { verifyOtp } from '../../api/auth';
+import { verifyFotgetPasswordOtp, verifyOtp } from '../../api/auth';
 
 function ForgotPassword() {
     const navigate = useNavigate();
@@ -86,7 +86,7 @@ function ForgotPassword() {
     
         setIsLoading(true);
         try {
-            const response = await verifyOtp(otp.trim(), email.trim(),);
+            const response = await verifyFotgetPasswordOtp(otp.trim(), email.trim(),);
             if (response.success) {
                 showToast("OTP verified successfully", "success");
                 setStep(3);

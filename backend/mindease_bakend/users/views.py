@@ -344,7 +344,6 @@ class VerifyEmailView(APIView):
         TemporaryUser.objects.create(
             email=entered_email,
             username=user.username,
-            password=user.password,  
             otp=otp_code
         )
 
