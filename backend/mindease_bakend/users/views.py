@@ -137,6 +137,27 @@ class VerifyOtp(APIView):
         return Response({"message": "OTP verified successfully"}, status=200)
 
 
+
+class VerifyForgetPasswordOtp(APIView):
+    def post(self, request):
+        user_otp = request.data.get('otp')
+        email = request.data.get('email')
+
+        if not email or not user_otp:
+            return Response({"message": "Email and OTP are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            temp_user = TemporaryUser.objects.get(email=email, otp=user_otp)
+        except TemporaryUser.DoesNotExist:
+            return Response({"message": "Invalid OTP"}, status=400)
+
+        if temp_user.is_otp_expired():
+            return Response({"message": "OTP has expired. Please request a new one."}, status=400)
+
+        temp_user.delete()
+
+        return Response({"message": "OTP verified successfully"}, status=200)
+
 class ResendOtp(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -318,6 +339,15 @@ class VerifyEmailView(APIView):
         # Generate 6-digit OTP
         otp_code = random.randint(100000, 999999)
 
+        
+
+        TemporaryUser.objects.create(
+            email=entered_email,
+            username=user.username,
+            password=user.password,  
+            otp=otp_code
+        )
+
         # Send OTP email
         send_mail(
             'Your OTP Code',
@@ -326,12 +356,6 @@ class VerifyEmailView(APIView):
             [entered_email],
             fail_silently=False
         )
-
-        # Save OTP and timestamp
-        user.otp_code = str(otp_code)
-        user.otp_created_at = now()
-        user.save()
-
         return Response({'success': True, 'message': 'OTP has been sent to your email.'}, status=status.HTTP_200_OK)
     
 

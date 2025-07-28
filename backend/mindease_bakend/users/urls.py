@@ -13,6 +13,7 @@ urlpatterns = [
     path('register/', RegisterUserView.as_view(), name='register'),
     # path('login/', LoginUserView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('verify_forgetpassword-otp/', VerifyForgetPasswordOtp.as_view(), name='erify_forgetpassword-otp'),
     path('verify_otp/', VerifyOtp.as_view(), name='otp'),
     path('resend_otp/', ResendOtp.as_view(), name='resend_otp'),
     path('get_profile/', ProfileView.as_view(), name='profile'),
@@ -20,8 +21,6 @@ urlpatterns = [
     path('verify_password/', VerifyPasswordView.as_view(), name='verify_password'),
     path('change_forgot_password/', ChangeForgotPasswordView.as_view(), name='change_password'),
     path('verifyEmail/', VerifyEmailView.as_view(), name='verifyEmail'),
-
-
     path('login/token/', TokenObtainPairViews.as_view(), name='token_obtain_pair'),
     path('token/refresh/', RefreshTokenView.as_view(), name='token_refresh'),
     path('create_appointment/', CreateAppointment.as_view(), name='create_appointment'),

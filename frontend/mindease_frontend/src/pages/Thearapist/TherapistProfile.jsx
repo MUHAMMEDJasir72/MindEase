@@ -56,6 +56,7 @@ function TherapistProfile() {
           setTherapistData(newProfile.data);
         }
       }
+      showToast(response.message, 'success')
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {
