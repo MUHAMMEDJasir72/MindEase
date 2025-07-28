@@ -17,7 +17,7 @@ function TherapistAppointments() {
   const [activeTab, setActiveTab] = useState("today");
   const [searchDate, setSearchDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const appointmentsPerPage = 1;
+  const appointmentsPerPage = 10;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
