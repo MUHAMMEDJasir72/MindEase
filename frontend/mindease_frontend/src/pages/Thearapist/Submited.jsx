@@ -53,6 +53,7 @@ const TherapistApplicationSubmitted = () => {
         setLoading(true);
         const response = await updateProfile(updatedData);
         if (response.success) {
+          showToast(response.message, 'success')
           const newProfile = await getProfile();
           if (newProfile.success) {
             setTherapistData(newProfile.data);
