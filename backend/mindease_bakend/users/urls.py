@@ -40,6 +40,7 @@ urlpatterns = [
     path('mark-as-attended/', MarkAsAttended.as_view(), name='mark-as-attended'),
     path('request-client-withdraw/', ClientWithdrawRequest.as_view(), name='request-client-withdraw'),
     path('get-therapist-profile/<int:id>/', GetTherapistProfile.as_view(), name='get-therapist-profile'),
+    path('get-session-prices/', GetSessionPrices.as_view(), name='get-session-prices'),
 
 
 

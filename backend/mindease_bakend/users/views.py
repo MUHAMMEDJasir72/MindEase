@@ -15,7 +15,7 @@ from django.utils.timezone import now
 from .serializers import *
 from .models import *
 from therapist.models import AvailableDate, AvailableTimes, TherapistDetails
-
+from admins.models import *
 
 from rest_framework import permissions
 
@@ -866,3 +866,21 @@ class GetTherapistProfile(APIView):
         return Response({'profile_info': serializer.data})
 
         
+class GetSessionPrices(APIView):
+    def get(self, request):
+        prices = Prices.objects.first()
+
+        if prices:
+            data = {
+                "video": prices.video_call,
+                "voice": prices.voice_call,
+                "message": prices.message
+            }
+        else:
+            data = {
+                "video": 0,
+                "voice": 0,
+                "message": 0
+            }
+
+        return Response({"prices": data}, status=status.HTTP_200_OK)

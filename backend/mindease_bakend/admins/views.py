@@ -547,7 +547,35 @@ class MarkAllAdminNotifications(APIView):
 
 class GetPrices(APIView):
     def get(self, request):
-        prices = Prices.objects.all()
-        serializer = PricesSerializer(prices)
-        return Response({"prices": serializer.data}, status=status.HTTP_200_OK)
+        prices = Prices.objects.first()
+
+        if prices:
+            serializer = PricesSerializer(prices)
+            return Response({"prices": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            # Send default 0 values if no Prices object exists
+            return Response({
+                "prices": {
+                    "video_call": 0,
+                    "voice_call": 0,
+                    "message": 0
+                }
+            }, status=status.HTTP_200_OK)
+        
+    def patch(self,request):
+        prices = Prices.objects.first()
+
+        if not prices:
+            # If no Prices object exists, create one
+            prices = Prices.objects.create()
+
+        prices.video_call = request.data.get('video_call', prices.video_call)
+        prices.voice_call = request.data.get('voice_call', prices.voice_call)
+        prices.message = request.data.get('message', prices.message)
+        prices.save()
+
+        return Response({"message": "Prices updated successfully"}, status=status.HTTP_200_OK)
+
+            
+
 

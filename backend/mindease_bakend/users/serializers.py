@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from therapist.models import *
+from admins.models import *
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -133,3 +134,9 @@ class GetTherapistProfileSerializer(serializers.ModelSerializer):
             therapist=obj.user,
             rating__isnull=False
         ).aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
+    
+
+class PricesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prices
+        fields = '__all__'
