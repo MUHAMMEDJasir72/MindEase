@@ -40,6 +40,7 @@ import Wallet from "./pages/users/Wallet";
 import WithdrawalRequests from "./pages/admin/WithdrawalRequests";
 import { ToastContainer } from "react-toastify";
 import { Toaster } from 'sonner'; 
+import AdminLayout from "./components/admin/AdminLayout";
 
 function App() {
   return (
@@ -80,7 +81,7 @@ function App() {
         <Route path="/clientDetails/:clientId" element={<TherapistRoute><ClientDetails /></TherapistRoute>} />
 
         {/* admin routes */}
-        <Route path="/therapists" element={<AdminRoute>< Therapists/></AdminRoute>} />
+        <Route path="/therapists" element={<AdminRoute><AdminLayout>< Therapists/></AdminLayout></AdminRoute>} />
         <Route path="/therapistDetails/:id" element={<AdminRoute><TherapistDetails /></AdminRoute>} />
         <Route path="/users" element={<AdminRoute><Users /></AdminRoute>} />
         <Route path="/adminDashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
