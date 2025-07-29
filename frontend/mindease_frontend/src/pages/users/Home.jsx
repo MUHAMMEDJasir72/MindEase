@@ -156,9 +156,10 @@ function Home() {
           <p className='text-base md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto'>
             Take the first step towards better mental health today. Our team is here to support you.
           </p>
+          <Link to={'/selectTherapist'}>
           <button className="bg-white hover:bg-gray-100 text-teal-700 px-8 py-3 md:px-10 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-lg hover:shadow-xl">
             Get Matched With a Therapist
-          </button>
+          </button></Link>
         </section>
 
         {/* Footer */}
