@@ -109,7 +109,7 @@ function Chat() {
       });
 
     // Set up WebSocket
-    socketRef.current = new WebSocket(`${routerBaseUrl}wss/chat/${roomName}/`);
+    socketRef.current = new WebSocket(`${routerBaseUrl}ws/chat/${roomName}/`);
 
     socketRef.current.onopen = () => {
       setIsConnected(true);

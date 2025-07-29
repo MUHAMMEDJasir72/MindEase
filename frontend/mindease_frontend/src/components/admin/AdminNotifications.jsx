@@ -46,7 +46,7 @@ const AdminNotification = () => {
 
     fetchNotifications();
 
-    const socket = new ReconnectingWebSocket(`${routerBaseUrl}wss/notifications/`);
+    const socket = new ReconnectingWebSocket(`${routerBaseUrl}ws/notifications/`);
 
     socket.onopen = () => {
       console.log("WebSocket connected");
