@@ -11,7 +11,6 @@ import Therapists from "./pages/admin/Therapists";
 import TherapistDetails from "./pages/admin/TherapistDetails";
 import Users from "./pages/admin/Users";
 import TherapistLogin from "./pages/users/TherapistLogin";
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import TherapistHome from "./pages/Thearapist/TherapistHome";
@@ -39,11 +38,13 @@ import TherapistApplicationSubmitted from "./pages/Thearapist/Submited"
 import ClientDetails from "./pages/Thearapist/ClientDetails"
 import Wallet from "./pages/users/Wallet";
 import WithdrawalRequests from "./pages/admin/WithdrawalRequests";
+import { ToastContainer } from "react-toastify";
+import { Toaster } from 'sonner'; 
 
 function App() {
   return (
     <BrowserRouter>
-         <ToastContainer />
+         <Toaster richColors position="top-center" />
         
       <Routes>
    

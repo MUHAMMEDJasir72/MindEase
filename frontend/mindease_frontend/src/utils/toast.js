@@ -1,32 +1,23 @@
-import { toast } from "react-toastify";
+import { toast } from "sonner"; // ✅ Use Sonner
 
 // Function to show different types of toast messages
 export const showToast = (message, type = "default") => {
-  const options = {
-    position: "top-right",
-    autoClose: 3000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-  };
 
   switch (type) {
     case "success":
-      toast.success(message, options);
+      toast.success(message);
       break;
     case "error":
-      toast.error(message, options);
+      toast.error(message);
       break;
     case "info":
-      toast.info(message, options);
+      toast(message); // No toast.info in Sonner
       break;
     case "warning":
-      toast.warn(message, options);
+      toast.warning(message);
       break;
     default:
-      toast(message, options);
+      toast(message);
       break;
   }
 };
