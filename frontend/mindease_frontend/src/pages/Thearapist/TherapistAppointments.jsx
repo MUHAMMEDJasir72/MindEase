@@ -140,7 +140,7 @@ function TherapistAppointments() {
       .filter(app => {
         const appDate = parseAppointmentDate(app.date_value, app.time_value);
         if (activeTab === "today") return appDate >= todayStart && appDate < todayEnd;
-        if (activeTab === "upcoming") return appDate >= todayEnd;
+        if (activeTab === "upcoming") return appDate >= todayEnd && app.status === 'Scheduled';;
         if (activeTab === "completed") return app.status === 'Completed';
         if (activeTab === "cancelled") return app.status === 'Cancelled';
         if (activeTab === "absences") return ['Absent - Client', 'Absent - Therapist', 'No Show - Both'].includes(app.status);
