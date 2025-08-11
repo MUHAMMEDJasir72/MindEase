@@ -516,7 +516,7 @@ from django.contrib.auth.decorators import login_required
 import os
 from django.conf import settings
 
-
+@permission_classes([IsAuthenticated])
 @login_required
 def protected_document_view(request, path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
