@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import {changeUserStatus, getUserInfo} from '../../api/admin'
 import { showToast } from '../../utils/toast';
 import ConfirmDialog from '../../utils/ConfirmDialog';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 const UserDetails = () => {
   const { id } = useParams();
@@ -142,6 +143,9 @@ const UserDetails = () => {
   return (
     <div className="flex w-full min-h-screen bg-gray-50">
       <AdminSidebar />
+      <div className="fixed top-10 right-20 z-50">
+        <AdminNotification />
+      </div>
       
       <main className="flex-1 p-8 overflow-y-auto ml-[220px]">
         {/* Back button */}
@@ -155,26 +159,6 @@ const UserDetails = () => {
           </svg>
           Back to Users
         </button>
-        <button
-            onClick={() => setShowConfirm(true)}
-            type="button"
-            className={`
-              focus:outline-none 
-              font-medium 
-              rounded-lg 
-              text-sm 
-              px-5 
-              py-2.5 
-              me-2 
-              mb-2 
-              dark:focus:ring-red-900
-              ${user?.is_user_active
-                ? 'text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700'
-                : 'text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700'}
-            `}
-          >
-            {user?.is_user_active ? "Block" : "Unblock"}
-          </button>    
         </div>
         
         {/* User Profile Header */}
@@ -222,6 +206,26 @@ const UserDetails = () => {
                     {user.role || 'User'}
                   </span>
                 </div>
+                <button
+            onClick={() => setShowConfirm(true)}
+            type="button"
+            className={`
+              focus:outline-none 
+              font-medium 
+              rounded-lg 
+              text-sm 
+              px-5 
+              py-2.5 
+              me-2 
+              mb-2 
+              dark:focus:ring-red-900
+              ${user?.is_user_active
+                ? 'text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700'
+                : 'text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700'}
+            `}
+          >
+            {user?.is_user_active ? "Block" : "Unblock"}
+          </button>    
               </div>
               
               {/* Additional Info */}

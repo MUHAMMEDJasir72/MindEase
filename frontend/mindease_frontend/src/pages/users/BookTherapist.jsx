@@ -6,6 +6,7 @@ import { createAppointment, createPayment, getSessionPrices } from '../../api/us
 import { showToast } from '../../utils/toast';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { getUserInfo } from '../../api/therapist';
+import Notifications from '../../components/users/Notifications';
 
 function BookTherapist() {
   const navigate = useNavigate();
@@ -186,9 +187,7 @@ function BookTherapist() {
         const response = await createAppointment(appointment);
         if (response.success) {
           showToast(response.message, 'success');
-          setTimeout(() => {
-            navigate('/appointments');
-          }, 1000); 
+          navigate('/appointments');
         } else {
           showToast(response.message, 'error');
         }
@@ -259,6 +258,9 @@ console.log(pricing)
           </button>
         </div>
       </div>
+      <div className='fixed right-4 md:right-10 top-4 md:top-8'>
+          <Notifications /> 
+        </div>    
 
       {/* Booking Main Content */}
       <div className="flex-1 p-4 md:p-6 lg:p-10">

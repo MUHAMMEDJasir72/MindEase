@@ -3,6 +3,7 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminTherapistChat from '../../components/Therapist/AdminTherapistChat';
 import { getAllTherapist, getTherapist } from '../../api/admin';
 import { User } from 'lucide-react';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 function ChatToTherapists() {
   const [therapists, setTherapists] = useState([]);
@@ -38,6 +39,9 @@ function ChatToTherapists() {
       {/* Admin Sidebar - fixed width */}
       <div className="w-56 fixed h-screen z-50">
         <AdminSidebar />
+        <div className="fixed top-4 right-20 z-50">
+        <AdminNotification />
+      </div>
       </div>
 
       {/* Main content - offset by sidebar width */}

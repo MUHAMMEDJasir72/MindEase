@@ -40,6 +40,9 @@ class TemporaryUser(models.Model):
     def is_otp_expired(self):
         expiry_time = self.created_at + timedelta(minutes=5)
         return now() > expiry_time
+    
+    def __str__(self):
+        return self.username
 
     
     

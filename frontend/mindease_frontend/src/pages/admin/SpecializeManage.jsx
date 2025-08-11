@@ -4,6 +4,7 @@ import { FiEdit, FiTrash2, FiPlus, FiChevronLeft, FiChevronRight, FiChevronsLeft
 import { createSpecialize, deleteSpecialize, getSpecializations, editSpecialize, getPrices, changePrice } from '../../api/admin';
 import { showToast } from '../../utils/toast';
 import ConfirmDialog from '../../utils/ConfirmDialog';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 function SpecializeManage() {
   const [specializations, setSpecializations] = useState([]);
@@ -275,6 +276,9 @@ function SpecializeManage() {
   return (
     <div className='flex h-screen bg-gray-100'>
       <AdminSidebar />
+      <div className="fixed top-14 right-60 z-50">
+        <AdminNotification />
+      </div>
       <div className='flex-1 p-8 overflow-y-auto ml-[220px]'>
         {/* Price Management Section */}
         <div className='mb-8 bg-white rounded-lg shadow overflow-hidden'>

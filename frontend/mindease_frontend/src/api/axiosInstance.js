@@ -7,6 +7,7 @@ export const routerBaseUrl = import.meta.env.VITE_ROUTER_URL;
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -16,26 +17,24 @@ const axiosInstance = axios.create({
 // ✅ Helper function to logout user
 function logoutUser() {
   console.warn('[Logout] Clearing tokens and redirecting to login');
-  localStorage.removeItem('access');
-  localStorage.removeItem('refresh');
   localStorage.clear()
   window.location.href = '/login/';  // Redirect to login page
 }
 
-// ✅ Request Interceptor: Attach token
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const accessToken = localStorage.getItem('access');
-    if (accessToken) {
-      config.headers['Authorization'] = 'Bearer ' + accessToken;
-    }
-    return config;
-  },
-  (error) => {
-    console.error('[Request Error]', error);
-    return Promise.reject(error);
-  }
-);
+// // ✅ Request Interceptor: Attach token
+// axiosInstance.interceptors.request.use(
+//   (config) => {
+//     const accessToken = localStorage.getItem('access');
+//     if (accessToken) {
+//       config.headers['Authorization'] = 'Bearer ' + accessToken;
+//     }
+//     return config;
+//   },
+//   (error) => {
+//     console.error('[Request Error]', error);
+//     return Promise.reject(error);
+//   }
+// );
 
 // ✅ Response Interceptor: Handle token refresh and account block
 axiosInstance.interceptors.response.use(
@@ -46,7 +45,7 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (originalRequest.url.includes('/users/login/token/')) {
+    if (originalRequest.url.includes('/users/login/')) {
       return Promise.reject(error);
     }
 
@@ -62,28 +61,12 @@ axiosInstance.interceptors.response.use(
       console.warn('[Response] 401 Unauthorized detected. Trying token refresh...');
       originalRequest._retry = true;
 
-      const refreshToken = localStorage.getItem('refresh');
-      console.log('jasir...........',refreshToken)
-      if (!refreshToken) {
-        console.warn('[Refresh] No refresh token found. Logging out.');
-        logoutUser();
-        return Promise.reject(error);
-      }
 
       try {
         // Try refreshing the token
-        const refreshResponse = await axios.post(`${baseURL}/users/token/refresh/`, {
-          refresh: refreshToken,
+        const refreshResponse = await axios.post(`${baseURL}/users/refresh-token/`, {}, {
+          withCredentials: true,
         });
-
-        const newAccessToken = refreshResponse.data.access;
-        localStorage.setItem('access', newAccessToken);
-
-        console.log('[Refresh] Token refreshed successfully.');
-
-        // Update the original request with new token
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-
         // Retry the original request
         return axiosInstance(originalRequest);
       } catch (refreshError) {

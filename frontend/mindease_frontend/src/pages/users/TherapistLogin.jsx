@@ -4,8 +4,9 @@ import { showToast } from '../../utils/toast';
 import { ToastContainer } from "react-toastify";
 import { loginUser } from '../../api/auth';
 import { Link, useNavigate } from "react-router-dom";
-import jwt_decode from 'jwt-decode';
 import { checkRequested } from '../../api/therapist';
+import { getMYInfo } from '../../api/user';
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 function TherapistLogin() {
     const [formData, setFormData] = useState({
@@ -17,6 +18,10 @@ function TherapistLogin() {
         username: false,
         password: false
     });
+
+    const [showPassword, setShowPassword] = useState(false);
+    const togglePasswordVisibility = () => setShowPassword(prev => !prev);
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -48,16 +53,13 @@ function TherapistLogin() {
         try {
             const response = await loginUser(formData);
 
-            if (response.success && response.data.access && response.data.refresh) {
-                showToast("Login successful!", "success");
-                localStorage.setItem('access', response.data.access);
-                localStorage.setItem('refresh', response.data.refresh);
-                const decoded = jwt_decode(response.data.access);
-                localStorage.setItem('id', decoded.id);
-                if (decoded.role === 'admin') {
+            if (response.success) {
+                const myInfo = await getMYInfo()
+                localStorage.setItem('id', myInfo.info.id)
+                if (myInfo.info.role === 'admin') {
                     localStorage.setItem('current_role', 'admin');
                     navigate('/adminDashboard');
-                } else if(decoded.role === 'therapist') {
+                } else if(myInfo.info.role === 'therapist') {
                     localStorage.setItem('current_role', 'therapist');
                     navigate('/therapistHome');
                 } else {
@@ -135,7 +137,7 @@ function TherapistLogin() {
                                 <input 
                                     id="password"
                                     name="password"
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={formData.password}
                                     onChange={handleChange}
                                     onFocus={() => handleFocus('password')}
@@ -144,6 +146,12 @@ function TherapistLogin() {
                                     placeholder="Enter your password"
                                     required
                                 />
+                                <span
+                                onClick={togglePasswordVisibility}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 transition-colors duration-150 cursor-pointer text-lg"
+                                >
+                                {showPassword ? <MdVisibility />: <MdVisibilityOff />}
+                                </span>
                             </div>
                         </div>
                         

@@ -6,7 +6,7 @@ import AdminNotification from './AdminNotifications';
 const AdminLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="flex justify-end items-center p-4 bg-white shadow">
+      <header className="fixed top-10 right-20 z-50">
         <AdminNotification/>
       </header>
       <main className="p-4">

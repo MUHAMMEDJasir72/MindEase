@@ -6,6 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { showToast } from '../../utils/toast';
 import ConfirmDialog from '../../utils/ConfirmDialog';
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import TherapistNotification from '../../components/Therapist/TherapistNotifications';
 
 function Availability() {
     const [availableDates, setAvailableDates] = useState([]);
@@ -115,7 +116,13 @@ function Availability() {
             if (response.success) {
                 showToast(response.message, 'success')
                 // Refresh the data from the server after successful removal
-                const info = await getAvailableDates();
+            }else{
+                showToast(response.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error removing time slot:', error);
+        } finally {
+            const info = await getAvailableDates();
                 
                 if (info.success) {
                     setAvailableDates(info.data);
@@ -134,12 +141,6 @@ function Availability() {
                     const times = await getAvailableTimesForModal();
                     setAvailableTimesForModal(times);
                 }
-            }else{
-                showToast(response.message, 'error');
-            }
-        } catch (error) {
-            console.error('Error removing time slot:', error);
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -377,6 +378,9 @@ function Availability() {
     return (
         <div className='flex min-h-screen bg-gray-50'>
             <TherapistSidebar />
+            <div className='fixed right-4 md:right-10 top-4 md:top-8 z-50'>
+                <TherapistNotification /> 
+              </div>
             <div className='flex-1 ml-[200px] p-6'>
                 <div className='flex gap-6'>
                     {/* Left side - Dates list */}

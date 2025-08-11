@@ -29,11 +29,4 @@ urlpatterns = [
     path('mark-therapist-notification/', MarkTherapistNotification.as_view(), name='mark-therapist-notification'),
     path('mark-alltherapist-notifications/', MarkAllTherapistNotifications.as_view(), name='mark-alltherapist-notifications'),
 
-
-
-
-
-
-
-
 ]

@@ -11,4 +11,5 @@ websocket_urlpatterns = [
     re_path(r'ws/chatAdminTherapist/(?P<room_name>[^/]+)/$', ChatAdminTherapistConsumer.as_asgi()),
     re_path(r'ws/therapist/notifications/$', TherapistNotificationConsumer.as_asgi()),
     re_path(r'ws/admin/notifications/$', AdminNotificationConsumer.as_asgi()),
+    re_path(r'ws/call/(?P<room_name>\w+)/$', consumers.CallConsumer.as_asgi()),
 ]

@@ -12,7 +12,7 @@ export const registerUser = async (userData) => {
 
 export const loginUser = async (userData) => {
   try {
-    const response = await API.post("/users/login/token/", userData);
+    const response = await API.post("/users/login/", userData);
     return { success: true, data: response.data };
   } catch (error) {
     const message =

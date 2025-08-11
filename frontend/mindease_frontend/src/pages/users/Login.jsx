@@ -4,8 +4,10 @@ import { ToastContainer } from "react-toastify";
 import { loginUser } from '../../api/auth';
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from 'framer-motion';
-import jwt_decode from 'jwt-decode'; 
 import GoogleAuth from '../../components/users/GoogleAuth';
+import { getMYInfo } from '../../api/user';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 function Login() {
     const [formData, setFormData] = useState({
@@ -17,6 +19,10 @@ function Login() {
         username: false,
         password: false
     });
+
+    const [showPassword, setShowPassword] = useState(false);
+    const togglePasswordVisibility = () => setShowPassword(prev => !prev);
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -48,24 +54,21 @@ function Login() {
         try {
             const response = await loginUser(formData);
 
-            if (response.success && response.data.access && response.data.refresh) {
+            if (response.success) {
                 showToast("Login successful!", "success");
-                localStorage.setItem('access', response.data.access);
-                localStorage.setItem('refresh', response.data.refresh);
-                localStorage.setItem('loginMethod', 'email');
 
-                const decoded = jwt_decode(response.data.access);
-                localStorage.setItem('id', decoded.id)
-                
-                setTimeout(() => {
-                    if (decoded.role === 'admin') {
-                        localStorage.setItem('current_role', 'admin');
-                        navigate('/adminDashboard');
-                    } else {
-                        localStorage.setItem('current_role', 'user');
-                        navigate('/');
-                    }
-                }, 1000); 
+                const myInfo = await getMYInfo()
+                console.log(myInfo.info)
+                localStorage.setItem('loginMethod', 'email');
+                localStorage.setItem('id', myInfo.info.id)
+
+                if (myInfo.info.role === 'admin') {
+                    localStorage.setItem('current_role', 'admin');
+                    navigate('/adminDashboard');
+                } else {
+                    localStorage.setItem('current_role', 'user');
+                    navigate('/');
+                }
             } else {
                 showToast(response.message || "Invalid credentials. Please try again.", "error");
             }
@@ -124,14 +127,21 @@ function Login() {
                                 <input 
                                     id="password"
                                     name="password"
-                                    type="password" 
+                                    type={showPassword ? 'text' : 'password'} 
                                     value={formData.password}
                                     onChange={handleChange}
                                     onFocus={() => handleFocus('password')}
                                     onBlur={() => handleBlur('password')}
                                     className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
-                                    placeholder="Enter your password"
+                                    placeholder="Enter your password"  
                                 />
+                                <span
+                                onClick={togglePasswordVisibility}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 transition-colors duration-150 cursor-pointer text-lg"
+                                >
+                                {showPassword ? <MdVisibility />: <MdVisibilityOff />}
+                                </span>
+
                             </div>
                         </div>
                         

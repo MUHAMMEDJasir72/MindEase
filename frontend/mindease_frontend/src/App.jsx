@@ -38,9 +38,9 @@ import TherapistApplicationSubmitted from "./pages/Thearapist/Submited"
 import ClientDetails from "./pages/Thearapist/ClientDetails"
 import Wallet from "./pages/users/Wallet";
 import WithdrawalRequests from "./pages/admin/WithdrawalRequests";
-import { ToastContainer } from "react-toastify";
 import { Toaster } from 'sonner'; 
-import AdminLayout from "./components/admin/AdminLayout";
+import NotFound from "./pages/Error Pages/NotFound";
+import Forbidden from "./pages/Error Pages/Forbidden";
 
 function App() {
   return (
@@ -58,13 +58,13 @@ function App() {
         <Route path="/therapistLogin" element={<TherapistLogin />} />
 
         {/* user routes */}
-        <Route path="/" element={<UserRoute><Home /></UserRoute>} />
+        <Route path="/" element={<Home />} />
         <Route path="/Profile" element={<UserRoute><Profile /></UserRoute>} />
         <Route path="/change_password" element={<UserRoute><ChangePassword /></UserRoute>} />
         <Route path="/selectTherapist" element={<UserRoute><SelectTherapist/></UserRoute>} />
         <Route path="/bookTherapist/:id" element={<UserRoute><StripeProvider><BookTherapist/></StripeProvider></UserRoute>} />
         <Route path="/appointments" element={<UserRoute><Appointments/></UserRoute>} />
-        <Route path="/videoCall/:userId/:roomId/:type" element={<VideoCall/>} />
+        <Route path="/videoCall/:roomName/:type" element={<VideoCall/>} />
         <Route path="/chat/:userId/:therapistId/:sessionId" element={<Chat/>} />
         <Route path="/wallet" element={<Wallet/>} />
        
@@ -81,7 +81,7 @@ function App() {
         <Route path="/clientDetails/:clientId" element={<TherapistRoute><ClientDetails /></TherapistRoute>} />
 
         {/* admin routes */}
-        <Route path="/therapists" element={<AdminRoute><AdminLayout>< Therapists/></AdminLayout></AdminRoute>} />
+        <Route path="/therapists" element={<AdminRoute>< Therapists/></AdminRoute>} />
         <Route path="/therapistDetails/:id" element={<AdminRoute><TherapistDetails /></AdminRoute>} />
         <Route path="/users" element={<AdminRoute><Users /></AdminRoute>} />
         <Route path="/adminDashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -91,6 +91,9 @@ function App() {
         <Route path="/chatToTherapists" element={<AdminRoute><ChatToTherapists/></AdminRoute>} />
         <Route path="/sessionDetails" element={<AdminRoute><AppointmentManagement/></AdminRoute>} />
         <Route path="/withdrawalReguests" element={<AdminRoute><WithdrawalRequests/></AdminRoute>} />
+
+        <Route path="*" element={<NotFound />} />
+         <Route path="/forbidden" element={<Forbidden/>} />
       </Routes>
     </BrowserRouter>
   );

@@ -4,6 +4,7 @@ import { getTransactions, getWalletAmount } from '../../api/therapist';
 import { showToast } from '../../utils/toast';
 import { requestClientWithdraw } from '../../api/user';
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import Notifications from '../../components/users/Notifications';
 
 function Wallet() {
   const [walletAmount, setWalletAmount] = useState({ balance: 0 });
@@ -216,7 +217,10 @@ function Wallet() {
       <div className={`${mobileNavOpen ? 'block' : 'hidden'} md:block w-full md:w-56 md:min-w-[14rem] bg-white shadow-md fixed md:relative z-40 h-full`}>
         <Navbar onClose={() => setMobileNavOpen(false)} />
       </div>
-      
+      <div className='fixed right-4 md:right-10 top-4 md:top-8'>
+        <Notifications /> 
+      </div>    
+    
       {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 mt-16 md:mt-0">
         <div className="max-w-4xl mx-auto">

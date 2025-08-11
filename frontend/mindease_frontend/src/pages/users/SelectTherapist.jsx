@@ -5,6 +5,7 @@ import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from '
 import { getTherapist } from '../../api/admin';
 import { Link } from 'react-router-dom';
 import ViewTherapist from '../../components/users/ViewTherapist';
+import Notifications from '../../components/users/Notifications';
 
 function SelectTherapist() {
   const [therapists, setTherapists] = useState([]);
@@ -232,6 +233,9 @@ function SelectTherapist() {
       <div className={`${mobileNavOpen ? 'block' : 'hidden'} md:block w-full md:w-56 md:min-w-[14rem] bg-white shadow-md fixed md:relative z-40 h-full`}>
         <Navbar onClose={() => setMobileNavOpen(false)} />
       </div>
+      <div className='fixed right-4 md:right-10 top-4 md:top-8 z-50'>
+          <Notifications /> 
+        </div>    
       
       <div className='flex-1 p-4 md:p-8 mt-16 md:mt-0'>
         <div className='max-w-7xl mx-auto'>

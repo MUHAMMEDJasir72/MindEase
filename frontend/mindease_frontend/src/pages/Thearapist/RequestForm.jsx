@@ -93,29 +93,154 @@ const RequestForm = () => {
     const newErrors = {};
     
     if (step === 1) {
-      if (!formData.fullname.trim()) newErrors.fullname = 'Full name is required';
-      if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+      if (!formData.fullname.trim()) {
+      newErrors.fullname = 'Full name is required';
+    } else if (!/^[A-Za-z\s]{2,30}$/.test(formData.fullname.trim())) {
+      newErrors.fullname = 'Full name must be 2-30 and only letters only';
+    }
+
+      if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    } else {
+      const selectedDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const fifteenYearsAgo = new Date();
+      fifteenYearsAgo.setFullYear(today.getFullYear() - 18);
+
+      if (selectedDate > fifteenYearsAgo) {
+        newErrors.dateOfBirth = 'You must be at least 18 years old';
+      }
+    }
+
       if (!formData.gender) newErrors.gender = 'Gender is required';
-      if (!formData.phone) newErrors.phone = 'Phone number is required';
-      if (!formData.state) newErrors.state = 'State is required';
-      if (!formData.country) newErrors.country = 'Country is required';
-      if (!formData.address) newErrors.address = 'Address is required';
+
+      if (!formData.phone) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\+?\d{7,15}$/.test(formData.phone.trim())) {
+      newErrors.phone = 'Please enter a valid number';
+    }
+
+      if (!formData.state || formData.state.trim() === '') {
+      newErrors.state = 'State is required';
+    } else if (!/^[A-Za-z\s]+$/.test(formData.state)) {
+      newErrors.state = 'State must contain only letters';
+    } else if (formData.state.trim().length < 3) {
+      newErrors.state = 'State must be at least 3 characters long';
+    } else if (formData.state.trim().length > 50) {
+      newErrors.state = 'State must be less than or equal to 50 characters';
+    }
+
+      if (!formData.country || formData.country.trim() === '') {
+      newErrors.country = 'Country is required';
+    } else if (!/^[A-Za-z\s]+$/.test(formData.country)) {
+      newErrors.country = 'Country must contain only letters';
+    } else if (formData.country.trim().length < 3) {
+      newErrors.country = 'Please enter valid country';
+    } else if (formData.country.trim().length > 50) {
+      newErrors.country = 'Country must be less than or equal to 50 characters';
+    }
+
+      if (!formData.address || formData.address.trim() === '') {
+      newErrors.address = 'Address is required';
+    } else if (!/^[A-Za-z0-9\s,.-]+$/.test(formData.address)) {
+      newErrors.address = 'Address can only contain letters, numbers, spaces, commas, periods, and hyphens';
+    } else if (formData.address.trim().length < 3) {
+      newErrors.address = 'Address must be at least 3 characters long';
+    } else if (formData.address.trim().length > 100) {
+      newErrors.address = 'Address must be less than or equal to 100 characters';
+    }
     }
     
     if (step === 2) {
-      if (!formData.professionalTitle) newErrors.professionalTitle = 'Professional title is required';
-      if (formData.specializations.length === 0) newErrors.specializations = 'At least one specialization is required';
-      if (!formData.yearsOfExperience) newErrors.yearsOfExperience = 'Years of experience is required';
-      if (formData.languages.length === 0) newErrors.languages = 'At least one language is required';
-      if (!formData.professionalLicenseNumber) newErrors.professionalLicenseNumber = 'License number is required';
-      if (!formData.licenseIssuingAuthority) newErrors.licenseIssuingAuthority = 'Issuing authority is required';
-      if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'Expiry date is required';
+      if (!formData.professionalTitle || formData.professionalTitle.trim() === '') {
+      newErrors.professionalTitle = 'Professional title is required';
+    } else if (!/^[A-Za-z\s]+$/.test(formData.professionalTitle)) {
+      newErrors.professionalTitle = 'Professional title must contain only letters and spaces';
+    } else if (formData.professionalTitle.trim().length < 3) {
+      newErrors.professionalTitle = 'Professional title must be at least 3 characters long';
+    } else if (formData.professionalTitle.trim().length > 50) {
+      newErrors.professionalTitle = 'Professional title must be less than or equal to 50 characters';
     }
-    
+
+      if (formData.specializations.length === 0) newErrors.specializations = 'At least one specialization is required';
+
+      if (!formData.yearsOfExperience || formData.yearsOfExperience.trim() === '') {
+      newErrors.yearsOfExperience = 'Year of experience is required';
+    } else if (!/^\d+$/.test(formData.yearsOfExperience)) {
+      newErrors.yearsOfExperience = 'Please enter a valid year';
+    } else if (parseInt(formData.yearsOfExperience) >= 100) {
+      newErrors.yearsOfExperience = 'Please enter a valid year';
+    }
+
+      if (formData.languages.length === 0) newErrors.languages = 'At least one language is required';
+
+      if (!formData.professionalLicenseNumber || formData.professionalLicenseNumber.trim() === '') {
+      newErrors.professionalLicenseNumber = 'Professional license number is required';
+    } else if (!/^[a-zA-Z0-9]+$/.test(formData.professionalLicenseNumber)) {
+      newErrors.professionalLicenseNumber = 'License number must contain only letters and numbers';
+    } else if (formData.professionalLicenseNumber.length > 100) {
+      newErrors.professionalLicenseNumber = 'Enter a valid License number';
+    }
+
+      if (!formData.licenseIssuingAuthority || formData.licenseIssuingAuthority.trim() === '') {
+      newErrors.licenseIssuingAuthority = 'License issuing authority is required';
+    } else if (!/^[A-Za-z\s]+$/.test(formData.licenseIssuingAuthority)) {
+      newErrors.licenseIssuingAuthority = 'Only letters are allowed.';
+    } else if (formData.licenseIssuingAuthority.length < 3) {
+      newErrors.licenseIssuingAuthority = 'must be at least 3 characters';
+    } else if (formData.licenseIssuingAuthority.length > 50) {
+      newErrors.licenseIssuingAuthority = 'must be at most 50 characters';
+    }
+
+
+      if (!formData.licenseExpiryDate || formData.licenseExpiryDate.trim() === '') {
+      newErrors.licenseExpiryDate = 'License expiry date is required';
+    } else {
+      const selectedDate = new Date(formData.licenseExpiryDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // remove time part
+
+      if (isNaN(selectedDate.getTime())) {
+        newErrors.licenseExpiryDate = 'Invalid date format';
+      } else if (selectedDate <= today) {
+        newErrors.licenseExpiryDate = 'License expiry date must be a future date';
+      }
+    }
+    } 
     if (step === 3) {
-      if (!formData.degree) newErrors.degree = 'Degree is required';
-      if (!formData.university) newErrors.university = 'University is required';
-      if (!formData.yearOfGraduation) newErrors.yearOfGraduation = 'Year of graduation is required';
+      if (!formData.degree || formData.degree.trim() === '') {
+      newErrors.degree = 'Degree is required';
+    } else if (!/^[A-Za-z\s]+$/.test(formData.degree.trim())) {
+      newErrors.degree = 'Degree must contain only letters';
+    } else if (formData.degree.trim().length < 3) {
+      newErrors.degree = 'Degree must be at least 3 characters';
+    } else if (formData.degree.trim().length > 50) {
+      newErrors.degree = 'Degree must be at most 50 characters';
+    }
+
+      if (!formData.university || formData.university.trim() === '') {
+      newErrors.university = 'University is required';
+    } else if (!/^[A-Za-z\s]+$/.test(formData.university.trim())) {
+      newErrors.university = 'University must contain only letters';
+    } else if (formData.university.trim().length < 3) {
+      newErrors.university = 'University must be at least 3 characters';
+    } else if (formData.university.trim().length > 50) {
+      newErrors.university = 'University must be at most 50 characters';
+    }
+
+    const currentYear = new Date().getFullYear();
+    if (!formData.yearOfGraduation || formData.yearOfGraduation.trim() === '') {
+      newErrors.yearOfGraduation = 'Year of graduation is required';
+    } else if (!/^\d{4}$/.test(formData.yearOfGraduation.trim())) {
+      newErrors.yearOfGraduation = 'Year of graduation must be a 4-digit number';
+    } else {
+      const year = parseInt(formData.yearOfGraduation.trim());
+      if (year < 1000) {
+        newErrors.yearOfGraduation = 'Year must be 1000 or later';
+      } else if (year > currentYear) {
+        newErrors.yearOfGraduation = `Year cannot be in the future`;
+      }
+    }
     }
     
     setErrors(newErrors);
@@ -451,8 +576,6 @@ const RequestForm = () => {
                 <input 
                   id="yearOfGraduation"
                   type="number"
-                  min="1900"
-                  max={new Date().getFullYear()}
                   name="yearOfGraduation" 
                   className={`p-3 w-full rounded-lg border ${errors.yearOfGraduation ? 'border-red-500' : 'border-gray-300'}`}
                   value={formData.yearOfGraduation} 
@@ -540,7 +663,7 @@ const RequestForm = () => {
                   required 
                 />
               </div>
-              
+    
               <div>
                 <label htmlFor="additionalCertificationDocument" className="block text-sm font-medium text-gray-700 mb-1">Additional Certification Documents</label>
                 <p className="text-xs text-gray-500 mb-2">Upload any additional certifications (PDF/JPEG/PNG, max 5MB each)</p>
@@ -553,7 +676,6 @@ const RequestForm = () => {
                   onChange={handleChange} 
                 />
               </div>
-              
               <button
                 type="submit"
                 disabled={isSubmitting}

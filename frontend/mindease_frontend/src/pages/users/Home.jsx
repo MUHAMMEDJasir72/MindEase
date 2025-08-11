@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/users/Navbar';
 import CompleteForm from '../../components/users/completeForm';
 import { Link } from 'react-router-dom';
@@ -29,6 +29,48 @@ function Home() {
   const therapists = [1, 2, 3, 4, 5];
   const [openModal, setOpenModal] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  
+  const user = localStorage.getItem("id");
+
+  const renderMainButton = () => {
+    if (user) {
+      return (
+        <Link to={'/selectTherapist'}>
+          <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-md hover:shadow-lg">
+            Start Your Healing Journey
+          </button>
+        </Link>
+      );
+    } else {
+      return (
+        <Link to={'/login'}>
+          <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-md hover:shadow-lg">
+            Login to Start Your Healing Journey
+          </button>
+        </Link>
+      );
+    }
+  };
+
+  const renderCTAButton = () => {
+    if (user) {
+      return (
+        <Link to={'/selectTherapist'}>
+          <button className="bg-white hover:bg-gray-100 text-teal-700 px-8 py-3 md:px-10 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-lg hover:shadow-xl">
+            Get Matched With a Therapist
+          </button>
+        </Link>
+      );
+    } else {
+      return (
+        <Link to={'/login'}>
+          <button className="bg-white hover:bg-gray-100 text-teal-700 px-8 py-3 md:px-10 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-lg hover:shadow-xl">
+            Login to Get Matched With a Therapist
+          </button>
+        </Link>
+      );
+    }
+  };
 
   return (
     <div className='flex flex-col md:flex-row min-h-screen bg-gray-50'>
@@ -49,9 +91,9 @@ function Home() {
       
       {/* Main Content */}
       <main className='flex-1 p-4 md:p-8 mt-16 md:mt-0'>
-        <div className='absolute right-4 md:right-10 top-4 md:top-8'>
+        {user && <div className='fixed right-4 md:right-10 top-4 md:top-8'>
           <Notifications /> 
-        </div>     
+        </div> }    
         
         {/* Hero Section */}
         <section className='mb-8 md:mb-16'>
@@ -65,11 +107,7 @@ function Home() {
               <h2 className='text-xl md:text-2xl lg:text-3xl font-sans font-semibold text-gray-800 mb-6 md:mb-8 leading-relaxed'>
                 Connect with licensed psychologists for confidential online therapy sessions from the comfort of your home
               </h2>
-              <Link to={'/selectTherapist'}>
-                <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-md hover:shadow-lg">
-                  Start Your Healing Journey
-                </button>
-              </Link>
+              {renderMainButton()}
             </div>
             <div className='w-full lg:w-1/2 h-64 md:h-[500px]'>
               <img 
@@ -156,17 +194,14 @@ function Home() {
           <p className='text-base md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto'>
             Take the first step towards better mental health today. Our team is here to support you.
           </p>
-          <Link to={'/selectTherapist'}>
-          <button className="bg-white hover:bg-gray-100 text-teal-700 px-8 py-3 md:px-10 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-lg hover:shadow-xl">
-            Get Matched With a Therapist
-          </button></Link>
+          {renderCTAButton()}
         </section>
 
         {/* Footer */}
         <footer className='mt-12 md:mt-20 py-8 md:py-10 border-t border-gray-200'>
           <div className='max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center'>
             <div className='mb-6 md:mb-0'>
-              <h3 className='text-xl md:text-2xl font-bold text-teal-600'>MindCare</h3>
+              <h3 className='text-xl md:text-2xl font-bold text-teal-600'>MindEase</h3>
               <p className='text-gray-600 mt-2 text-sm md:text-base'>Professional online therapy platform</p>
             </div>
             <div className='flex gap-4 md:gap-6'>

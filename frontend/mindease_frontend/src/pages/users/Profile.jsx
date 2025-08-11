@@ -5,6 +5,7 @@ import { showToast } from '../../utils/toast';
 import { logoutUser } from '../../api/auth';
 import { Pencil, Check } from 'lucide-react';
 import { profileInfo, updateProfileField, updateProfileImage } from '../../api/user';
+import Notifications from '../../components/users/Notifications';
 
 function Profile() {
   const navigate = useNavigate();
@@ -29,13 +30,7 @@ function Profile() {
         setIsLoading(false);
       }
     };
-
-    const token = localStorage.getItem("access");
-    if (!token) {
-      navigate("/login");
-    } else {
-      fetchProfile();
-    }
+    fetchProfile();
   }, [navigate]);
 
   const handleLogout = async () => {
@@ -43,7 +38,7 @@ function Profile() {
     if (response.success) {
       localStorage.clear();
       showToast(response.message, 'success');
-      navigate('/');
+      navigate('/login');
     } else {
       showToast(response.message, 'error');
     }
@@ -141,6 +136,9 @@ function Profile() {
       <div className={`${mobileNavOpen ? 'block' : 'hidden'} md:block w-full md:w-56 md:min-w-[14rem] bg-white shadow-md fixed md:relative z-40 h-full`}>
         <Navbar onClose={() => setMobileNavOpen(false)} />
       </div>
+      <div className='fixed right-4 md:right-10 top-4 md:top-8'>
+          <Notifications /> 
+        </div>
 
       <div className="flex-1 p-4 md:p-8 mt-16 md:mt-0">
         <div className="flex flex-col sm:flex-row justify-center items-center w-full max-w-2xl mx-auto pb-6 sm:pb-8 border-b-2 border-gray-300 gap-4 sm:gap-0">

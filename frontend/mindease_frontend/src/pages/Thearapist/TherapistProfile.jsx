@@ -3,6 +3,7 @@ import TherapistSidebar from '../../components/Therapist/TherapistSidebar';
 import { FaUser, FaCalendarAlt, FaPhone, FaMapMarkerAlt, FaBriefcase, FaGraduationCap, FaFileAlt, FaIdCard, FaEdit } from 'react-icons/fa';
 import { getProfile, getTotalRating, updateProfile } from '../../api/therapist';
 import TherapistProfileEditModal from '../../components/Therapist/TherapistProfileEditModal';
+import TherapistNotification from '../../components/Therapist/TherapistNotifications';
 
 function TherapistProfile() {
   const [therapistData, setTherapistData] = useState({
@@ -79,6 +80,9 @@ function TherapistProfile() {
   return (
     <div className="flex h-screen bg-gray-50">
       <TherapistSidebar />
+      <div className='fixed right-4 md:right-10 top-4 md:top-8'>
+        <TherapistNotification /> 
+      </div>
       
       <div className="flex-1 p-8 ml-[200px] overflow-y-auto">
         <div className="max-w-6xl mx-auto">

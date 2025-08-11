@@ -1,17 +1,10 @@
 from django.urls import path
 from .views import *
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-)
+from rest_framework_simplejwt.views import (TokenObtainPairView)
 from . import views
-
-
-
-
 
 urlpatterns = [
     path('register/', RegisterUserView.as_view(), name='register'),
-    # path('login/', LoginUserView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('verify_forgetpassword-otp/', VerifyForgetPasswordOtp.as_view(), name='erify_forgetpassword-otp'),
     path('verify_otp/', VerifyOtp.as_view(), name='otp'),
@@ -21,8 +14,8 @@ urlpatterns = [
     path('verify_password/', VerifyPasswordView.as_view(), name='verify_password'),
     path('change_forgot_password/', ChangeForgotPasswordView.as_view(), name='change_password'),
     path('verifyEmail/', VerifyEmailView.as_view(), name='verifyEmail'),
-    path('login/token/', TokenObtainPairViews.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', RefreshTokenView.as_view(), name='token_refresh'),
+    path('login/', LoginViews.as_view(), name='login'),
+    path('refresh-token/', RefreshTokenView.as_view(), name='token_refresh'),
     path('create_appointment/', CreateAppointment.as_view(), name='create_appointment'),
     path('get_appointments/', GetAppointment.as_view(), name='get_appointments'),
     path('cancel_session/<int:session_id>/', CancelSession.as_view(), name='cancel_session'),
@@ -40,7 +33,7 @@ urlpatterns = [
     path('request-client-withdraw/', ClientWithdrawRequest.as_view(), name='request-client-withdraw'),
     path('get-therapist-profile/<int:id>/', GetTherapistProfile.as_view(), name='get-therapist-profile'),
     path('get-session-prices/', GetSessionPrices.as_view(), name='get-session-prices'),
-
+    path('my-info/', MyInfoview.as_view(), name='my-info'),
 
 
 

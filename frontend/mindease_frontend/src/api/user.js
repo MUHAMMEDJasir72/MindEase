@@ -217,3 +217,12 @@ export const getSessionPrices= async () => {
       return { success: false };
     }
   };
+
+export const getMYInfo = async () => {
+    try {
+      const response = await API.get(`/users/my-info/`);
+      return { success: true, info: response.data};
+    } catch (error) {
+      return { success: false };
+    }
+  };

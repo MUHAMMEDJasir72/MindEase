@@ -8,6 +8,7 @@ import {
 import { getTransactions, getWalletAmount } from '../../api/therapist';
 import { showToast } from '../../utils/toast';
 import moment from 'moment';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 function AdminEarnings() {
   const [totalEarnings, setTotalEarnings] = useState({});
@@ -155,6 +156,9 @@ function AdminEarnings() {
   return (
     <div className="flex h-screen bg-gray-100">
       <AdminSidebar />
+      <div className="fixed top-10 right-20 z-50">
+        <AdminNotification />
+      </div>
       
       <div className="flex-1 p-8 overflow-y-auto ml-[220px]">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Earnings Dashboard</h1>

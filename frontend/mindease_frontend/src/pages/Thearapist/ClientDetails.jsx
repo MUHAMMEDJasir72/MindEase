@@ -5,6 +5,7 @@ import { showToast } from '../../utils/toast';
 import TherapistSidebar from '../../components/Therapist/TherapistSidebar';
 import { User, Clock, Calendar, MapPin, Phone, Mail, ChevronLeft } from 'lucide-react';
 import { getUserInfo } from '../../api/admin';
+import TherapistNotification from '../../components/Therapist/TherapistNotifications';
 
 function ClientDetails() {
   const { clientId } = useParams();
@@ -93,6 +94,9 @@ console.log('data',clientId)
   return (
     <div className="flex min-h-screen bg-gray-50">
       <TherapistSidebar />
+      <div className='fixed right-4 md:right-10 top-4 md:top-8 z-50'>
+        <TherapistNotification /> 
+      </div>
       
       <div className="flex-1 ml-[200px] p-6">
         <div className="max-w-4xl mx-auto">

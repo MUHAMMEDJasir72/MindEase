@@ -7,6 +7,7 @@ import { CancelConfirmationDialog } from '../../components/users/CancelConfirmat
 import { showToast } from '../../utils/toast';
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import ViewTherapist from '../../components/users/ViewTherapist';
+import Notifications from '../../components/users/Notifications';
 
 function Appointments() {
   const navigate = useNavigate();
@@ -291,7 +292,7 @@ function Appointments() {
           {appointments.length !== 0 && (
             <button 
               onClick={() => navigate('/selectTherapist')}
-              className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 text-sm md:text-base"
+              className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 text-sm md:text-base mr-8 md:mr-16"
             >
               <span>Book New</span>
               <ChevronRight size={18} />
@@ -537,7 +538,7 @@ function Appointments() {
                                 to={
                                   appointment.session_mode === 'message'
                                     ? `/chat/${appointment.client}/${appointment.therapist}/${appointment.id}`
-                                    : `/videoCall/${appointment.client}/${appointment.id}/${appointment.session_mode}`
+                                    : `/videoCall/${appointment.id}/${appointment.session_mode}`
                                 }
                                 className="block w-full"
                               >
@@ -630,6 +631,9 @@ function Appointments() {
           onClose={() => setViewProfile({ open: false, id: null })}
           id={viewProfile.id}
         />
+        <div className='fixed right-4 md:right-10 top-4 md:top-8 z-50'>
+          <Notifications /> 
+        </div>
       </div>
     </div>
   );

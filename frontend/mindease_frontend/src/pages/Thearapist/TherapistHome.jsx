@@ -54,9 +54,9 @@ function TherapistHome() {
           <>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
-              <div className="relative">
-                <TherapistNotification />
-              </div>
+              <div className='fixed right-4 md:right-10 top-4 md:top-8 z-50'>
+                <TherapistNotification /> 
+              </div>    
             </div>
             
             {/* Stats Cards */}

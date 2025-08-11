@@ -6,6 +6,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../../api/auth";
 import { validateForm } from "../../utils/validateForm";
 import GoogleAuth from "../../components/users/GoogleAuth";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -21,6 +23,9 @@ function Register() {
     password1: false,
     password2: false
   });
+
+  const [showPassword1, setShowPassword1] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
 
   const navigate = useNavigate();
 
@@ -43,17 +48,17 @@ function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const errorMessage = validateForm(
-      formData.username,
-      formData.email,
-      formData.password1,
-      formData.password2
-    );
+    // const errorMessage = validateForm(
+    //   formData.username,
+    //   formData.email,
+    //   formData.password1,
+    //   formData.password2
+    // );
     
-    if (errorMessage) {
-      showToast(errorMessage, "error");
-      return;
-    }
+    // if (errorMessage) {
+    //   showToast(errorMessage, "error");
+    //   return;
+    // }
 
     setIsLoading(true);
 
@@ -61,12 +66,13 @@ function Register() {
       const { success, message } = await registerUser({
         username: formData.username,
         email: formData.email,
-        password: formData.password1
+        password1: formData.password1,
+        password2: formData.password2
       });
 
       if (success) {
         localStorage.setItem("email", formData.email);
-        showToast("Registration successful!", "success");
+        showToast("Please Enter The Otp", "success");
         navigate('/otp');
       } else {
         showToast(message, "error");
@@ -115,7 +121,6 @@ function Register() {
                   onBlur={() => handleBlur('username')}
                   className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
                   placeholder="Enter your username"
-                  required
                 />
               </div>
             </div>
@@ -128,14 +133,13 @@ function Register() {
                 <input
                   id="email"
                   name="email"
-                  type="email"
+                  type="text"
                   value={formData.email}
                   onChange={handleChange}
                   onFocus={() => handleFocus('email')}
                   onBlur={() => handleBlur('email')}
                   className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
                   placeholder="Enter your email"
-                  required
                 />
               </div>
             </div>
@@ -148,15 +152,20 @@ function Register() {
                 <input
                   id="password1"
                   name="password1"
-                  type="password"
+                  type={showPassword1 ? "text" : "password"}
                   value={formData.password1}
                   onChange={handleChange}
                   onFocus={() => handleFocus('password1')}
                   onBlur={() => handleBlur('password1')}
                   className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
                   placeholder="Create a password"
-                  required
                 />
+                <span
+      onClick={() => setShowPassword1(!showPassword1)}
+      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer text-lg"
+    >
+      {showPassword1? <MdVisibility /> : <MdVisibilityOff /> }
+    </span>
               </div>
             </div>
             
@@ -168,15 +177,20 @@ function Register() {
                 <input
                   id="password2"
                   name="password2"
-                  type="password"
+                  type={showPassword2 ? "text" : "password"}
                   value={formData.password2}
                   onChange={handleChange}
                   onFocus={() => handleFocus('password2')}
                   onBlur={() => handleBlur('password2')}
                   className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
                   placeholder="Confirm your password"
-                  required
                 />
+                 <span
+      onClick={() => setShowPassword2(!showPassword2)}
+      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer text-lg"
+    >
+      {showPassword2 ? <MdVisibility /> : <MdVisibilityOff /> }
+    </span>
               </div>
             </div>
             

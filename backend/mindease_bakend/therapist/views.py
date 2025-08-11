@@ -47,10 +47,10 @@ class IsNotBlockedTherapist(permissions.BasePermission):
 
 
 class RegisterTherapistView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         data = request.data
         files = request.FILES
-
         try:
             user = request.user  # Or fetch manually if needed
             
@@ -106,7 +106,6 @@ class RegisterTherapistView(APIView):
             return Response({'success': True, "message":"form subimtted successfully"}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            print('Error:', e)
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -692,7 +691,7 @@ from rest_framework.decorators import api_view, permission_classes
 @permission_classes([IsAuthenticated])
 def get_notifications(request):
     user = request.user
-    Notification.objects.filter(user=user, read=True).delete()
+    TherapistNotification.objects.filter(user=user, read=True).delete()
     notifications = TherapistNotification.objects.filter(user=user).order_by('-time')
     serializer = TherapistNotificationSerializer(notifications, many=True)
     return Response(serializer.data)

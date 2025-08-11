@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { CancelConfirmationDialog } from '../../components/users/CancelConfirmationDialog';
 import { cancelSession } from '../../api/user';
 import { showToast } from '../../utils/toast';
+import TherapistNotification from '../../components/Therapist/TherapistNotifications';
 
 function TherapistAppointments() {
   const navigate = useNavigate();
@@ -396,6 +397,9 @@ function TherapistAppointments() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <TherapistSidebar />
+      <div className='fixed right-4 md:right-10 top-4 md:top-8'>
+        <TherapistNotification /> 
+      </div>
 
       <div className="flex-1 ml-[200px] p-6">
         <div className="max-w-6xl mx-auto">
@@ -494,7 +498,7 @@ function TherapistAppointments() {
                                 to={
                                   session.session_mode === 'message'
                                     ? `/chat/${session.client}/${session.therapist}/${session.id}`
-                                    : `/videoCall/${session.therapist}/${session.id}/${session.session_mode}`
+                                    : `/videoCall/${session.id}/${session.session_mode}`
                                 }
                                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md flex items-center gap-1"
                               >

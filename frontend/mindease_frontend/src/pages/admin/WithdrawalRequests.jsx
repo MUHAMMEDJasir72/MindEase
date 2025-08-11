@@ -5,6 +5,7 @@ import axios from 'axios';
 import moment from 'moment';
 import { clientWithdrawalRequests, processClientWithdraw, processTherapistWithdraw, therapistWithdrawalRequests } from '../../api/admin';
 import { showToast } from '../../utils/toast';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 function WithdrawalRequests() {
   const [clientRequests, setClientRequests] = useState([]);
@@ -201,6 +202,9 @@ function WithdrawalRequests() {
   return (
     <div className="flex">
       <AdminSidebar />
+      <div className="fixed top-10 right-20 z-50">
+        <AdminNotification />
+      </div>
       <div className="flex-1 ml-[220px] p-6">
         <h1 className="text-2xl font-bold mb-6">Withdrawal Requests</h1>
         

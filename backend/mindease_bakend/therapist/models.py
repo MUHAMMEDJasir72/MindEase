@@ -56,5 +56,15 @@ class AvailableTimes(models.Model):
     date = models.ForeignKey(AvailableDate, on_delete=models.CASCADE, related_name='available_times')
 
 
+class BlockedSlot(models.Model):
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blocked_slots')
+    date = models.ForeignKey(AvailableDate, on_delete=models.CASCADE)
+    time = models.ForeignKey(AvailableTimes, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('client', 'date', 'time')
+
+    def __str__(self):
+        return f"{self.client.username} blocked from {self.date.date} at {self.time.time}"
 
 

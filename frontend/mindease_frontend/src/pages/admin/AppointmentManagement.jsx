@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { fetchAllSessions } from '../../api/admin';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 function AppointmentManagement() {
   const [appointments, setAppointments] = useState([]);
@@ -83,6 +84,9 @@ function AppointmentManagement() {
   return (
     <div className="flex h-screen bg-gray-50">
       <AdminSidebar />
+      <div className="fixed top-10 right-20 z-50">
+        <AdminNotification />
+      </div>
       
       <div className="flex-1 p-8 overflow-auto ml-[220px]">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Appointment Management</h1>

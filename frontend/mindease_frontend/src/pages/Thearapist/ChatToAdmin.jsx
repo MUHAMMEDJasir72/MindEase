@@ -3,6 +3,7 @@ import TherapistSidebar from '../../components/Therapist/TherapistSidebar';
 import AdminTherapistChat from '../../components/Therapist/AdminTherapistChat';
 import { getAdmin } from '../../api/therapist';
 import { Box, CircularProgress, Typography } from '@mui/material';
+import TherapistNotification from '../../components/Therapist/TherapistNotifications';
 
 function ChatToAdmin() {
   const [admin, setAdmin] = useState(null);
@@ -40,6 +41,9 @@ function ChatToAdmin() {
         zIndex: 1000
       }}>
         <TherapistSidebar />
+        <div className='fixed right-4 md:right-10 top-4 md:top-8 z-50'>
+        <TherapistNotification /> 
+      </div>
       </Box>
 
       {/* Main content - offset by sidebar width */}

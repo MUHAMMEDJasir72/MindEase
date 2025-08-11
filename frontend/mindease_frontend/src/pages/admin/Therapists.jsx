@@ -4,6 +4,7 @@ import { ChevronRight, Search, Filter, UserCheck, UserX, ChevronLeft, Eye } from
 import { getAllTherapist } from '../../api/admin';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 function Therapists() {
   const [therapists, setTherapists] = useState([]);
@@ -61,7 +62,9 @@ function Therapists() {
   return (
     <div className='flex h-screen bg-gray-100'>
       <AdminSidebar/>
-      
+      <div className="fixed top-10 right-20 z-50">
+        <AdminNotification />
+      </div>
       <div className='flex-1 p-8 overflow-y-auto ml-[220px]'>
         {/* Centered Header with search and filters */}
         <div className='flex flex-col items-center mb-6 gap-4'>          

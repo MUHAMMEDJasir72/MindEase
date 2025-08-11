@@ -74,7 +74,6 @@ class GetUserDetails(APIView):
     def get(self, request, id):
         user = get_object_or_404(UserDetails, id=id)
         serializer = UsersSerializer(user)
-        print(serializer.data)
         return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
      
     
@@ -281,12 +280,14 @@ class ProcessClientWithdraw(APIView):
         
 
 from django.db.models import Sum, Count
+from django.db.models import Exists, OuterRef
 
 class ReportForAdminDashboard(APIView):
     def get(self,request):
         today = now().date()
         current_year = today.year
         current_month = today.month
+
 
         total_sessions = TherapySession.objects.count()
         scheduled_sessions = TherapySession.objects.filter(status='Scheduled').count()
@@ -298,7 +299,7 @@ class ReportForAdminDashboard(APIView):
         today_cancelled = TherapySession.objects.filter(status='Cancelled', date__date=today).count()
 
         today_total = today_scheduled + today_completed
-        completion_rate = (today_completed / today_total) * 100 if today_total > 0 else 0
+        completion_rate = round((today_completed / today_total) * 100) if today_total > 0 else 0
 
         month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -334,12 +335,13 @@ class ReportForAdminDashboard(APIView):
             created_at__year=current_year
         ).aggregate(total=Sum('amount'))['total'] or 0
 
-        total_users = User.objects.filter(is_therapist=False).count()
+        total_users = User.objects.filter(is_staff=False).count()
+        total_clients = User.objects.filter(is_therapist=False, role='user').count()
         total_therapists = User.objects.filter(is_therapist=True).count()
-        new_users_today = User.objects.filter(is_therapist=False, date_joined__date=today).count()
-        new_users_month = User.objects.filter(is_therapist=False, date_joined__year=current_year, date_joined__month=current_month).count()
-        new_users_year = User.objects.filter(is_therapist=False, date_joined__year=current_year).count()
-        blocked_users = User.objects.filter(is_therapist=False, is_user_active=False).count()
+        new_users_today = User.objects.filter(is_staff=False, date_joined__date=today).count()
+        new_users_month = User.objects.filter(is_staff=False, date_joined__year=current_year, date_joined__month=current_month).count()
+        new_users_year = User.objects.filter(is_staff=False, date_joined__year=current_year).count()
+        blocked_users = User.objects.filter(is_user_active=False).count()
         blocked_therapists = User.objects.filter(is_therapist=True, is_therapist_active=False).count()
 
         therapist_most_sessions = (
@@ -411,6 +413,7 @@ class ReportForAdminDashboard(APIView):
             },
             'users': {
                 'total': total_users,
+                'total_clients': total_clients,
                 'therapists': total_therapists,
                 'new': {
                     'today': new_users_today,

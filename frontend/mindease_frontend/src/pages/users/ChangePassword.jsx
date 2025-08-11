@@ -43,8 +43,7 @@ const PasswordUpdateForm = () => {
                 showToast('Your password has been updated successfully', "success");
                 const res = await logoutUser();
                 if (res.success) {
-                    localStorage.removeItem('access');
-                    localStorage.removeItem('refresh');
+                    localStorage.clear()
                     navigate('/login');
                 } else {
                     showToast(res.message || "Logout failed. Please log out manually.", "error");

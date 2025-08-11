@@ -4,6 +4,7 @@ import { FaRupeeSign, FaHistory, FaMoneyBillWave, FaWallet } from 'react-icons/f
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { getTransactions, getWalletAmount, requestWithdraw } from '../../api/therapist';
 import { showToast } from '../../utils/toast';
+import TherapistNotification from '../../components/Therapist/TherapistNotifications';
 
 function Earnings() {
   const [wallet, setWallet] = useState({ balance: 0 });
@@ -183,6 +184,9 @@ function Earnings() {
   return (
     <div className="flex h-screen bg-gray-100">
       <TherapistSidebar />
+      <div className='fixed right-4 md:right-10 top-4 md:top-8 z-50'>
+        <TherapistNotification /> 
+      </div>
       
       <div className="flex-1 p-8 overflow-y-auto ml-[220px]">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">My Earnings</h1>

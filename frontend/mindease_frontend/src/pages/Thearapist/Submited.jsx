@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../api/auth';
 import TherapistNotification from '../../components/Therapist/TherapistNotifications'
-import jwt_decode from 'jwt-decode'; 
 import { useEffect, useState } from 'react';
 import { getProfile, updateProfile } from '../../api/therapist';
 import TherapistProfileEditModal from '../../components/Therapist/TherapistProfileEditModal';
@@ -18,15 +17,15 @@ const TherapistApplicationSubmitted = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const navigate = useNavigate()
 
-   useEffect(() => {
-    const access_code = localStorage.getItem('access')
-    console.log('acces',access_code)
-    const decoded = jwt_decode(access_code);
-    console.log('role',decoded.role)
-    if (decoded.role === 'therapist'){
-      navigate('/therapistHome')
-    }
-    }, []);
+  //  useEffect(() => {
+  //   const access_code = localStorage.getItem('access')
+  //   console.log('acces',access_code)
+  //   const decoded = jwt_decode(access_code);
+  //   console.log('role',decoded.role)
+  //   if (decoded.role === 'therapist'){
+  //     navigate('/therapistHome')
+  //   }
+  //   }, []);
 
     useEffect(() => {
         const fetchData = async () => {

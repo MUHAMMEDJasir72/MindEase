@@ -3,6 +3,7 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import { getUsers } from '../../api/admin';
 import { Link } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -197,6 +198,9 @@ function Users() {
   return (
     <div className='flex h-screen bg-gray-100'>
       <AdminSidebar />
+        <div className="fixed top-10 right-20 z-50">
+          <AdminNotification />
+        </div>
       
       <div className='flex-1 p-8 overflow-y-auto ml-[220px]'>
         <h1 className='text-3xl font-bold text-gray-800 mb-6'>User Management</h1>

@@ -37,38 +37,72 @@ def get_tokens_for_user(user):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
-
-
+import string
+import re
 User = get_user_model()
 from decouple import config
+
 class RegisterUserView(APIView):
     def post(self, request):
         email = request.data.get('email', '').strip()
-        password = request.data.get('password', '').strip()
         username = request.data.get('username', '').strip()
+        password1 = request.data.get('password1', '').strip()
+        password2 = request.data.get('password2', '').strip()
         
+        if not username:
+            return Response({"error": "User name is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        username_pattern = r'^[a-zA-Z0-9_-]+$'
+        if not re.match(username_pattern, username):
+            return Response(
+                {"error": "Username can only contain letters, numbers, underscores, or hyphens (no other special characters)."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not (4 <= len(username) <= 15):
+            return Response(
+                {"error": "Username must be between 4 and 15 characters long."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "Username already taken"}, status=status.HTTP_400_BAD_REQUEST)
+    
+        if not email:
+            return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
         try:
             validate_email(email)
         except ValidationError:
             return Response({"error": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
-
-
+        
         if User.objects.filter(email=email).exists():
-            return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "This Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
         
-        if User.objects.filter(username=username).exists():
-            return Response({"error": "Username already taken"}, status=status.HTTP_400_BAD_REQUEST)
-
+        if not password1 and password2:
+            return Response({"error": "password is required."}, status=status.HTTP_400_BAD_REQUEST)
         
-        if TemporaryUser.objects.filter(email=email).exists():
-            return Response({"error": "User already pending verification"}, status=400)
-
+        if not password1:
+            return Response({"error": "Please enter first password"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not (4 <= len(password1) <= 15):
+            return Response({"error": "Password must be between 4 and 15 characters long."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        allowed_chars = string.ascii_letters + string.digits + string.punctuation
+        if any(char not in allowed_chars for char in password1):
+            return Response({"error": "Password must not contain emojis or unsupported characters."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not password2:
+            return Response({"error": "Please enter confirm password"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if password1 != password2:
+            return Response({"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+    
+        temp_user = TemporaryUser.objects.filter(email=email, username=username)
+        if temp_user.exists():
+            temp_user.delete()
+            
         otp_code = random.randint(100000, 999999)
 
         TemporaryUser.objects.create(
             email=email,
             username=username,
-            password=password,  # or hash it if preferred
+            password=password1, 
             otp=otp_code
         )
         
@@ -89,9 +123,79 @@ class RegisterUserView(APIView):
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
 
-class TokenObtainPairViews(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.response import Response
+from rest_framework import status
+from datetime import timedelta
+from django.utils.timezone import now
 
+# class TokenObtainPairViews(TokenObtainPairView):
+#     serializer_class = MyTokenObtainPairSerializer
+
+    # def post(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+
+    #     try:
+    #         serializer.is_valid(raise_exception=True)
+    #     except Exception as e:
+    #         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    #     access = serializer.validated_data.get("access")
+    #     refresh = serializer.validated_data.get("refresh")
+
+    #     res = Response({"message": "Login successful"}, status=status.HTTP_200_OK)
+
+    #     access_expiry = now() + timedelta(minutes=5)
+    #     refresh_expiry = now() + timedelta(days=7)
+
+    #     res.set_cookie(
+    #         key="access",
+    #         value=access,
+    #         httponly=True,
+    #         secure=True,
+    #         samesite="Lax",
+    #         expires=access_expiry,
+    #     )
+    #     res.set_cookie(
+    #         key="refresh",
+    #         value=refresh,
+    #         httponly=True,
+    #         secure=True,
+    #         samesite="Lax",
+    #         expires=refresh_expiry,
+    #     )
+    #     return res
+
+
+
+class LoginViews(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            response = Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+
+            # Set HttpOnly cookies
+            response.set_cookie(
+                key='access_token',
+                value=str(refresh.access_token),
+                httponly=True,
+                secure=False,  # Use only on HTTPS
+                samesite='Lax',
+                max_age=3600,
+            )
+            response.set_cookie(
+                key='refresh_token',
+                value=str(refresh),
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+                max_age=86400,
+            )
+            return response
+        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 
@@ -99,14 +203,19 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         try:
-            refresh_token = request.data.get("refresh") 
+            refresh_token = request.COOKIES.get('refresh_token')
             if not refresh_token:
                 return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
             token = RefreshToken(refresh_token)
             token.blacklist()
 
-            return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+            response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+            response.delete_cookie('access_token')
+            response.delete_cookie('refresh_token')
+
+            return response
+
         except Exception as e:
             return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -198,32 +307,25 @@ User = get_user_model()
 
 class RefreshTokenView(APIView):
     def post(self, request):
-        refresh_token = request.data.get("refresh")
+        refresh_token = request.COOKIES.get('refresh_token')
         if not refresh_token:
-            return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'No refresh token'}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
-            old_refresh = RefreshToken(refresh_token)
-
-            # Get user from user_id in token payload
-            user_id = old_refresh.payload.get('user_id')
-            user = User.objects.get(id=user_id)
-
-            # Create new rotated refresh token
-            new_refresh = RefreshToken.for_user(user)
-
-            return Response({
-                "access": str(new_refresh.access_token),
-                "refresh": str(new_refresh)
-            }, status=status.HTTP_200_OK)
-
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
-        except TokenError:
-            return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            refresh = RefreshToken(refresh_token)
+            access_token = refresh.access_token
+            response = Response({'message': 'Token refreshed'})
+            response.set_cookie(
+                key='access_token',
+                value=str(access_token),
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+                max_age=3600,
+            )
+            return response
+        except Exception:
+            return Response({'detail': 'Invalid refresh token'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class ProfileView(APIView):
@@ -266,7 +368,6 @@ class ProfileImageUpdateView(APIView):
     # permission_classes = [IsAuthenticated]
 
     def patch(self, request):
-        print("yws working")
         user = request.user
         if 'profile_image' in request.FILES:
             user.profile_image = request.FILES['profile_image']
@@ -370,11 +471,19 @@ class CreateAppointment(APIView):
         session_mode = data.get('mode')
         session_type = data.get('type')
 
+        
+
+
         therapistInstance = TherapistDetails.objects.get(id=therapist_id)
         therapist = UserDetails.objects.get(id=therapistInstance.user.id)
         
         get_date = get_object_or_404(AvailableDate, id=date_id)
         get_time = get_object_or_404(AvailableTimes, id=time_id, date=get_date)
+
+        # Check if the client is blocked from this slot
+        if BlockedSlot.objects.filter(client=request.user, date=get_date, time=get_time).exists():
+            return Response({"message": "You cannot rebook this time slot again."}, status=status.HTTP_400_BAD_REQUEST)
+        
         get_time.is_booked = True
         get_time.save()
 
@@ -502,11 +611,9 @@ class CancelSession(APIView):
 
             if current_role == 'user':
                 session.canceled_person = 'Client'
-                recipient = session.client
                 cancelled_by = "Client"
             else:
                 session.canceled_person = 'Therapist'
-                recipient = session.therapist
                 cancelled_by = "Therapist"
 
             admin_user = UserDetails.objects.filter(is_superuser=True).first()
@@ -518,27 +625,37 @@ class CancelSession(APIView):
             client_wallet.save()
             admin_wallet.save()
 
-
             session.status = 'Cancelled'
             session.cancel_reason = reason
             session.save()
 
-            # Create notification for the other person
+            session.time.is_booked = False
+            session.time.save()
+
+            BlockedSlot.objects.get_or_create(client=session.client, date=session.date, time=session.time)
+
+            if cancelled_by == "Client":
+                client_noti_message = f"You cancelled Session ({session.id}) with {session.therapist.therapist_details.fullname} on {session_date} at {session_time.strftime('%I:%M %p')}."
+                therapist_noti_message = f"The client {session.client.fullname if session.client.fullname else session.client.username} cancelled session with you on {session_date} at {session_time.strftime('%I:%M %p')}."
+            else:
+                client_noti_message = f"The Therapist {session.therapist.therapist_details.fullname} cancelled session with you on {session_date} at {session_time.strftime('%I:%M %p')}."
+                therapist_noti_message = f"You cancelled Session ({session.id}) with {session.client.fullname if session.client.fullname else session.client.username} on {session_date} at {session_time.strftime('%I:%M %p')}."
+
             Notification.objects.create(
-                user=recipient,
+                user=session.client,
                 title="Session Cancelled",
-                message=f"Your cancelled appointment on {session_date} at {session_time.strftime('%I:%M %p')}.",
-                type="warning",
+                message=client_noti_message,
                 read=False,
-                location="/appointments"
+                location="/appointments",
+                type="warning",
             )
             TherapistNotification.objects.create(
-                user=recipient,
+                user=session.therapist,
                 title="Session Cancelled",
-                message=f"Your canceled appointment on {session_date} at {session_time.strftime('%I:%M %p')}.",
-                type="warning",
+                message=therapist_noti_message,
                 read=False,
-                location="/therapistAppointments"
+                location="/therapistAppointments",
+                type="warning",
             )
 
             return Response({"message": "Session cancelled successfully."}, status=status.HTTP_200_OK)
@@ -608,11 +725,9 @@ def stripe_webhook(request):
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']  # Contains a stripe.PaymentIntent
         # Handle successful payment here (e.g., update order status)
-        print('PaymentIntent was successful!')
     elif event['type'] == 'payment_intent.payment_failed':
         payment_intent = event['data']['object']  # Contains a stripe.PaymentIntent
         # Handle payment failure here (e.g., notify user)
-        print('PaymentIntent failed!')
 
     # Other event types can be handled here (e.g., 'checkout.session.completed')
 
@@ -665,15 +780,13 @@ class ConversationView(APIView):
             user1 = User.objects.get(id=user1_id)
             user2 = User.objects.get(id=user2_id)
 
-            print('sender',user1)
-            print('reciever',user2)
+         
             # Fetch all messages between user1 and user2
             messages = Message.objects.filter(
                 Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1)
             ).order_by('timestamp')
 
 
-            # print(messages)  # Debugging: check if you're getting the expected messages
 
             # Serialize the messages
             serializer = MessageSerializer(messages, many=True)
@@ -907,3 +1020,19 @@ class GetSessionPrices(APIView):
             }
 
         return Response({"prices": data}, status=status.HTTP_200_OK)
+    
+
+
+class MyInfoview(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user 
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+        })
+    
+
+

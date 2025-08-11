@@ -7,6 +7,7 @@ import { basicUrl } from '../../api/axiosInstance';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { differenceInYears } from 'date-fns';
 import ConfirmDialog from '../../utils/ConfirmDialog';
+import AdminNotification from '../../components/admin/AdminNotifications';
 
 function TherapistDetails() {
     const { id } = useParams();
@@ -105,7 +106,10 @@ function TherapistDetails() {
     return (
         <div className='flex min-h-screen bg-gray-50'>
             <AdminSidebar />
-            
+            <div className="fixed top-10 right-20 z-50">
+                <AdminNotification />
+            </div>
+                    
             <div className='flex-1 ml-[200px] p-8 overflow-y-auto'>
                 <div className='max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden'>
                     {/* Profile Header */}
