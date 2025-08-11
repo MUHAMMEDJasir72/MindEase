@@ -88,9 +88,9 @@ const TherapistApplicationSubmitted = () => {
   return (
   <div className="relative min-h-screen">
     {/* Notification in top-right */}
-    <div className="absolute top-7 right-11 z-50">
+    {/* <div className="absolute top-7 right-11 z-50">
       <TherapistNotification />
-    </div>
+    </div> */}
 
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="bg-white rounded-lg shadow-md p-8 text-center">

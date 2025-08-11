@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import { markAsAttended } from '../api/user';
+import { routerBaseUrl } from '../api/axiosInstance';
 
 const VideoCall = () => {
   const { roomName, type } = useParams();
@@ -37,7 +38,7 @@ const VideoCall = () => {
 
   useEffect(() => {
     socketRef.current = new W3CWebSocket(
-      `ws://localhost:8000/ws/call/${roomName}/`
+      `${routerBaseUrl}ws/call/${roomName}/`
     );
 
     socketRef.current.onopen = () => {
