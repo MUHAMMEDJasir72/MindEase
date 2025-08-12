@@ -283,6 +283,7 @@ from django.db.models import Sum, Count
 from django.db.models import Exists, OuterRef
 
 class ReportForAdminDashboard(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self,request):
         today = now().date()
         current_year = today.year
