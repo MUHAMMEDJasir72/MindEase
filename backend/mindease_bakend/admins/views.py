@@ -503,14 +503,14 @@ class Sessions(APIView):
 from rest_framework.decorators import api_view, permission_classes
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_notifications(request):
-    user = request.user
-    AdminNotification.objects.filter(user=user, read=True).delete()
-    notifications = AdminNotification.objects.filter(user=user).order_by('-time')
-    serializer = AdminNotificationSerializer(notifications, many=True)
-    return Response(serializer.data)   
+
+class get_notifications(APIView):
+    def get(self,request):
+        user = request.user
+        AdminNotification.objects.filter(user=user, read=True).delete()
+        notifications = AdminNotification.objects.filter(user=user).order_by('-time')
+        serializer = AdminNotificationSerializer(notifications, many=True)
+        return Response(serializer.data)   
 
 from django.http import FileResponse, Http404
 from django.contrib.auth.decorators import login_required
