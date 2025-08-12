@@ -510,7 +510,8 @@ class get_notifications(APIView):
         AdminNotification.objects.filter(user=user, read=True).delete()
         notifications = AdminNotification.objects.filter(user=user).order_by('-time')
         serializer = AdminNotificationSerializer(notifications, many=True)
-        return Response(serializer.data)   
+        return Response(serializer.data)  
+     
 
 from django.http import FileResponse, Http404
 from django.contrib.auth.decorators import login_required
