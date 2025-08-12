@@ -1,9 +1,9 @@
 // src/components/GoogleAuth.jsx
 import { useEffect, useRef } from 'react';
-import jwt_decode from 'jwt-decode';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { basicUrl } from '../../api/axiosInstance';
+import { getMYInfo } from '../../api/user';
 
  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const GoogleAuth = ({ mode = 'login' }) => {
@@ -42,15 +42,11 @@ const GoogleAuth = ({ mode = 'login' }) => {
         token: credentialResponse.credential,
       });
 
-      const { access, refresh } = response.data;
-      localStorage.setItem('access', access);
-      localStorage.setItem('refresh', refresh);
       localStorage.setItem('loginMethod', 'google');
 
-      const decoded = jwt_decode(access);
-      
+      const myInfo = await getMYInfo()
 
-      if (decoded.role === 'admin') {
+      if (myInfo.info.role === 'admin') {
         localStorage.setItem('current_role', 'admin');
         navigate('/adminDashboard');
       } else {

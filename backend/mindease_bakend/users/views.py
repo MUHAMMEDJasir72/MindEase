@@ -873,25 +873,28 @@ class GoogleLoginView(APIView):
             email = idinfo['email']
             name = idinfo.get('name', '')
 
-            
             user, created = User.objects.get_or_create(email=email, defaults={'username': name, 'first_name': name})
 
             refresh = RefreshToken.for_user(user)
-            refresh['role'] = user.role
-            refresh['username'] = user.username
-            refresh['email'] = user.email
+            response = Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
 
-            tokens = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
-
-            return Response({
-                'message': 'Login successful',
-                'access': tokens['access'],
-                'refresh': tokens['refresh'],
-                'user': user.username,
-            })
+            response.set_cookie(
+                key='access_token',
+                value=str(refresh.access_token),
+                httponly=True,
+                secure=False,  # Use only on HTTPS
+                samesite='Lax',
+                max_age=3600,
+            )
+            response.set_cookie(
+                key='refresh_token',
+                value=str(refresh),
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+                max_age=86400,
+            )
+            return response
         except ValueError:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
