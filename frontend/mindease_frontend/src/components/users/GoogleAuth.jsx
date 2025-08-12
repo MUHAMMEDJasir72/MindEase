@@ -44,15 +44,15 @@ const GoogleAuth = ({ mode = 'login' }) => {
 
       localStorage.setItem('loginMethod', 'google');
 
-      // const myInfo = await getMYInfo()
+      const myInfo = await getMYInfo()
 
-      // if (myInfo.info.role === 'admin') {
-      //   localStorage.setItem('current_role', 'admin');
-      //   navigate('/adminDashboard');
-      // } else {
-      //   localStorage.setItem('current_role', 'user');
+      if (myInfo.info.role === 'admin') {
+        localStorage.setItem('current_role', 'admin');
+        navigate('/adminDashboard');
+      } else {
+        localStorage.setItem('current_role', 'user');
         navigate('/');
-      // }
+      }
     } catch (error) {
       console.error('Google login failed:', error.response?.data || error.message);
     }
