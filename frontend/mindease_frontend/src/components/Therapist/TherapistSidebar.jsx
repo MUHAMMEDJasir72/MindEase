@@ -15,6 +15,7 @@ import {
   LogOut,
 } from 'lucide-react';
 
+
 const menuItems = [
   { key: 'dashboard', label: 'Dashboard', icon: <Home size={19} />, path: '/therapistHome' },
   { key: 'profile', label: 'Profile', icon: <User size={19} />, path: '/therapistProfile' },
@@ -34,7 +35,6 @@ function TherapistSidebar() {
       const response = await logoutUser();
       if (response.success) {
         navigate('/therapistLogin');
-        localStorage.clear()
         showToast(response.message, 'success');
       } else {
         showToast(response.message, 'error');

@@ -1,3 +1,5 @@
+import json
+from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -53,6 +55,12 @@ class RegisterTherapistView(APIView):
         files = request.FILES
         try:
             user = request.user  # Or fetch manually if needed
+
+            if TherapistDetails.objects.filter(user=user).exists():
+                return Response(
+                    {'success': False, 'message': 'You have already submitted the form.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
             therapist = TherapistDetails.objects.create(
                 user=user,
@@ -82,10 +90,19 @@ class RegisterTherapistView(APIView):
          
 
             # Save many-to-one specializations
-            specializations = data.getlist('specializations')
-            spec_data = specializations[0].split(',')
-            for spec in spec_data:
-                Specializations.objects.create(therapist_details=therapist, specializations=spec)
+            specializations = data.get('specializations')  # gives 'sleep,anxiety'
+            specializations_list = specializations.split(',')  # ['sleep', 'anxiety']
+
+            for spec_name in specializations_list:
+                try:
+                    specialization_obj = SpecializationsList.objects.get(specialization=spec_name.strip())
+                    Specializations.objects.create(
+                        specialization=specialization_obj,
+                        therapist_details=therapist
+                    )
+                except SpecializationsList.DoesNotExist:
+                    continue
+
 
             
             languages = data.getlist('languages')
@@ -170,18 +187,24 @@ class AddSlotView(APIView):
     def post(self, request):
         date = request.data.get('date')
         available_times = request.data.get('available_times')
-        
-        
+
         if date is None:
             return Response({'message': "Please select a date"}, status=status.HTTP_400_BAD_REQUEST)
         if not available_times:
             return Response({'message': "Please select a time"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Assuming the user is authenticated
-        user = request.user
+        # Get the therapist details
+        try:
+            therapist_details = TherapistDetails.objects.get(user=request.user)
+        except TherapistDetails.DoesNotExist:
+            return Response({'message': "Therapist details not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check if the date already exists for the user
-        available_date_obj, created = AvailableDate.objects.get_or_create(date=date, user=user)
+        # ✅ Check if therapist has any specialization
+        if not therapist_details.specializations.exists():
+            return Response({'message': "You have any specialization. Please add a specialization before creating slots."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create or get available date
+        available_date_obj, created = AvailableDate.objects.get_or_create(date=date, user=request.user)
 
         for time_slot in available_times:
             time_value = time_slot.get('time')
@@ -195,8 +218,8 @@ class AddSlotView(APIView):
                 date=available_date_obj
             )
 
-        return Response({"message": f"New slots successfully created."}, status=status.HTTP_201_CREATED)
-        
+        return Response({"message": "New slots successfully created."}, status=status.HTTP_201_CREATED)
+
 
 from datetime import date
 from .serializers import AvailableDateSerializer
@@ -251,6 +274,34 @@ class GetTherapistAppointment(APIView):
                     session.status = 'Absent - Client'
                 elif not session.therapist_attended:
                     session.status = 'Absent - Therapist'
+
+                    wallet = Wallet.objects.get(user=session.client)
+                    admin_wallet = Wallet.objects.get(user__is_staff=True)
+                    admin_wallet.balance -= session.price
+                    wallet.balance += session.price
+
+                    WalletTransaction.objects.create(
+                    wallet=wallet,
+                    transaction_type='CREDIT',
+                    amount=session.price,
+                    description=f"Refund from {session.id}, because of therapist not attended"
+                    )
+                    WalletTransaction.objects.create(
+                    wallet=admin_wallet,
+                    transaction_type='DEBIT',
+                    amount=session.price,
+                    description=f"gave refund to {session.client.fullname} from {session.id}, because of therapist not attended"
+                    )
+                    wallet.save()
+                    admin_wallet.save()
+
+                    Notification.objects.create(
+                    user=session.client,
+                    title="Refund from absent session",
+                    message=f"You got {session.price} to yout wallet , because of therapist absent of session {session.id}",
+                    type="success",
+                    location="/appointments"
+                    )
                 else:
                     session.status = 'Completed'
                 session.save()
@@ -371,18 +422,32 @@ class UpdateTherapistProfile(APIView):
 
             details.save()
 
-            # Clear and recreate specializations
             Specializations.objects.filter(therapist_details=details).delete()
             specializations_data = []
+
             for key in data:
-                if re.match(r"specializations\[\d+\]\[specializations\]", key):
-                    specializations_data.append({'specializations': data[key]})
+                if re.match(r"specializations\[\d+\]\[specialization\]", key):
+                    specializations_data.append({'specialization': data[key]})
 
             for specialization in specializations_data:
-                Specializations.objects.create(
-                    therapist_details=details,
-                    specializations=specialization.get('specializations')
-                )
+                spec_name = specialization.get('specialization')
+
+                try:
+                    # Check if specialization exists in SpecializationsList
+                    spec_obj = SpecializationsList.objects.get(specialization=spec_name)
+
+                    # Create new mapping for therapist
+                    Specializations.objects.create(
+                        therapist_details=details,
+                        specialization=spec_obj
+                    )
+
+                except SpecializationsList.DoesNotExist:
+                    # Validation failed → specialization not found
+                    raise ValidationError(
+                        f"There is not {spec_name} specialization, try another one"
+                    )
+
 
             # Clear and recreate languages
             Languages.objects.filter(therapist_details=details).delete()
@@ -402,7 +467,6 @@ class UpdateTherapistProfile(APIView):
         except TherapistDetails.DoesNotExist:
             return Response({"message": "Therapist details not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(str(e))  # <--- Add this line
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -432,7 +496,7 @@ class MakeCompleted(APIView):
             therapist_wallet.balance += therapist_share
             therapist_wallet.save()
 
-            WalletTransaction.objects.create(
+            TherapistTransaction.objects.create(
                 wallet=therapist_wallet,
                 transaction_type='CREDIT',
                 amount=therapist_share,
@@ -519,7 +583,7 @@ class GetTransactions(APIView):
         user = request.user
         try:
             wallet = Wallet.objects.get(user=user)
-            transactions = wallet.transactions.all().order_by('-created_at')  # latest first
+            transactions = wallet.therapist_transactions.all().order_by('-created_at')  # latest first
             serializer = WalletTransactionSerializer(transactions, many=True)
             return Response({
                 "data": serializer.data
@@ -700,6 +764,7 @@ def get_notifications(request):
 from django.db.models import Avg
 
 class Get_total_rating(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self,request):
         if request.user.role != 'therapist':
                 return JsonResponse({'error': 'Unauthorized'}, status=403)

@@ -46,7 +46,7 @@ const AdminNotification = () => {
 
     fetchNotifications();
 
-    const socket = new ReconnectingWebSocket(`${routerBaseUrl}ws/notifications/`);
+    const socket = new ReconnectingWebSocket(`${routerBaseUrl}ws/admin/notifications/`);
 
     socket.onopen = () => {
       console.log("WebSocket connected");
@@ -109,7 +109,6 @@ const AdminNotification = () => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  console.log(notifications)
 
   return (
     <div className="relative" ref={notificationRef}>

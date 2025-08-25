@@ -5,10 +5,11 @@ import {
   FaHistory, 
   FaWallet
 } from 'react-icons/fa';
-import { getTransactions, getWalletAmount } from '../../api/therapist';
+import { getWalletAmount } from '../../api/therapist';
 import { showToast } from '../../utils/toast';
 import moment from 'moment';
 import AdminNotification from '../../components/admin/AdminNotifications';
+import { getUserTransactions } from '../../api/user';
 
 function AdminEarnings() {
   const [totalEarnings, setTotalEarnings] = useState({});
@@ -25,7 +26,7 @@ function AdminEarnings() {
         setTotalEarnings(earningsRes.data);
         
         // Fetch transactions
-        const transactionsRes = await getTransactions();
+        const transactionsRes = await getUserTransactions();
         setTransactions(transactionsRes.data);
       } catch (error) {
         console.error('Error fetching data:', error);

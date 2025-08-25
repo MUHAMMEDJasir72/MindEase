@@ -8,22 +8,20 @@ import { validateForm } from "../../utils/validateForm";
 import GoogleAuth from "../../components/users/GoogleAuth";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
-
 function Register() {
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
+    fullName: "",
+    age: "",
+    place: "",
+    gender: "",
+    language: "",
+    phone: "",
     password1: "",
     password2: ""
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isFocused, setIsFocused] = useState({
-    username: false,
-    email: false,
-    password1: false,
-    password2: false
-  });
-
+  const [isFocused, setIsFocused] = useState({});
   const [showPassword1, setShowPassword1] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
 
@@ -31,10 +29,7 @@ function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFocus = (field) => {
@@ -47,33 +42,26 @@ function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    // const errorMessage = validateForm(
-    //   formData.username,
-    //   formData.email,
-    //   formData.password1,
-    //   formData.password2
-    // );
-    
-    // if (errorMessage) {
-    //   showToast(errorMessage, "error");
-    //   return;
-    // }
+    const errorMessage = validateForm(
+      formData.fullName,
+      formData.email,
+      formData.age,
+      formData.place,
+      formData.gender,
+      formData.language,
+      formData.phone,
+      formData.password1,
+      formData.password2
+    );
 
     setIsLoading(true);
 
     try {
-      const { success, message } = await registerUser({
-        username: formData.username,
-        email: formData.email,
-        password1: formData.password1,
-        password2: formData.password2
-      });
-
+      const { success, message } = await registerUser(formData);
       if (success) {
         localStorage.setItem("email", formData.email);
-        showToast("Please Enter The Otp", "success");
-        navigate('/otp');
+        showToast("Please Enter The OTP", "success");
+        navigate("/otp");
       } else {
         showToast(message, "error");
       }
@@ -86,170 +74,141 @@ function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="hidden md:block fixed inset-0 overflow-hidden opacity-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-blue-600"></div>
-      </div>
-      
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative w-full max-w-md mx-auto bg-white rounded-xl shadow-xl overflow-hidden z-10"
+        transition={{ duration: 0.4 }}
+        className="relative w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
       >
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-teal-400 to-blue-500"></div>
-        
-        <div className="px-6 py-8 sm:px-10 sm:py-10">
-          <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Create Account</h2>
-            <p className="text-gray-500 mt-1 sm:mt-2 text-sm sm:text-base">Join us today</p>
+        {/* Top Accent */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-400 to-blue-600"></div>
+
+        {/* Content */}
+        <div className="px-10 py-10">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800">Create Account</h2>
+            <p className="text-gray-500 mt-2 text-sm">Join our community today</p>
           </div>
-          
-          <form className="space-y-3 sm:space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                Username
-              </label>
-              <div className={`relative transition-all duration-200 ${isFocused.username ? 'ring-2 ring-teal-500' : ''} rounded-lg`}>
+
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Fields */}
+            {[
+              { id: "fullName", label: "Full Name", type: "text", placeholder: "Enter your full name" },
+              { id: "email", label: "Email", type: "email", placeholder: "Enter your email" },
+              { id: "age", label: "Age", type: "number", placeholder: "Enter your age" },
+              { id: "place", label: "Place", type: "text", placeholder: "Enter your place" },
+              { id: "language", label: "Language", type: "text", placeholder: "Enter your preferred language" },
+              { id: "phone", label: "Phone", type: "tel", placeholder: "Enter your phone number" }
+            ].map(({ id, label, type, placeholder }) => (
+              <div key={id}>
+                <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
                 <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  value={formData.username}
+                  id={id}
+                  name={id}
+                  type={type}
+                  value={formData[id]}
                   onChange={handleChange}
-                  onFocus={() => handleFocus('username')}
-                  onBlur={() => handleBlur('username')}
-                  className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
-                  placeholder="Enter your username"
+                  onFocus={() => handleFocus(id)}
+                  onBlur={() => handleBlur(id)}
+                  placeholder={placeholder}
+                  className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none transition-colors duration-200 ${isFocused[id] ? "ring-2 ring-teal-500" : ""}`}
                 />
               </div>
-            </div>
-            
+            ))}
+
+            {/* Gender */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <div className={`relative transition-all duration-200 ${isFocused.email ? 'ring-2 ring-teal-500' : ''} rounded-lg`}>
-                <input
-                  id="email"
-                  name="email"
-                  type="text"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('email')}
-                  onBlur={() => handleBlur('email')}
-                  className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
-                  placeholder="Enter your email"
-                />
-              </div>
+              <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+              <select
+                id="gender"
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                onFocus={() => handleFocus("gender")}
+                onBlur={() => handleBlur("gender")}
+                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none transition-colors duration-200 ${isFocused.gender ? "ring-2 ring-teal-500" : ""}`}
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
             </div>
-            
-            <div>
-              <label htmlFor="password1" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <div className={`relative transition-all duration-200 ${isFocused.password1 ? 'ring-2 ring-teal-500' : ''} rounded-lg`}>
-                <input
-                  id="password1"
-                  name="password1"
-                  type={showPassword1 ? "text" : "password"}
-                  value={formData.password1}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('password1')}
-                  onBlur={() => handleBlur('password1')}
-                  className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
-                  placeholder="Create a password"
-                />
-                <span
-      onClick={() => setShowPassword1(!showPassword1)}
-      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer text-lg"
-    >
-      {showPassword1? <MdVisibility /> : <MdVisibilityOff /> }
-    </span>
+
+            {/* Passwords */}
+            {[
+              { id: "password1", label: "Password", placeholder: "Create a password", show: showPassword1, setShow: setShowPassword1 },
+              { id: "password2", label: "Confirm Password", placeholder: "Confirm your password", show: showPassword2, setShow: setShowPassword2 }
+            ].map(({ id, label, placeholder, show, setShow }) => (
+              <div key={id}>
+                <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+                <div className={`relative ${isFocused[id] ? "ring-2 ring-teal-500" : ""} rounded-lg`}>
+                  <input
+                    id={id}
+                    name={id}
+                    type={show ? "text" : "password"}
+                    value={formData[id]}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus(id)}
+                    onBlur={() => handleBlur(id)}
+                    placeholder={placeholder}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
+                  />
+                  <span
+                    onClick={() => setShow(!show)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer text-lg"
+                  >
+                    {show ? <MdVisibility /> : <MdVisibilityOff />}
+                  </span>
+                </div>
               </div>
+            ))}
+
+            {/* Submit button spans full width */}
+            <div className="col-span-1 md:col-span-2">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={isLoading}
+                className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 ${isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 shadow-lg"}`}
+              >
+                {isLoading ? "Creating account..." : "Create Account"}
+              </motion.button>
             </div>
-            
-            <div>
-              <label htmlFor="password2" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
-              </label>
-              <div className={`relative transition-all duration-200 ${isFocused.password2 ? 'ring-2 ring-teal-500' : ''} rounded-lg`}>
-                <input
-                  id="password2"
-                  name="password2"
-                  type={showPassword2 ? "text" : "password"}
-                  value={formData.password2}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('password2')}
-                  onBlur={() => handleBlur('password2')}
-                  className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500 transition-colors duration-200"
-                  placeholder="Confirm your password"
-                />
-                 <span
-      onClick={() => setShowPassword2(!showPassword2)}
-      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer text-lg"
-    >
-      {showPassword2 ? <MdVisibility /> : <MdVisibilityOff /> }
-    </span>
-              </div>
-            </div>
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={isLoading}
-              className={`w-full py-2 sm:py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 shadow-md'}`}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating account...
-                </span>
-              ) : 'Create Account'}
-            </motion.button>
           </form>
 
-          <div className="mt-5 sm:mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-5 sm:mt-6">
-             <GoogleAuth mode="register"/>
+          {/* Divider */}
+          <div className="my-6">
+            <div className="flex items-center">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="mx-3 text-sm text-gray-500">Or continue with</span>
+              <div className="flex-grow border-t border-gray-300"></div>
             </div>
           </div>
 
-          <div className="mt-5 sm:mt-6 text-center">
-            <p className="text-gray-600 text-sm">
-              Already have an account?{' '}
-              <Link to="/login" className="font-medium text-teal-600 hover:text-teal-500">
-                Sign in
-              </Link>
-            </p>
-          </div>
+          {/* Google Auth */}
+          <GoogleAuth mode="register" current_role="user" />
+
+          {/* Footer */}
+          <p className="mt-6 text-center text-gray-600 text-sm">
+            Already have an account?{" "}
+            <Link to="/login" className="font-medium text-teal-600 hover:text-teal-500">
+              Sign in
+            </Link>
+          </p>
         </div>
       </motion.div>
-      
-      <ToastContainer 
+
+      <ToastContainer
         position="top-center"
         autoClose={3000}
         hideProgressBar={false}
-        newestOnTop={false}
         closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
         draggable
         pauseOnHover
-        toastStyle={{ borderRadius: '10px' }}
+        toastStyle={{ borderRadius: "10px" }}
       />
     </div>
   );

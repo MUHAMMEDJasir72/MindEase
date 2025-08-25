@@ -13,7 +13,10 @@ import {
   User,
   LogOut,
   CreditCard,
-  PieChart
+  PieChart,
+  Banknote,
+  ClipboardList,
+  
 } from 'lucide-react';
 
 // Organized menu items into categories for better structure
@@ -31,8 +34,9 @@ const menuItems = [
   { key: 'messages', label: 'Messages', icon: <MessageCircle size={19} />, path: '/chatToTherapists' },
   
   // Management sections
-  { key: 'specializeManage', label: 'Specializations', icon: <Settings size={19} />, path: '/specializeManage' },
+  { key: 'specializeManage', label: 'Specializations', icon: <ClipboardList size={19} />, path: '/specializeManage' },
   { key: 'withdrawalReguests', label: 'Withdrawal Reguests', icon: <Settings size={19} />, path: '/withdrawalReguests' },
+  { key: 'prices', label: 'Prices', icon: <Banknote size={19} />, path: '/prices' },
   
   // Logout
   { key: 'logout', label: 'Logout', icon: <LogOut size={19} />, type: 'logout' }
@@ -47,8 +51,6 @@ function AdminSidebar() {
       const response = await logoutUser();
       if (response.success) {
         navigate('/login');
-        localStorage.removeItem('access');
-        localStorage.removeItem('refresh');
         showToast(response.message, 'success');
       } else {
         showToast(response.message, 'error');

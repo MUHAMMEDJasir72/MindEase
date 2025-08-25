@@ -192,6 +192,8 @@ function Availability() {
 
         if (response.success) {
             showToast(response.message, 'success');
+        }else{
+            showToast(response.message, 'error')
         }
 
         const info = await getAvailableDates();

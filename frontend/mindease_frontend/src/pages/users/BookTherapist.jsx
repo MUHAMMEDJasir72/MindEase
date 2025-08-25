@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Clock, Calendar, User, ArrowLeft, Video, Phone, MessageSquare, Lock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getTherapistInformation } from '../../api/admin';
-import { createAppointment, createPayment, getSessionPrices } from '../../api/user';
+import { checkSlot, createAppointment, createPayment } from '../../api/user';
 import { showToast } from '../../utils/toast';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { getUserInfo } from '../../api/therapist';
@@ -67,6 +67,7 @@ function BookTherapist() {
         const info = await getTherapistInformation(id);
         if (info.success) {
           setTherapist(info.data);
+          setPricing(info.data.price)
         }
       } catch (error) {
         console.error('Failed to fetch therapist:', error);
@@ -91,25 +92,25 @@ function BookTherapist() {
         setIsLoading(false);
       }
     };
-    const fetchPrices = async () => {
-      setIsLoading(true);
-      try {
-        const info = await getSessionPrices();
-        if (info.success) {
-          setPricing(info.prices);
-        }
-      } catch (error) {
-        console.error('Failed to fetch therapist:', error);
-        showToast('Failed to load price information', 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // const fetchPrices = async () => {
+    //   setIsLoading(true);
+    //   try {
+    //     const info = await getSessionPrices();
+    //     if (info.success) {
+    //       setPricing(info.prices);
+    //     }
+    //   } catch (error) {
+    //     console.error('Failed to fetch therapist:', error);
+    //     showToast('Failed to load price information', 'error');
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
 
     if (id) {
       fetchTherapistInfo();
       fetchUserapistInfo()
-      fetchPrices()
+      // fetchPrices()
     }
   }, [id]);
 
@@ -147,6 +148,15 @@ function BookTherapist() {
       return;
     }
 
+    const check = await checkSlot(
+      {date: selectedDateId,
+      time: selectedTimeId});
+
+    if (!check.available) {
+      showToast("This slot has just been booked. Please choose another.", "error");
+      return;
+    }
+
     const cardElement = elements.getElement(CardElement);
     if (!cardElement) {
       showToast('Card details are incomplete.', 'error');
@@ -163,6 +173,8 @@ function BookTherapist() {
       type: therapyType,
       price: pricing[therapyMode],
     };
+
+
 
     try {
       const res = await createPayment(appointment.price);
@@ -226,7 +238,7 @@ function BookTherapist() {
       </div>
     );
   }
-console.log(pricing)
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Back button for mobile */}
@@ -355,7 +367,7 @@ console.log(pricing)
                   <div className="p-4 md:p-6 border-b border-gray-100">
                     <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
                       <Clock size={20} className="text-teal-600" /> Available Times for{' '}
-                      {new Date(selectedDate).toLocaleDateString()}
+                      {new Date(selectedDate).toLocaleDateString()} (1 hour)
                     </h2>
                   </div>
 

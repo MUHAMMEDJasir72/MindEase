@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/users/Navbar';
-import { getTransactions, getWalletAmount } from '../../api/therapist';
+import { getWalletAmount } from '../../api/therapist';
 import { showToast } from '../../utils/toast';
-import { requestClientWithdraw } from '../../api/user';
+import { getUserTransactions, requestClientWithdraw } from '../../api/user';
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import Notifications from '../../components/users/Notifications';
 
@@ -17,7 +17,7 @@ function Wallet() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [transactionsPerPage] = useState(5); // Show 5 transactions per page
+  const [transactionsPerPage] = useState(4); // Show 5 transactions per page
 
   useEffect(() => {
     fetchWalletData();
@@ -29,7 +29,7 @@ function Wallet() {
       const walletRes = await getWalletAmount();
       setWalletAmount(walletRes.data);
       
-      const transactionsRes = await getTransactions();
+      const transactionsRes = await getUserTransactions();
       setTransactions(transactionsRes.data);
     } catch (error) {
       console.error('Error fetching wallet data:', error);

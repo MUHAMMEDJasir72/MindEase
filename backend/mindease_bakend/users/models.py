@@ -21,9 +21,12 @@ class UserDetails(AbstractUser):
     is_therapist_active = models.BooleanField(default=True)
     is_user_active = models.BooleanField(default=True)
     is_therapist = models.BooleanField(default=False)
+    current_role = models.CharField(max_length=15, blank=True, null=True)
+    is_google_account = models.BooleanField(default=False)
 
 
 
+   
    
     
     def __str__(self):
@@ -32,17 +35,22 @@ class UserDetails(AbstractUser):
 # models.py
 class TemporaryUser(models.Model):
     email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150)
     password = models.CharField(max_length=128, blank=True, null=True) 
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
+    fullname = models.CharField(max_length=100,blank=True,null=True)
+    age = models.CharField(max_length=200,blank=True,null=True)
+    place = models.CharField(max_length=100,blank=True,null=True)
+    gender = models.CharField(max_length=100,blank=True,null=True)
+    language = models.CharField(max_length=100,blank=True,null=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
 
     def is_otp_expired(self):
         expiry_time = self.created_at + timedelta(minutes=5)
         return now() > expiry_time
     
     def __str__(self):
-        return self.username
+        return self.email
 
     
     
@@ -145,6 +153,21 @@ class WalletTransaction(models.Model):
     )
 
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    amount = models.IntegerField()
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.wallet.user.username} - {self.transaction_type} - ₹{self.amount}"
+    
+class TherapistTransaction(models.Model):
+    TRANSACTION_TYPES = (
+        ('CREDIT', 'Credit'),   # money added
+        ('DEBIT', 'Debit'),     # money used
+    )
+
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='therapist_transactions')
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     amount = models.IntegerField()
     description = models.TextField(blank=True, null=True)

@@ -1,35 +1,38 @@
-import React from 'react'
-import { approveTherapist, changeTherapistStatus, getTherapistInformation, rejectTherapist } from '../../api/admin';
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
+import { 
+  approveTherapist, 
+  changeTherapistStatus, 
+  getTherapistInformation, 
+  rejectTherapist,
+  updateTherapistTier,
+} from '../../api/admin';
 import { useNavigate, useParams } from "react-router-dom";
 import { showToast } from '../../utils/toast';
-import { basicUrl } from '../../api/axiosInstance';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { differenceInYears } from 'date-fns';
-import ConfirmDialog from '../../utils/ConfirmDialog';
 import AdminNotification from '../../components/admin/AdminNotifications';
 
 function TherapistDetails() {
     const { id } = useParams();
     const [details, setDetails] = useState({})
     const [isLoading, setIsLoading] = useState(true)
+    const [selectedTier, setSelectedTier] = useState('')
+    const [showTierModal, setShowTierModal] = useState(false)
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false)
     const navigate = useNavigate()
     const [confirmConfig, setConfirmConfig] = useState({
-    isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: null,
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: null,
     });
 
-    
     useEffect(() => {
       const fetchTherpistInfo = async () => {
         const info = await getTherapistInformation(id);
         if (info.success) {
             setDetails(info.data)
-            console.log("success");
         } else {
-            console.log("error");
         }
         setIsLoading(false);
       };
@@ -39,17 +42,62 @@ function TherapistDetails() {
       }
     }, [id]);
 
-    const handleApproveTherapist = async () => {
-        setIsLoading(true);
-      const info = await approveTherapist(id)
-      if (info.success){
-        console.log('success')
-        setIsLoading(false);
-        navigate('/therapists')
-      }else{
-        console.log("error")
+    const handleTierSelection = (tier) => {
+      setSelectedTier(tier);
+    };
+
+    const handleApproveWithTier = async () => {
+      if (!selectedTier) {
+        showToast('Please select a tier for the therapist', 'error');
+        return;
       }
-    }
+      
+      setIsLoading(true);
+      const info = await approveTherapist(id, selectedTier);
+      if (info.success){
+        setIsLoading(false);
+        setShowTierModal(false);
+        showToast(`Therapist approved as ${selectedTier} tier`, 'success');
+        navigate('/therapists');
+      } else {
+        console.log("error");
+        showToast('Failed to approve therapist', 'error');
+      }
+    };
+
+    const handleUpgradeTier = async () => {
+      if (!selectedTier) {
+        showToast('Please select a tier for the therapist', 'error');
+        return;
+      }
+      
+      setIsLoading(true);
+      const info = await updateTherapistTier({id, selectedTier});
+      if (info.success){
+        setIsLoading(false);
+        setShowUpgradeModal(false);
+        showToast(`Therapist tier updated to ${selectedTier}`, 'success');
+        
+        // Refresh therapist details
+        const updatedInfo = await getTherapistInformation(id);
+        if (updatedInfo.success) {
+            setDetails(updatedInfo.data);
+        }
+      } else {
+        console.log("error");
+        showToast('Failed to update therapist tier', 'error');
+      }
+    };
+
+    const openTierModal = () => {
+      setSelectedTier('');
+      setShowTierModal(true);
+    };
+
+    const openUpgradeModal = () => {
+      setSelectedTier(details.tier || '');
+      setShowUpgradeModal(true);
+    };
 
    const rejectRequest = async () => {
     const info = await rejectTherapist(id);
@@ -59,8 +107,7 @@ function TherapistDetails() {
     } else {
         showToast(info.message, 'error');
     }
-}
-
+  };
 
     const handleBlock = async () => {
         try {
@@ -81,16 +128,35 @@ function TherapistDetails() {
             console.error("Error while changing status:", error);
             showToast('An unexpected error occurred.', 'error');
         } finally {
-            setShowConfirm(false);
+            setConfirmConfig({...confirmConfig, isOpen: false});
         }
-        };
-
+    };
 
     function calculateAge(dateOfBirth) {
-    const dob = new Date(dateOfBirth);
-    const today = new Date();
-    return differenceInYears(today, dob);
+      const dob = new Date(dateOfBirth);
+      const today = new Date();
+      return differenceInYears(today, dob);
     }
+
+    const getTierColor = (tier) => {
+      switch(tier) {
+        case 'bronze': return 'bg-amber-500';
+        case 'silver': return 'bg-gray-400';
+        case 'gold': return 'bg-yellow-400';
+        case 'platinum': return 'bg-blue-400';
+        default: return 'bg-gray-400';
+      }
+    };
+
+    const getTierDisplayName = (tier) => {
+      switch(tier) {
+        case 'bronze': return 'Bronze';
+        case 'silver': return 'Silver';
+        case 'gold': return 'Gold';
+        case 'platinum': return 'Platinum';
+        default: return 'Not Set';
+      }
+    };
 
     if (isLoading) {
         return (
@@ -102,7 +168,7 @@ function TherapistDetails() {
             </div>
         );
     }
-    console.log(id)
+
     return (
         <div className='flex min-h-screen bg-gray-50'>
             <AdminSidebar />
@@ -123,7 +189,26 @@ function TherapistDetails() {
                         </div>
                         <h1 className='mt-4 text-2xl font-bold text-white'>{details.fullname}</h1>
                         <p className='text-indigo-100 font-medium'>{details.professionalTitle}</p>
-                        <div className='absolute top-7 right-14'>
+                        
+                        {/* Tier Badge */}
+                        {details.status === 'approved' && (
+                          <div className="mt-2 flex items-center">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getTierColor(details.tier)} text-white`}>
+                              {getTierDisplayName(details.tier)} Tier
+                            </span>
+                          </div>
+                        )}
+                        
+                        <div className='absolute top-7 right-14 flex space-x-2'>
+                            {details.status === 'approved' && (
+                              <button
+                                onClick={openUpgradeModal}
+                                type="button"
+                                className="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none dark:focus:ring-purple-800"
+                              >
+                                Upgrade Tier
+                              </button>
+                            )}
                             <button
                                 onClick={() =>
                                 setConfirmConfig({
@@ -192,7 +277,7 @@ function TherapistDetails() {
                                     <InfoItem label="Years of Experience" value={details.yearsOfExperience} />
                                     <InfoItem label="License Issuing Authority" value={details.licenseIssuingAuthority} />
                                     <InfoItem label="License Expiry Date" value={details.licenseExpiryDate} />
-                                    <InfoItem label="Specializations" value={details.specializations?.map((spec) => spec.specializations).join(', ')} />
+                                    <InfoItem label="Specializations" value={details.specializations?.map((spec) => spec.specialization).join(', ')} />
                                 </div>
                             </div>
 
@@ -234,23 +319,17 @@ function TherapistDetails() {
                         </div>
 
                         {/* Action Buttons */}
-                        { details.role !== 'therapist' &&
+                        { details.status !== 'approved' &&
                         <div className='mt-8 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3'>
                             <button className='flex-1 bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center'
-                           onClick={() =>
-                            setConfirmConfig({
-                                isOpen: true,
-                                title: 'Approve Therapist',
-                                message: 'Are you sure you want to approve this therapist?',
-                                onConfirm: handleApproveTherapist,
-                                })
-                                }
-                                >
+                            onClick={openTierModal}
+                            >
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                                 Approve Therapist
                             </button>
+                            {details.status !== 'rejected' &&
                             <button className='flex-1 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center'
                             onClick={() =>
                             setConfirmConfig({
@@ -266,24 +345,160 @@ function TherapistDetails() {
                                 </svg>
                                 Reject Application
                             </button>
-                          
+                            }
                         </div>
                         }
-                        <ConfirmDialog
-                        isOpen={confirmConfig.isOpen}
-                        title={confirmConfig.title}
-                        message={confirmConfig.message}
-                        onConfirm={() => {
-                            confirmConfig.onConfirm();
-                            setConfirmConfig({ ...confirmConfig, isOpen: false });
-                        }}
-                        onCancel={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
-                        />
+                    
                     </div>
                 </div>
             </div>
+
+            {/* Tier Selection Modal for Approval */}
+            {showTierModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 className="text-xl font-semibold mb-4">Select Therapist Tier</h3>
+                        <p className="text-gray-600 mb-6">Please select a tier level for this therapist:</p>
+                        
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <TierOption 
+                                tier="Bronze" 
+                                selected={selectedTier === 'bronze'} 
+                                onClick={() => handleTierSelection('bronze')} 
+                            />
+                            <TierOption 
+                                tier="Silver" 
+                                selected={selectedTier === 'silver'} 
+                                onClick={() => handleTierSelection('silver')} 
+                            />
+                            <TierOption 
+                                tier="Gold" 
+                                selected={selectedTier === 'gold'} 
+                                onClick={() => handleTierSelection('gold')} 
+                            />
+                            <TierOption 
+                                tier="Platinum" 
+                                selected={selectedTier === 'platinum'} 
+                                onClick={() => handleTierSelection('platinum')} 
+                            />
+                        </div>
+                        
+                        <div className="flex justify-end space-x-3">
+                            <button 
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                onClick={() => setShowTierModal(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-300"
+                                onClick={handleApproveWithTier}
+                                disabled={!selectedTier}
+                            >
+                                Confirm Approval
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Tier Upgrade Modal */}
+            {showUpgradeModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 className="text-xl font-semibold mb-4">Change Therapist Tier</h3>
+                        <p className="text-gray-600 mb-6">Select a new tier level for this therapist:</p>
+                        
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <TierOption 
+                                tier="Bronze" 
+                                selected={selectedTier === 'bronze'} 
+                                onClick={() => handleTierSelection('bronze')} 
+                            />
+                            <TierOption 
+                                tier="Silver" 
+                                selected={selectedTier === 'silver'} 
+                                onClick={() => handleTierSelection('silver')} 
+                            />
+                            <TierOption 
+                                tier="Gold" 
+                                selected={selectedTier === 'gold'} 
+                                onClick={() => handleTierSelection('gold')} 
+                            />
+                            <TierOption 
+                                tier="Platinum" 
+                                selected={selectedTier === 'platinum'} 
+                                onClick={() => handleTierSelection('platinum')} 
+                            />
+                        </div>
+                        
+                        <div className="flex justify-end space-x-3">
+                            <button 
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                onClick={() => setShowUpgradeModal(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-300"
+                                onClick={handleUpgradeTier}
+                                disabled={!selectedTier}
+                            >
+                                Update Tier
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Confirmation Modal */}
+            {confirmConfig.isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 className="text-xl font-semibold mb-2">{confirmConfig.title}</h3>
+                        <p className="text-gray-600 mb-6">{confirmConfig.message}</p>
+                        <div className="flex justify-end space-x-3">
+                            <button 
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                onClick={() => setConfirmConfig({...confirmConfig, isOpen: false})}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                                onClick={confirmConfig.onConfirm}
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
+}
+
+// Tier Option Component
+function TierOption({ tier, selected, onClick }) {
+    const tierColors = {
+        Bronze: 'bg-amber-100 border-amber-400 text-amber-800',
+        Silver: 'bg-gray-100 border-gray-400 text-gray-800',
+        Gold: 'bg-yellow-100 border-yellow-400 text-yellow-800',
+        Platinum: 'bg-blue-100 border-blue-400 text-blue-800'
+    };
+
+    return (
+        <div 
+            className={`border-2 rounded-lg p-4 text-center cursor-pointer transition-all ${
+                selected 
+                    ? `${tierColors[tier]} ring-2 ring-offset-2 font-bold` 
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+            onClick={onClick}
+        >
+            <h4 className="text-lg font-medium">{tier}</h4>
+        </div>
+    );
 }
 
 // Reusable component for information items
@@ -301,9 +516,6 @@ function DocumentItem({ label, fileUrl }) {
     const fullUrl = `${import.meta.env.VITE_API_URL}/admin/secure-documents/${
      fileUrl.replace(/^\/?media\//, '').replace(/\/$/, '')
    }`;
-
-
-
 
     return (
         <div className="border rounded-md p-4 bg-gray-50 shadow-sm flex flex-col">
@@ -323,9 +535,5 @@ function DocumentItem({ label, fileUrl }) {
         </div>
     );
 }
-
-
-
-
 
 export default TherapistDetails

@@ -1,22 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { getMYInfo } from '../../api/user';
+import { checkRequested } from '../../api/therapist';
 
 function Forbidden() {
   const [place, setPlace] = useState('/');
+  
 
   useEffect(() => {
-    const role = localStorage.getItem('current_role');
-    console.log(role)
-    if (role === 'user') {
-      setPlace('/');
-    } else if (role === 'therapist') {
-      setPlace('/therapistHome');
-    } else if (role === 'admin') {
-      setPlace('/adminDashboard');
-    } else{
-      setPlace('/login');
-    }
-  }, []); 
+    const fetchUser = async () => {
+        try {
+          const res = await getMYInfo();
+          if (res.success) {
+            if (res.data.current_role === 'user') {
+              setPlace('/');
+            } else if(res.data.current_role === 'therapist' && res.data.role === 'therapist'){
+              setPlace('/therapistHome');
+            }else if (res.data.current_role === 'therapist') {
+              const res = await checkRequested();
+                if (res.success) {
+                    setPlace('/submited');
+                } else {
+                    setPlace('/therapistDashboard');
+                }
+            } else if (res.data.current_role === 'admin') {
+              setPlace('/adminDashboard');
+            } else {
+              setPlace('/login');
+            }
+          } else {
+          }
+        } catch (error) {
+        } finally {
+        }
+      };
+  
+      fetchUser();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 text-center p-6">

@@ -4,6 +4,7 @@ import { FaUser, FaCalendarAlt, FaPhone, FaMapMarkerAlt, FaBriefcase, FaGraduati
 import { getProfile, getTotalRating, updateProfile } from '../../api/therapist';
 import TherapistProfileEditModal from '../../components/Therapist/TherapistProfileEditModal';
 import TherapistNotification from '../../components/Therapist/TherapistNotifications';
+import { showToast } from '../../utils/toast';
 
 function TherapistProfile() {
   const [therapistData, setTherapistData] = useState({
@@ -56,8 +57,11 @@ function TherapistProfile() {
         if (newProfile.success) {
           setTherapistData(newProfile.data);
         }
+        showToast(response.message, 'success')
+      }else{
+        showToast(response.message, 'error')
       }
-      showToast(response.message, 'success')
+      
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {
@@ -65,7 +69,6 @@ function TherapistProfile() {
       setIsEditModalOpen(false);
     }
   };
-
   if (loading) {
     return (
       <div className="flex h-screen bg-gray-50">
@@ -105,7 +108,7 @@ function TherapistProfile() {
                 <h2 className="text-2xl font-bold text-gray-800">{therapistData.fullname}</h2>
                 <p className="text-blue-600 font-medium mb-2">{therapistData.professionalTitle}</p>
                 <p className="text-gray-800 mb-2">
-                  {therapistData.specializations?.map((item) => item.specializations).join(', ') || 'N/A'}
+                  {therapistData.specializations?.map((item) => item.specialization).join(', ') || 'N/A'}
                 </p>
 
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
@@ -124,24 +127,41 @@ function TherapistProfile() {
                 </div>
               </div>
 
-              {/* Rating Section */}
-              <div className="flex items-center justify-center md:justify-start mt-2">
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      className={`w-5 h-5 ${star <= Math.round(rate) ? 'text-yellow-400' : 'text-gray-300'}`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                  <span className="ml-1 text-gray-600">
-                    {rate ? rate.toFixed(1) : 'No ratings yet'}
-                  </span>
-                </div>
-              </div>
+              {/* Rating + Tier Section */}
+<div className="flex items-center justify-center md:justify-start mt-2 gap-4">
+  
+  {/* Tier Badge */}
+  <span
+    className={`
+      inline-block px-3 py-1 text-sm font-semibold rounded-full shadow-md
+      ${therapistData.tier === 'bronze' ? 'bg-yellow-700 text-white' :
+        therapistData.tier === 'silver' ? 'bg-gray-400 text-white' :
+        therapistData.tier === 'gold' ? 'bg-yellow-500 text-white' :
+        therapistData.tier === 'platinum' ? 'bg-purple-600 text-white' :
+        'bg-gray-300 text-black'}
+    `}
+  >
+    {therapistData.tier ? therapistData.tier.charAt(0).toUpperCase() + therapistData.tier.slice(1) : 'Bronze'} Badge
+  </span>
+
+  {/* Rating */}
+  <div className="flex items-center">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <svg
+        key={star}
+        className={`w-5 h-5 ${star <= Math.round(rate) ? 'text-yellow-400' : 'text-gray-300'}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    ))}
+    <span className="ml-1 text-gray-600">
+      {rate ? rate.toFixed(1) : 'No ratings yet'}
+    </span>
+  </div>
+</div>
+
               
               {/* Edit Button */}
               <div className="w-full md:w-auto">

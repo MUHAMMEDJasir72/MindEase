@@ -13,7 +13,6 @@ function ClientDetails() {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-console.log('data',clientId)
   useEffect(() => {
     const fetchClientDetails = async () => {
       try {

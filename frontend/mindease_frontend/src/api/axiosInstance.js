@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { logoutUser } from './auth';
+import { showToast } from '../utils/toast';
 
 export const baseURL = import.meta.env.VITE_API_URL;
 export const basicUrl = import.meta.env.VITE_BASE_URL;
 export const routerBaseUrl = import.meta.env.VITE_ROUTER_URL;
-
 
 const axiosInstance = axios.create({
   baseURL: baseURL,
@@ -15,70 +16,62 @@ const axiosInstance = axios.create({
 });
 
 // ✅ Helper function to logout user
-function logoutUser() {
-  console.warn('[Logout] Clearing tokens and redirecting to login');
-  localStorage.clear()
-  window.location.href = '/login/';  // Redirect to login page
+async function handleLogout() {
+  try {
+    const response = await logoutUser();
+    if (response.success) {
+      showToast("You account blocked", "error");
+
+      // Delay redirect so toast shows up
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
+    } else {
+      // showToast(response.message, 'error');
+    }
+  } catch (error) {
+    showToast("Something went wrong!", "error");
+  }
 }
 
-// // ✅ Request Interceptor: Attach token
-// axiosInstance.interceptors.request.use(
-//   (config) => {
-//     const accessToken = localStorage.getItem('access');
-//     if (accessToken) {
-//       config.headers['Authorization'] = 'Bearer ' + accessToken;
-//     }
-//     return config;
-//   },
-//   (error) => {
-//     console.error('[Request Error]', error);
-//     return Promise.reject(error);
-//   }
-// );
-
-// ✅ Response Interceptor: Handle token refresh and account block
 axiosInstance.interceptors.response.use(
-  (response) => {
-    // Success case — just return the response
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (originalRequest.url.includes('/users/login/')) {
+      if (error.response?.status === 403) {
+        console.warn('[Response] 403 Forbidden detected. User may be blocked.');
+        console.log(error.response.data.detail)
+      if (error.response.data?.detail === "You do not have permission to perform this action.") {
+        handleLogout();
+      }
       return Promise.reject(error);
     }
-
-    // ✅ 1. If therapist is blocked (403 Forbidden)
-    if (error.response?.status === 403) {
-      console.warn('[Response] 403 Forbidden detected. User may be blocked.');
-      logoutUser();
-      return Promise.reject(error);
-    }
-
-    // ✅ 2. If access token expired (401 Unauthorized) and not yet retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      console.warn('[Response] 401 Unauthorized detected. Trying token refresh...');
+     console.error('error',error.response.data)
+    // If token expired (401) and not already retried
+    if (error.response && error.response.status === 401 && error.response.data.detail !== "Not logged in" &&
+      error.response.data.detail == 'Authentication credentials were not provided.' &&
+      !originalRequest._retry) {
       originalRequest._retry = true;
 
-
+     
+ 
       try {
-        // Try refreshing the token
-        const refreshResponse = await axios.post(`${baseURL}/users/refresh-token/`, {}, {
-          withCredentials: true,
-        });
-        // Retry the original request
+        // call refresh endpoint
+        await axiosInstance.post('/users/refresh/', {}, { withCredentials: true });
+
+        // retry the original request
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.error('[Refresh] Failed to refresh token:', refreshError.response?.data || refreshError.message);
-        logoutUser();
+        console.log('Session expired, please login again', 'error');
+        handleLogout() // logout flow
         return Promise.reject(refreshError);
       }
     }
-
-    console.error('[Response Error]', error.response?.data || error.message);
+ 
     return Promise.reject(error);
   }
 );
+
 
 export default axiosInstance;

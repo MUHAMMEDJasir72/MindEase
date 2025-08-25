@@ -1,9 +1,11 @@
+import { message } from "antd";
 import API from "./axiosInstance";
 
 export const profileInfo = async () => {
     try {
       const response = await API.get('/users/get_profile/');
-      return { success: true, profile_info: response.data.profile_info };
+      console.log(response.data)
+      return { success: true, profile_info: response.data.profile_info, loginMethod: response.data.login_method };
     } catch (error) {
       return { success: false };
     }
@@ -38,21 +40,29 @@ export const updateProfileImage = async (file) => {
 
 export const verifyPassword = async (password) => {
     try {
-      const response = await API.post('/users/verify_password/',{password});
+      const response = await API.post('/users/verify-password/',{password});
       return { success: true};
     } catch (error) {
       return { success: false };
     }
   };
 
-  export const changePassword = async (password) => {
-    try {
-      const response = await API.post('/users/change_password/',{password});
-      return { success: true};
-    } catch (error) {
-      return { success: false };
-    }
-  };
+export const changePassword = async (password1, password2) => {
+  try {
+    const response = await API.post('/users/change_password/', { password1, password2 });
+    return { 
+      success: true, 
+      message: response.data?.message || "Password updated successfully" 
+    };
+  } catch (error) {
+    return { 
+      success: false, 
+      message: error.response?.data?.message || "Something went wrong" 
+    };
+ 
+  }
+};
+
  
 
   export const verifyEmail = async (email) => {
@@ -107,9 +117,9 @@ export const verifyPassword = async (password) => {
   
   
 
-  export const changeForgotPassword = async (email, password) => {
+  export const changeForgotPassword = async (email, password1, password2) => {
     try {
-      const response = await API.post('/users/change_forgot_password/', { email, password });
+      const response = await API.post('/users/change_forgot_password/', { email, password1, password2 });
       return { success: true };  // Consider returning response data if needed
     } catch (error) {
       // Check if error response has message and return it
@@ -209,20 +219,67 @@ export const getTherapsitProfile= async (id) => {
   };
 
 
-export const getSessionPrices= async () => {
+// export const getSessionPrices= async () => {
+//     try {
+//       const response = await API.get(`/users/get-session-prices/`);
+//       return { success: true, prices: response.data.prices};
+//     } catch (error) {
+//       return { success: false };
+//     }
+//   };
+
+export const getMYInfo = async () => {
+  try {
+    const response = await API.get(`/users/my-info/`);
+    return { success: true, status: response.status, data: response.data.data };
+  } catch (error) {
+    return { success: false, error }; 
+  }
+};
+
+
+
+
+  export const googleLogin = async (token, current_role, mode) => {
     try {
-      const response = await API.get(`/users/get-session-prices/`);
-      return { success: true, prices: response.data.prices};
+      const response = await API.post('/users/auth/google/', { token, current_role, mode });
+      return { success: true, data: response.data}; // optionally pass message
     } catch (error) {
-      return { success: false };
+      return {
+        success: false,
+        message: error.response?.data?.error || error.message || "Something went wrong",
+      };
     }
   };
 
-export const getMYInfo = async () => {
-    try {
-      const response = await API.get(`/users/my-info/`);
-      return { success: true, info: response.data};
-    } catch (error) {
-      return { success: false };
-    }
-  };
+
+export const getUserTransactions = async () => {
+try {
+  const response = await API.get(`/users/get-transactions-history/`);
+  return { success: true, data: response.data.data };
+} catch (error) {
+  console.error('Error fetching profile:', error); // Optionally log the error
+  return { success: false, message: error.message || 'An error occurred' };
+}
+};
+
+export const checkAuth = async () => {
+try {
+  const response = await API.get(`/users/check-auth/`);
+  return { success: true, data:response.data.data};
+} catch (error) {
+  console.error('Error fetching profile:', error); // Optionally log the error
+  return { success: false, message: error.message || 'An error occurred' };
+}
+};
+
+
+
+export const checkSlot = async (data) => {
+  try {
+    const response = await API.post(`/users/check-time-slot/`, data); 
+    return { available: response.data.available };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || 'An error occurred' };
+  }
+};

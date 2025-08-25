@@ -7,7 +7,7 @@ from channels.layers import get_channel_layer
 from .models import Wallet, UserDetails, TherapistNotification, AdminNotification
 
 @receiver(post_save, sender=Notification)
-def send_notification_on_save(sender, instance, created, **kwargs):
+def send_user_notification_on_save(sender, instance, created, **kwargs):
     if created:
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -20,7 +20,7 @@ def send_notification_on_save(sender, instance, created, **kwargs):
                     "time": instance.time.isoformat(),
                     "type": instance.type,
                 },
-            }, 
+            },
         )
 
 @receiver(post_save, sender=UserDetails)
@@ -29,7 +29,7 @@ def create_user_wallet(sender, instance, created, **kwargs):
         Wallet.objects.create(user=instance)
 
 @receiver(post_save, sender=TherapistNotification)
-def send_notification_on_save(sender, instance, created, **kwargs):
+def send_therapist_notification_on_save(sender, instance, created, **kwargs):
     if created:
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -47,7 +47,7 @@ def send_notification_on_save(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=AdminNotification)
-def send_notification_on_save(sender, instance, created, **kwargs):
+def send_admin_notification_on_save(sender, instance, created, **kwargs):
     if created:
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(

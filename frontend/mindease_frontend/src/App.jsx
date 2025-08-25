@@ -41,6 +41,7 @@ import WithdrawalRequests from "./pages/admin/WithdrawalRequests";
 import { Toaster } from 'sonner'; 
 import NotFound from "./pages/Error Pages/NotFound";
 import Forbidden from "./pages/Error Pages/Forbidden";
+import Prices from "./pages/admin/Prices";
 
 function App() {
   return (
@@ -64,7 +65,7 @@ function App() {
         <Route path="/selectTherapist" element={<UserRoute><SelectTherapist/></UserRoute>} />
         <Route path="/bookTherapist/:id" element={<UserRoute><StripeProvider><BookTherapist/></StripeProvider></UserRoute>} />
         <Route path="/appointments" element={<UserRoute><Appointments/></UserRoute>} />
-        <Route path="/videoCall/:roomName/:type" element={<VideoCall/>} />
+        <Route path="/videoCall/:role/:roomName/:type" element={<VideoCall/>} />
         <Route path="/chat/:userId/:therapistId/:sessionId" element={<Chat/>} />
         <Route path="/wallet" element={<Wallet/>} />
        
@@ -91,6 +92,7 @@ function App() {
         <Route path="/chatToTherapists" element={<AdminRoute><ChatToTherapists/></AdminRoute>} />
         <Route path="/sessionDetails" element={<AdminRoute><AppointmentManagement/></AdminRoute>} />
         <Route path="/withdrawalReguests" element={<AdminRoute><WithdrawalRequests/></AdminRoute>} />
+        <Route path="/prices" element={<Prices/>} />
 
         <Route path="*" element={<NotFound />} />
          <Route path="/forbidden" element={<Forbidden/>} />

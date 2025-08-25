@@ -9,7 +9,7 @@ import Notifications from '../../components/users/Notifications';
 
 function Profile() {
   const navigate = useNavigate();
-  const loginMethod = localStorage.getItem('loginMethod');
+  const [loginMethod, setLoginMethod ] = useState(null)
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState({});
   const [editingField, setEditingField] = useState(null);
@@ -23,8 +23,13 @@ function Profile() {
         const info = await profileInfo();
         if (info.success) {
           setUser(info.profile_info);
+          setLoginMethod(info.loginMethod)
         }
       } catch (error) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+        // token invalid → logout
+        navigate("/login");
+        }
         showToast('Failed to load profile', 'error');
       } finally {
         setIsLoading(false);
@@ -36,7 +41,6 @@ function Profile() {
   const handleLogout = async () => {
     const response = await logoutUser();
     if (response.success) {
-      localStorage.clear();
       showToast(response.message, 'success');
       navigate('/login');
     } else {
@@ -107,6 +111,7 @@ function Profile() {
     }
   };
 
+
   if (isLoading) {
     return (
       <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
@@ -154,7 +159,7 @@ function Profile() {
             </label>
           </div>
           <div className="sm:p-5 text-center sm:text-left leading-relaxed">
-            <h1 className="text-lg sm:text-xl font-semibold">{user.username}</h1>
+            <h1 className="text-lg sm:text-xl font-semibold">{user.fullname}</h1>
             <p className="text-gray-600 text-sm sm:text-base">{user.email}</p>
           </div>
         </div>
@@ -231,12 +236,12 @@ function Profile() {
           <button
             onClick={handleLogout}
             className={`py-2 px-4 sm:px-0 bg-[#336c6d] text-white rounded-xl hover:bg-[#013435] border transition ${
-              loginMethod === 'email' ? 'sm:w-1/2' : 'w-full'
+              !loginMethod ? 'sm:w-1/2' : 'w-full'
             }`}
           >
             Logout
           </button>
-          {loginMethod === 'email' && (
+          {!loginMethod && (
             <button
               onClick={() => navigate('/change_password')}
               className="py-2 px-4 sm:px-0 sm:w-1/2 bg-[#336c6d] text-white rounded-xl hover:bg-[#013435] border transition"

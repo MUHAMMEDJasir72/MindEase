@@ -15,6 +15,8 @@ const AdminDashboard = () => {
   const [data, setData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
+
+
   useEffect(() => {
     const fetchInfo = async () => {
       const res = await getInfoForAdminDash();
@@ -38,7 +40,6 @@ const AdminDashboard = () => {
     );
   }
 
-  console.log(data)
 
   // Color palette
   const colors = {

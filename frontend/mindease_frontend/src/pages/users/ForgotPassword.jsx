@@ -4,7 +4,8 @@ import { ToastContainer } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { changeForgotPassword, verifyEmail } from '../../api/user';
 import { validateForm } from '../../utils/validateForm';
-import { verifyFotgetPasswordOtp, verifyOtp } from '../../api/auth';
+import { verifyFotgetPasswordOtp } from '../../api/auth';
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 function ForgotPassword() {
     const navigate = useNavigate();
@@ -16,6 +17,8 @@ function ForgotPassword() {
     const [isLoading, setIsLoading] = useState(false);
     const [canResendOtp, setCanResendOtp] = useState(true);
     const [resendTimer, setResendTimer] = useState(0);
+    const [showPassword1, setShowPassword1] = useState(false);
+    const [showPassword2, setShowPassword2] = useState(false);
 
     // Timer effect for resend OTP
     useEffect(() => {
@@ -102,31 +105,15 @@ function ForgotPassword() {
 
     const handlePasswordSubmit = async (event) => {
         event.preventDefault();
-    
-        // Validate fields
-        if (!password || !confirmPassword) {
-            showToast("Please fill in all fields", "error");
-            return;
-        }
-    
-        if (password !== confirmPassword) {
-            showToast("Passwords do not match", "error");
-            return;
-        }
-    
-        if (!validateForm({ password })) {
-            showToast("Password must be at least 8 characters with letters and numbers", "error");
-            return;
-        }
-    
+
         setIsLoading(true);
     
         try {
-            const response = await changeForgotPassword(email, password);
+            const response = await changeForgotPassword(email, password, confirmPassword);
             
             if (response.success) {
                 showToast('Password changed successfully', "success");
-                setTimeout(() => navigate('/login'), 2000);
+                navigate('/login')
             } else {
                 showToast(response.message || 'Password change failed', "error");
             }
@@ -171,7 +158,7 @@ function ForgotPassword() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="your@email.com"
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                    required
+                                    
                                 />
                             </div>
                             
@@ -263,19 +250,29 @@ function ForgotPassword() {
                     {/* Step 3: New Password */}
                     {step === 3 && (
                         <form onSubmit={handlePasswordSubmit}>
+
+
                             <div className="mb-4">
                                 <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">
                                     New Password
                                 </label>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Enter new password"
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                    required
-                                />
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        type={showPassword1 ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Enter new password"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                        
+                                    />
+                                    <span
+                                        onClick={() => setShowPassword1(!showPassword1)}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer text-lg"
+                                    >
+                                        {showPassword1 ? <MdVisibility /> : <MdVisibilityOff />}
+                                    </span>
+                                </div>
                                 <p className="text-xs text-gray-500 mt-1">
                                     Must be at least 8 characters with letters and numbers
                                 </p>
@@ -285,15 +282,22 @@ function ForgotPassword() {
                                 <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-medium mb-2">
                                     Confirm Password
                                 </label>
-                                <input
-                                    id="confirmPassword"
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Confirm your password"
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                    required
-                                />
+                                <div className="relative">
+                                    <input
+                                        id="confirmPassword"
+                                        type={showPassword2 ? "text" : "password"}
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        placeholder="Confirm your password"
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    />
+                                    <span
+                                        onClick={() => setShowPassword2(!showPassword2)}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer text-lg"
+                                    >
+                                        {showPassword2 ? <MdVisibility /> : <MdVisibilityOff />}
+                                    </span>
+                                </div>
                             </div>
                             
                             <button

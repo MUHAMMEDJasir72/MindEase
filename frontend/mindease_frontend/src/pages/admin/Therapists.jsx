@@ -1,6 +1,6 @@
 import React from 'react'
 import AdminSidebar from '../../components/admin/AdminSidebar'
-import { ChevronRight, Search, Filter, UserCheck, UserX, ChevronLeft, Eye } from "lucide-react";
+import { ChevronRight, Search, Filter, UserCheck, UserX, ChevronLeft, Eye, UserMinus } from "lucide-react";
 import { getAllTherapist } from '../../api/admin';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -13,7 +13,7 @@ function Therapists() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6);
-  const [searchTerm, setSearchTerm] = useState(''); // Add search term state
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchTherpists = async () => {
@@ -36,9 +36,17 @@ function Therapists() {
 
   // Filter therapists based on active tab and search term
   const filteredTherapists = therapists.filter(therapist => {
-    const roleMatch = therapist.role === (activeTab === 'therapists' ? 'therapist' : 'user');
+    let statusMatch = false;
+    if (activeTab === 'therapists') {
+      statusMatch = therapist.status === 'approved';
+    } else if (activeTab === 'requests') {
+      statusMatch = therapist.status === 'pending';
+    } else if (activeTab === 'rejected') {
+      statusMatch = therapist.status === 'rejected';
+    }
+    
     const nameMatch = therapist.fullname.toLowerCase().includes(searchTerm.toLowerCase());
-    return roleMatch && (searchTerm === '' || nameMatch);
+    return statusMatch && (searchTerm === '' || nameMatch);
   });
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -81,13 +89,13 @@ function Therapists() {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setCurrentPage(1); // Reset to first page when searching
+                  setCurrentPage(1);
                 }}
               />
             </div>
             
-            {/* Centered Toggle Switch */}
-            <div className='relative w-full md:w-64 h-10 bg-white rounded-lg border border-gray-300 flex'>
+            {/* Centered Toggle Switch - Now with three options */}
+            <div className='relative w-full md:w-96 h-10 bg-white rounded-lg border border-gray-300 flex'>
               <button
                 onClick={() => {
                   setActiveTab('therapists');
@@ -110,11 +118,25 @@ function Therapists() {
                 }`}
               >
                 <UserX className='h-4 w-4 mr-2' />
-                Requests
+                Pending
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('rejected');
+                  setCurrentPage(1);
+                }}
+                className={`flex-1 flex items-center justify-center text-sm font-medium z-10 transition-colors duration-200 ${
+                  activeTab === 'rejected' ? 'text-white' : 'text-gray-600'
+                }`}
+              >
+                <UserMinus className='h-4 w-4 mr-2' />
+                Rejected
               </button>
               <div
-                className={`absolute top-0 h-full w-1/2 bg-indigo-600 rounded-md transition-all duration-300 ${
-                  activeTab === 'therapists' ? 'left-0' : 'left-1/2'
+                className={`absolute top-0 h-full w-1/3 bg-indigo-600 rounded-md transition-all duration-300 ${
+                  activeTab === 'therapists' ? 'left-0' 
+                  : activeTab === 'requests' ? 'left-1/3' 
+                  : 'left-2/3'
                 }`}
               ></div>
             </div>
@@ -127,7 +149,9 @@ function Therapists() {
           <div className='w-full max-w-4xl bg-white rounded-xl shadow-sm border border-gray-200'>
             <div className='p-4 border-b border-gray-200'>
               <h2 className='text-lg font-semibold text-gray-800'>
-                {activeTab === 'therapists' ? 'Approved Therapists' : 'Pending Requests'} ({filteredTherapists.length})
+                {activeTab === 'therapists' ? 'Approved Therapists' 
+                 : activeTab === 'requests' ? 'Pending Requests' 
+                 : 'Rejected Therapists'} ({filteredTherapists.length})
               </h2>
             </div>
             {currentTherapists.length > 0 ? (
@@ -159,6 +183,11 @@ function Therapists() {
                           {activeTab === 'requests' && (
                             <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1'>
                               Pending Approval
+                            </span>
+                          )}
+                          {activeTab === 'rejected' && (
+                            <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 mt-1'>
+                              Rejected
                             </span>
                           )}
                         </div>

@@ -1,7 +1,7 @@
 # therapists/serializers.py
 from rest_framework import serializers
 from therapist.models import TherapistDetails, Specializations, Languages, AvailableDate, AvailableTimes
-from .models import SpecializationsList, Prices
+from .models import *
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
@@ -21,9 +21,12 @@ class LanguageSerializer(serializers.ModelSerializer):
 
 
 class SpecializationSerializer(serializers.ModelSerializer):
+    specialization = serializers.CharField(source='specialization.specialization', read_only=True)
+
     class Meta:
         model = Specializations
-        fields = ['id', 'specializations']
+        fields = ['id', 'specialization']
+
 
 class AvailableTimesSerializer(serializers.ModelSerializer):
     time = serializers.SerializerMethodField()
@@ -58,6 +61,7 @@ class TherapistDetailsSerializer(serializers.ModelSerializer):
     user = UsersSerializer(read_only=True)
     availabilities = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
 
     class Meta:
         model = TherapistDetails
@@ -77,6 +81,19 @@ class TherapistDetailsSerializer(serializers.ModelSerializer):
         )
         avg_rating = sessions.aggregate(avg=Avg('rating'))['avg']
         return round(avg_rating, 1) if avg_rating is not None else None
+    
+    def get_price(self, obj):
+        config = TierPriceConfig.objects.first()
+        if not config:
+            return {}
+
+        tier = obj.tier.lower()
+
+        return {
+            "video": getattr(config, f"{tier}_video"),
+            "voice": getattr(config, f"{tier}_audio"),
+            "message": getattr(config, f"{tier}_chat"),
+        }
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -172,3 +189,8 @@ class PricesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prices
         fields = '__all__'
+
+class TierPricesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TierPriceConfig
+        exclude = ['id']

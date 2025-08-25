@@ -50,7 +50,7 @@ function Otp() {
             const response = await verifyOtp(otp, email);
             if (response.success) {
                 showToast(response.message, "success");
-                setTimeout(() => navigate('/login'), 1000);
+                navigate('/login')
             } else {
                 showToast(response.message, "error");
             }

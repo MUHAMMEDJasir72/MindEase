@@ -44,40 +44,33 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 class TherapistNotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        print("WebSocket connection attempt")
         await self.channel_layer.group_add("therapist_notifications", self.channel_name)
         await self.accept()
-        print(f"WebSocket accepted and added to group: {self.channel_name}")
 
     async def disconnect(self, close_code):
-        print(f"WebSocket disconnected with code {close_code}")
-        await self.channel_layer.group_discard("notifications", self.channel_name)
+        await self.channel_layer.group_discard("therapist_notifications", self.channel_name)
 
     async def receive(self, text_data):
-        print(f"Received message from client: {text_data}")
         data = json.loads(text_data)
         message = data.get("message", "")
-        
-        # Test message to broadcast
-        print(f"Broadcasting message: {message}")  # Add this log
         await self.channel_layer.group_send(
-            "notifications",
+            "therapist_notifications",
             {
                 "type": "send_notification",
                 "message": {
                     "title": "New Notification",
                     "message": message,
-                    "time": "",  # Optionally add the timestamp here
-                    "type": "info"
+                    "time": datetime.now().isoformat(),
+                    "type": "info",
                 }
             }
         )
 
     async def send_notification(self, event):
-        print(f"Sending notification: {event['message']}")  # Add this log
         await self.send(text_data=json.dumps({
             "message": event["message"]
         }))
+
 
 
 class AdminNotificationConsumer(AsyncWebsocketConsumer): 

@@ -213,7 +213,7 @@ function Appointments() {
   const handleConfirmCancel = async (reason) => {
     if (!selectedId) return;
 
-    const current_role = localStorage.getItem('current_role')
+    const current_role = "user"
   
     const response = await cancelSession({ id: selectedId, reason, current_role });
   
@@ -538,7 +538,7 @@ function Appointments() {
                                 to={
                                   appointment.session_mode === 'message'
                                     ? `/chat/${appointment.client}/${appointment.therapist}/${appointment.id}`
-                                    : `/videoCall/${appointment.id}/${appointment.session_mode}`
+                                    : `/videoCall/videoCallWithTherapist/${appointment.id}/${appointment.session_mode}`
                                 }
                                 className="block w-full"
                               >

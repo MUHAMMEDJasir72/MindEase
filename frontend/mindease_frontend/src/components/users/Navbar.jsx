@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Home, CalendarCheck, User, Wallet, LogIn } from "lucide-react";
 import { Link, useLocation } from 'react-router-dom';
 
-function Navbar() {
+function Navbar({user=true}) {
   const location = useLocation();
-  const [isLogin, setIsLogin] = useState(false);
 
-  useEffect(() => {
-    const id = localStorage.getItem('id');
-    setIsLogin(!!id);
-  }, []);
+  // ✅ Call useSelector at the top level
+  const isLogin = user;
 
   const isActive = (path) => location.pathname === path;
 

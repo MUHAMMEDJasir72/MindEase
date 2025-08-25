@@ -1,11 +1,22 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from admins.models import *
 
-# in your model
 
 
 class TherapistDetails(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    TIER_CHOICES = [
+        ('bronze', 'Bronze'),
+        ('silver', 'Silver'),
+        ('gold', 'Gold'),
+        ('platinum', 'Platinum'),
+    ]
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='therapist_details')
     fullname = models.CharField(max_length=100)
     dateOfBirth = models.DateField()
@@ -28,14 +39,15 @@ class TherapistDetails(models.Model):
     educationalCertificate = models.FileField(upload_to='documents/')
     additionalCertificationDocument = models.FileField(upload_to='documents/', blank=True, null=True)
     profile_image = models.ImageField(upload_to='therapist_profile_images/', max_length=255, blank=True, null=True)
-    rejected = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    tier = models.CharField(max_length=20, choices=TIER_CHOICES, default='bronze')
 
     def __str__(self):
         return self.fullname
     
 
 class Specializations(models.Model):
-    specializations = models.CharField(max_length=100)
+    specialization = models.ForeignKey(SpecializationsList, on_delete=models.CASCADE, related_name='therapist_specializations')
     therapist_details = models.ForeignKey(TherapistDetails, on_delete=models.CASCADE, related_name='specializations')
 
 class Languages(models.Model):

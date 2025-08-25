@@ -4,3 +4,4 @@ from .models import *
 
 admin.site.register(SpecializationsList)
 admin.site.register(Prices)
+admin.site.register(TierPriceConfig)

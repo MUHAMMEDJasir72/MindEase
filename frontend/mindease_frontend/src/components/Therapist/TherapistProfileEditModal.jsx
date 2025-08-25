@@ -85,6 +85,40 @@ const TherapistProfileEditModal = ({ isOpen, onClose, therapistData, onSave }) =
     fetchSpecializations();
   }, []);
 
+const handleCheckboxChange = (field, value, checked) => {
+  setFormData(prevData => {
+    // Ensure the array exists
+    const currentArray = prevData[field] || [];
+    
+    let updatedArray;
+    
+    if (checked) {
+      // Add new item in the format Django expects
+      if (field === 'specializations') {
+        updatedArray = [...currentArray, { specialization: value }];
+      } else if (field === 'languages') {
+        updatedArray = [...currentArray, { languages: value }];
+      } else {
+        updatedArray = [...currentArray, value];
+      }
+    } else {
+      // Remove item based on field type
+      if (field === 'specializations') {
+        updatedArray = currentArray.filter(item => item.specialization !== value);
+      } else if (field === 'languages') {
+        updatedArray = currentArray.filter(item => item.languages !== value);
+      } else {
+        updatedArray = currentArray.filter(item => item !== value);
+      }
+    }
+
+    return {
+      ...prevData,
+      [field]: updatedArray,
+    };
+  });
+};
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -158,21 +192,7 @@ const TherapistProfileEditModal = ({ isOpen, onClose, therapistData, onSave }) =
     onClose();
   };
 
-  const handleCheckboxChange = (field, value, checked) => {
-    setFormData(prevData => {
-      // Ensure the array exists
-      const currentArray = prevData[field] || [];
-      
-      const updatedArray = checked
-        ? [...currentArray, { [field]: value }]
-        : currentArray.filter(item => item[field] !== value);
 
-      return {
-        ...prevData,
-        [field]: updatedArray,
-      };
-    });
-  };
 
   // Check file type for proper preview display
   const isImageFile = (fileName) => {
@@ -211,6 +231,7 @@ const TherapistProfileEditModal = ({ isOpen, onClose, therapistData, onSave }) =
     { id: 'education', label: 'Education', icon: <FaGraduationCap /> },
     { id: 'documents', label: 'Documents & Images', icon: <FaFileAlt /> }
   ];
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -428,8 +449,8 @@ const TherapistProfileEditModal = ({ isOpen, onClose, therapistData, onSave }) =
                             className="mt-1 mr-2"
                             value={item.specialization}
                             checked={formData?.specializations?.some(
-                              (spec) => spec.specializations === item.specialization
-                            )}
+  (spec) => spec.specialization === item.specialization
+)}
                             onChange={(e) => {
                               handleCheckboxChange('specializations', item.specialization, e.target.checked);
                             }}

@@ -3,6 +3,7 @@ import TherapistSidebar from '../../components/Therapist/TherapistSidebar';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getInfoForTherapistDash } from '../../api/therapist';
 import TherapistNotification from '../../components/Therapist/TherapistNotifications';
+import { getMYInfo } from '../../api/user';
 
 const COLORS = ['#0088FE', '#FFBB28', '#FF8042', '#00C49F'];
 
@@ -15,24 +16,29 @@ function TherapistHome() {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const therapist_id = localStorage.getItem('id');
+  
 
-    const fetchInfo = async () => {
-      try {
-        const res = await getInfoForTherapistDash(therapist_id);
+  useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const Info = await getMYInfo();
+
+      if (Info?.status === 200) {
+        const res = await getInfoForTherapistDash(Info.data.id);
         if (res.success) {
           setSessionData(res.data);
         }
-      } catch (err) {
-        console.error("Error fetching therapist dashboard data:", err);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching user or dashboard data:", err);
+    } finally {
+      setLoading(false); // always stop loading, success or fail
+    }
+  };
 
-    fetchInfo();
-  }, []);
+  fetchUser();
+}, []);
+
 
   // Calculate today's completion percentage
   const todaySessions = sessionData.todaySessions || [];

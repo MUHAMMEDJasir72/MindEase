@@ -30,21 +30,22 @@ from .models import TherapistDetails, Specializations, Languages
 
 # Specialization Serializer
 class SpecializationsSerializer(serializers.ModelSerializer):
+    specialization = serializers.CharField(source="specialization.specialization", read_only=True)
+
     class Meta:
         model = Specializations
-        fields = ['specializations']
+        fields = ['specialization']
 
-# Language Serializer
+
 class LanguagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Languages
         fields = ['languages']
 
-# TherapistDetails Serializer
+
 class TherapistDetailsSerializer(serializers.ModelSerializer):
     specializations = SpecializationsSerializer(many=True, read_only=True)
     languages = LanguagesSerializer(many=True, read_only=True)
- 
 
     class Meta:
         model = TherapistDetails
@@ -54,22 +55,20 @@ class TherapistDetailsSerializer(serializers.ModelSerializer):
             'licenseIssuingAuthority', 'licenseExpiryDate', 'degree', 'university',
             'yearOfGraduation', 'additionalCertifications', 'governmentIssuedID',
             'professionalLicense', 'educationalCertificate', 'additionalCertificationDocument',
-            'profile_image', 'specializations', 'languages'
+            'profile_image', 'specializations', 'languages', 'tier'
         ]
 
     def create(self, validated_data):
-        # Pop related fields
         specializations_data = validated_data.pop('specializations', [])
         languages_data = validated_data.pop('languages', [])
 
-        # Create main therapist object
         therapist = TherapistDetails.objects.create(**validated_data)
 
-        # Create specialization entries
         for spec in specializations_data:
-            Specializations.objects.create(therapist_details=therapist, specializations=spec)
+            # If spec is a name string
+            spec_obj = SpecializationsList.objects.get(specialization=spec)
+            Specializations.objects.create(therapist_details=therapist, specialization=spec_obj)
 
-        # Create language entries
         for lang in languages_data:
             Languages.objects.create(therapist_details=therapist, languages=lang)
 

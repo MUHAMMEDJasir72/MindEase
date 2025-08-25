@@ -108,7 +108,6 @@ function Notifications() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  console.log(notifications)
 
   return (
     <div className="relative" ref={notificationRef}>

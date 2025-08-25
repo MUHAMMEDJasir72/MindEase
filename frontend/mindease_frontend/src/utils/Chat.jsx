@@ -25,7 +25,7 @@ function Chat() {
 
   const { userId, therapistId, sessionId } = useParams();
   const roomName = `${userId}-${therapistId}`;
-  const role = localStorage.getItem('current_role');
+  const [role, setRole] = useState(null)
 
   // Role-based sender/receiver logic
   const sender = role === 'therapist' ? therapistId : userId;
@@ -82,6 +82,7 @@ function Chat() {
       const info = await getUserInfo(userId);
       if (info.success) {
         setUser(info.data);
+        setRole(info.data.current_role)
       } else {
         console.log('Failed to load user information.');
       }
@@ -90,9 +91,8 @@ function Chat() {
     fetchUserInfo();
     fetchTherapistInfo();
 
-    const current_role = localStorage.getItem('current_role');
 
-    const url = current_role === 'therapist'
+    const url = role === 'therapist'
       ? `${basicUrl}api/users/chat/conversation/${therapistId}/${userId}/`
       : `${basicUrl}api/users/chat/conversation/${userId}/${therapistId}/`;
 
@@ -132,7 +132,7 @@ function Chat() {
     };
 
     const markSessionAttend = async () => {
-            const info = await markAsAttended(sessionId,current_role);
+            const info = await markAsAttended(sessionId,role);
             if (info.success) {
               console.log('marked as attended')
             } else {

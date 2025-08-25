@@ -15,8 +15,10 @@ export const loginUser = async (userData) => {
     const response = await API.post("/users/login/", userData);
     return { success: true, data: response.data };
   } catch (error) {
+     console.log("LOGIN ERROR RESPONSE:", error.response?.data);
     const message =
       error.response?.data?.detail ||
+      error.response?.data?.message ||
       error.response?.data?.non_field_errors?.[0] ||
       error.message ||
       "Login failed!";
@@ -29,8 +31,7 @@ export const loginUser = async (userData) => {
 
 export const logoutUser = async () => {
     try {
-        const refreshToken = localStorage.getItem("refresh");
-        const response = await API.post("/users/logout/", { refresh: refreshToken });
+        const response = await API.post("/users/logout/");
         return { success: true, message: response.data.message };
     } catch (error) {
         return {
@@ -55,7 +56,7 @@ export const verifyOtp = async (otp,email) => {
 export const verifyFotgetPasswordOtp = async (otp,email) => {
  
   try {
-      const response = await API.post("/users/verify_forgetpassword-otp/", {otp,email});
+      const response = await API.post("/users/verify-forgetpassword-otp/", {otp,email});
       return { success: true, message: response.data.message};
   } catch (error) {
       return { success: false, message: error.response?.data?.message || "Invalid OTP" };

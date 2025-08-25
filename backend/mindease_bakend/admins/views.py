@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.models import *
 from decouple import config
 from django.core.mail import send_mail
-from .models import Prices
+from .models import *
 
 
 User = get_user_model()
@@ -24,7 +24,8 @@ class GetTherapistsView(APIView):
         therapists = TherapistDetails.objects.filter(
             user__availabilities__date__gte=today,
             user__availabilities__available_times__is_booked=False
-        ).distinct()
+        ).exclude(user=request.user)
+        therapists = therapists.distinct()
         serializer = TherapistDetailsSerializer(therapists, many=True)
         return Response({
             "success": True,
@@ -36,7 +37,7 @@ class GetAllTherapist(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        therapists = TherapistDetails.objects.exclude(rejected = True)
+        therapists = TherapistDetails.objects.all()
         serializer = TherapistDetailsSerializer(therapists, many=True)
         return Response({
             "success": True,
@@ -85,8 +86,11 @@ class ApproveTherapist(APIView):
     def patch(self, request, id):
         # Get the TherapistDetails instance using the ID sent from frontend
         therapist = get_object_or_404(TherapistDetails, id=id)
+        therapist.status = 'approved'
+        therapist.tier = request.data.get('tier')
+        therapist.save()
+        
 
-        # Access the related user and update the role
         user = therapist.user
         user.role = 'therapist'
         user.is_therapist = True
@@ -96,23 +100,23 @@ class ApproveTherapist(APIView):
         TherapistNotification.objects.create(
         user=therapist.user,
         title="Approved As Therapist",
-        message="You have been approved as a therapist. Please relogin for enter therapist page",
+        message="You have been approved as a therapist. Please relogin or refresh page for enter therapist page",
         type="success",
         )
-        login_url = os.getenv("BACKEND_URL", "").rstrip("/") + "/therapistLogin"
-        send_mail(
-            subject='Approved As Therapist',
-            message=(
-                f"Congratulations! Your account has been successfully approved as a therapist on our platform.\n\n"
-                "You now have access to the therapist dashboard, where you can manage your availability, "
-                "view appointments, and interact with clients.\n\n"
-                f"To continue, please log in again using the following link:\n{login_url}\n\n"
-                "Thank you for joining our platform. We're excited to have you on board!"
-            ),
-            from_email=config('EMAIL_HOST_USER'),
-            recipient_list=[user.email],
-            fail_silently=False
-        )
+        # login_url = os.getenv("BACKEND_URL", "").rstrip("/") + "/therapistLogin"
+        # send_mail(
+        #     subject='Approved As Therapist',
+        #     message=(
+        #         f"Congratulations! Your account has been successfully approved as a therapist on our platform.\n\n"
+        #         "You now have access to the therapist dashboard, where you can manage your availability, "
+        #         "view appointments, and interact with clients.\n\n"
+        #         f"To continue, please log in again using the following link:\n{login_url}\n\n"
+        #         "Thank you for joining our platform. We're excited to have you on board!"
+        #     ),
+        #     from_email=config('EMAIL_HOST_USER'),
+        #     recipient_list=[user.email],
+        #     fail_silently=False
+        # )
 
         return Response({"success": True}, status=status.HTTP_200_OK)
     
@@ -121,8 +125,15 @@ class ApproveTherapist(APIView):
 class RejectTherapist(APIView):
     def patch(self, request, id):
         therapist = get_object_or_404(TherapistDetails, id=id)
-        therapist.rejected = True
-        therapist.save()  
+        therapist.status = 'rejected'
+        therapist.save() 
+
+        TherapistNotification.objects.create(
+        user=therapist.user,
+        title="Rejected Request",
+        message="Your therapist request rejected.",
+        type="Your therapist request has been rejected.",
+        ) 
 
         return Response({
             "success": True,
@@ -475,6 +486,28 @@ class Sessions(APIView):
                     session.status = 'Absent - Client'
                 elif not session.therapist_attended:
                     session.status = 'Absent - Therapist'
+
+                    wallet = Wallet.objects.get(user=session.client)
+                    admin_wallet = Wallet.objects.get(user__is_staff=True)
+                    wallet.balance += session.price
+                    admin_wallet.balance -= session.price
+
+
+                    WalletTransaction.objects.create(
+                    wallet=wallet,
+                    transaction_type='CREDIT',
+                    amount=session.price,
+                    description=f"Refund from {session.id}, because of therapist not attended"
+                    )
+                    wallet.save()
+
+                    Notification.objects.create(
+                    user=session.client,
+                    title="Refund from absent session",
+                    message=f"You got {session.price} to yout wallet , because of therapist absent of session {session.id}",
+                    type="success",
+                    location="/appointments"
+                    )
                 else:
                     session.status = 'Completed'
                 session.save()
@@ -550,37 +583,76 @@ class MarkAllAdminNotifications(APIView):
         return Response({"message": "All notifications marked as read."}, status=status.HTTP_200_OK)
     
 
-class GetPrices(APIView):
-    def get(self, request):
-        prices = Prices.objects.first()
+# class GetPrices(APIView):
+#     def get(self, request):
+#         prices = Prices.objects.first()
 
-        if prices:
-            serializer = PricesSerializer(prices)
-            return Response({"prices": serializer.data}, status=status.HTTP_200_OK)
-        else:
-            # Send default 0 values if no Prices object exists
-            return Response({
-                "prices": {
-                    "video_call": 0,
-                    "voice_call": 0,
-                    "message": 0
-                }
-            }, status=status.HTTP_200_OK)
+#         if prices:
+#             serializer = PricesSerializer(prices)
+#             return Response({"prices": serializer.data}, status=status.HTTP_200_OK)
+#         else:
+#             # Send default 0 values if no Prices object exists
+#             return Response({
+#                 "prices": {
+#                     "video_call": 0,
+#                     "voice_call": 0,
+#                     "message": 0
+#                 }
+#             }, status=status.HTTP_200_OK)
         
-    def patch(self,request):
-        prices = Prices.objects.first()
+#     def patch(self,request):
+#         prices = Prices.objects.first()
 
-        if not prices:
-            # If no Prices object exists, create one
-            prices = Prices.objects.create()
+#         if not prices:
+#             # If no Prices object exists, create one
+#             prices = Prices.objects.create()
 
-        prices.video_call = request.data.get('video_call', prices.video_call)
-        prices.voice_call = request.data.get('voice_call', prices.voice_call)
-        prices.message = request.data.get('message', prices.message)
-        prices.save()
+#         prices.video_call = request.data.get('video_call', prices.video_call)
+#         prices.voice_call = request.data.get('voice_call', prices.voice_call)
+#         prices.message = request.data.get('message', prices.message)
+#         prices.save()
 
-        return Response({"message": "Prices updated successfully"}, status=status.HTTP_200_OK)
+#         return Response({"message": "Prices updated successfully"}, status=status.HTTP_200_OK)
 
+
+class TierPrices(APIView):
+    def get(self, request):
+        prices = TierPriceConfig.objects.all()
+        serializer = TierPricesSerializer(prices, many=True)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        # Assuming you only have one config row (created in migration/signal)
+  
+            config = TierPriceConfig.objects.first()
+
+            tier_data = request.data.get("data")
+
+            if config:
+                    
+                for field, value in tier_data.items():
+                    price = int(value)
+                    if price < 50:
+                        return Response({"error": "price must be at least 50"}, status=status.HTTP_400_BAD_REQUEST)
+                   
+                    setattr(config, field, value)
+                config.save()
             
+            return Response({"success": True, "message": "Updated Successfully"}, status=status.HTTP_200_OK)
+
+  
+class UpdateTier(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self,request):
+        id = request.data.get("id")
+        new_tier = request.data.get('selectedTier')
+
+        therapist = TherapistDetails.objects.get(id = id)
+        therapist.tier = new_tier
+        therapist.save()
+        
+        return Response({"success": True, "message": "Updated Successfully"}, status=status.HTTP_200_OK)
+        
+
 
 

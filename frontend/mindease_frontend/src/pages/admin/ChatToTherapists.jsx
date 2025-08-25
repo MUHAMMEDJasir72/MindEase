@@ -4,12 +4,13 @@ import AdminTherapistChat from '../../components/Therapist/AdminTherapistChat';
 import { getAllTherapist, getTherapist } from '../../api/admin';
 import { User } from 'lucide-react';
 import AdminNotification from '../../components/admin/AdminNotifications';
+import { getMYInfo } from '../../api/user';
 
 function ChatToTherapists() {
   const [therapists, setTherapists] = useState([]);
-  const [admin, setAdmin] = useState(localStorage.getItem('id'))
   const [selectedTherapist, setSelectedTherapist] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [admin, setAdmin] = useState('')
 
   useEffect(() => {
   
@@ -26,13 +27,18 @@ function ChatToTherapists() {
       }
     };
 
+      const fetchMyInfo = async () => {
+        const res = await getMYInfo();
+        if (res?.status === 200) {
+          setAdmin(res.data.id)
+        }
+      }
+    fetchMyInfo()
     fetchTherapists();
   }, []);
 
  
 
-  //   console.log('sender',a)
-  console.log('thera',therapists)
 
   return (
     <div className="flex min-h-screen w-full">
@@ -51,7 +57,7 @@ function ChatToTherapists() {
           {selectedTherapist ? (
             <AdminTherapistChat 
               roomName={`${admin}-${selectedTherapist.user.id}`} 
-              sender={localStorage.getItem('id')} 
+              sender={admin} 
               receiver={selectedTherapist.user.id} 
             />
           ) : (

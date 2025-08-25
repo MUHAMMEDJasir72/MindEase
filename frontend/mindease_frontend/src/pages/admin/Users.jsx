@@ -337,12 +337,12 @@ function Users() {
                               />
                             ) : (
                               <span className='text-blue-600 font-medium'>
-                                {(user.username || 'U').charAt(0).toUpperCase()}
+                                {(user.fullname || 'U').charAt(0).toUpperCase()}
                               </span>
                             )}
                           </div>
                           <div className='ml-4'>
-                            <div className='text-sm font-medium text-gray-900'>{user.username || 'No name'}</div>
+                            <div className='text-sm font-medium text-gray-900'>{user.fullname || 'No name'}</div>
                             <div className='text-sm text-gray-500'>ID: {user.id}</div>
                           </div>
                         </div>

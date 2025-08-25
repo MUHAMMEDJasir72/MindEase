@@ -87,7 +87,6 @@ const UserDetails = () => {
     // }
   };
 
-  console.log('user',user)
 
   if (isLoading) {
     return (
@@ -193,7 +192,7 @@ const UserDetails = () => {
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800">
-                    {user.username || 'No name provided'}
+                    {user.fullname || 'No name provided'}
                   </h1>
                   <p className="text-gray-600">{user.email || 'No email provided'}</p>
                 </div>
@@ -236,7 +235,7 @@ const UserDetails = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Full Name</p>
-                  <p className="font-medium">{user.Fullname || 'Not specified'}</p>
+                  <p className="font-medium">{user.fullname || 'Not specified'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Gender</p>
@@ -248,7 +247,7 @@ const UserDetails = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Location</p>
-                  <p className="font-medium">{user.location || 'Not specified'}</p>
+                  <p className="font-medium">{user.place || 'Not specified'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Phone</p>
@@ -257,7 +256,7 @@ const UserDetails = () => {
                 <div>
                   <p className="text-sm text-gray-500">Joined Date</p>
                   <p className="font-medium">
-                    {user.created_at ? format(new Date(user.created_at), 'MMM d, yyyy') : 'Unknown'}
+                    {user.date_joined ? format(new Date(user.date_joined), 'MMM d, yyyy') : 'Unknown'}
                   </p>
                 </div>
               </div>

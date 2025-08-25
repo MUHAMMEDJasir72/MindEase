@@ -19,6 +19,7 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import { deepPurple, green } from '@mui/material/colors';
 import { routerBaseUrl } from '../../api/axiosInstance';
+import { useSelector } from 'react-redux';
 
 function AdminTherapistChat({ roomName, sender, receiver }) {
   const [messages, setMessages] = useState([]);
@@ -29,13 +30,6 @@ function AdminTherapistChat({ roomName, sender, receiver }) {
   const theme = useTheme();
   const [currentUser, setCurrentUser] = useState('');
 
-  useEffect(() => {
-    // Get current user ID from localStorage
-    const userId = localStorage.getItem('id');
-    if (userId) {
-      setCurrentUser(String(userId)); // Ensure currentUser is always a string
-    }
-  }, []);
 
   useEffect(() => {
     const fetchChatHistory = async () => {
@@ -116,6 +110,13 @@ function AdminTherapistChat({ roomName, sender, receiver }) {
     }
   };
 
+  useEffect(() => {
+  if (sender) {
+    setCurrentUser(String(sender));
+  }
+}, [sender]);
+
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -124,7 +125,6 @@ function AdminTherapistChat({ roomName, sender, receiver }) {
     );
   }
 
-  console.log(roomName)
 
   return (
     <Box sx={{ 
@@ -160,7 +160,7 @@ function AdminTherapistChat({ roomName, sender, receiver }) {
         }}>
           <List sx={{ pb: 0 }}>
             {messages.map((msg, idx) => {
-              const isCurrentUser = String(msg.sender) === currentUser;
+              const isCurrentUser = String(msg.sender) === String(sender);
               return (
                 <ListItem 
                   key={idx} 

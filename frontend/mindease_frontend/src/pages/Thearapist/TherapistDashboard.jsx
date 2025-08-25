@@ -2,11 +2,51 @@ import React, { useState, useEffect } from 'react'
 import { CalendarClock, DollarSign, Home, TrendingUp, LogOut, Menu, X } from "lucide-react";
 import { logoutUser } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
+import { getMYInfo } from '../../api/user';
+import { checkRequested } from '../../api/therapist';
 
 function TherapistDashboard() {
   const [isRequested, setIsrequested] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [isLoading, setIsLoading] = useState(true);
+  
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const res = await getMYInfo();
+
+      if (res.success) {
+        const { role, current_role } = res.data;
+
+        if (role === "therapist") {
+            navigate("/therapistHome");  
+        }else if(current_role === 'user'){
+          navigate('/')
+        } else if(role === 'admin'){
+          navigate('/adminDashboard')
+        } else {
+          const info = await checkRequested();
+          if (info.success) {
+              navigate('/submited');
+          } else {
+              navigate('/therapistDashboard');
+          }
+        }
+      } else {
+        if (res.error?.response?.data?.detail === "Not logged in") {
+          navigate("/login");
+        } else {
+          navigate("/forbidden"); // fallback for other errors
+        }
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchUser();
+  }, [navigate]);
+
 
   const handleLogout = async () => {
     try {
@@ -18,7 +58,6 @@ function TherapistDashboard() {
       } else {
         showToast(response.message, 'error');
       }
-      console.log('Logout clicked');
     } catch (error) {
       console.error('Logout error:', error);
     }

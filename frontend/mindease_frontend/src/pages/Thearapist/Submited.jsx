@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { getProfile, updateProfile } from '../../api/therapist';
 import TherapistProfileEditModal from '../../components/Therapist/TherapistProfileEditModal';
 import { showToast } from '../../utils/toast';
+import { getMYInfo } from '../../api/user';
 
 
 const TherapistApplicationSubmitted = () => {
@@ -17,15 +18,36 @@ const TherapistApplicationSubmitted = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const navigate = useNavigate()
 
-  //  useEffect(() => {
-  //   const access_code = localStorage.getItem('access')
-  //   console.log('acces',access_code)
-  //   const decoded = jwt_decode(access_code);
-  //   console.log('role',decoded.role)
-  //   if (decoded.role === 'therapist'){
-  //     navigate('/therapistHome')
-  //   }
-  //   }, []);
+
+        
+        useEffect(() => {
+          const fetchUser = async () => {
+            const res = await getMYInfo();
+      
+            if (res.success) {
+              const { role, current_role } = res.data;
+      
+              if (role === "therapist") {
+                  navigate("/therapistHome");  
+                }else if(current_role === 'user'){
+                  navigate('/')
+                } else if(role === 'admin'){
+                  navigate('/adminDashboard')
+                } else {
+                  navigate("/submited");
+                }
+            } else {
+              if (res.error?.response?.data?.detail === "Not logged in") {
+                navigate("/login");
+              } else {
+                navigate("/forbidden"); // fallback for other errors
+              }
+            }
+                };
+      
+          fetchUser();
+        }, [navigate]);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -46,6 +68,10 @@ const TherapistApplicationSubmitted = () => {
     
         fetchData();
       }, []);
+
+
+     
+
 
   const handleSaveProfile = async (updatedData) => {
       try {
@@ -71,7 +97,7 @@ const TherapistApplicationSubmitted = () => {
         const response = await logoutUser();
         if (response.success) {
           localStorage.clear()
-          navigate('/login');
+          navigate('/therapistLogin');
         
           showToast(response.message, 'success');
         } else {
@@ -88,9 +114,9 @@ const TherapistApplicationSubmitted = () => {
   return (
   <div className="relative min-h-screen">
     {/* Notification in top-right */}
-    {/* <div className="absolute top-7 right-11 z-50">
+    <div className="absolute top-7 right-11 z-50">
       <TherapistNotification />
-    </div> */}
+    </div>
 
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="bg-white rounded-lg shadow-md p-8 text-center">

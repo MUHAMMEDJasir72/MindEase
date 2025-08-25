@@ -12,6 +12,7 @@ function SelectTherapist() {
   const [filteredTherapists, setFilteredTherapists] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialties, setSelectedSpecialties] = useState([]);
+  const [selectedTiers, setSelectedTiers] = useState([]);
   const [sortOption, setSortOption] = useState('rating-desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,9 +28,12 @@ function SelectTherapist() {
   // Get all unique specialties from therapists
   const allSpecialties = [...new Set(
     therapists.flatMap(t => 
-      t.specializations?.map(spec => spec.specializations) || []
+      t.specializations?.map(spec => spec.specialization) || []
     )
   )];
+
+  // Get all unique tiers from therapists
+  const allTiers = [...new Set(therapists.map(t => t.tier))].filter(tier => tier);
 
   useEffect(() => {
     const fetchTherapists = async () => {
@@ -56,8 +60,15 @@ function SelectTherapist() {
     if (selectedSpecialties.length > 0) {
       results = results.filter(therapist => 
         therapist.specializations?.some(spec => 
-          selectedSpecialties.includes(spec.specializations)
+          selectedSpecialties.includes(spec.specialization)
         )
+      );
+    }
+    
+    // Filter by tier
+    if (selectedTiers.length > 0) {
+      results = results.filter(therapist => 
+        selectedTiers.includes(therapist.tier)
       );
     }
     
@@ -89,7 +100,7 @@ function SelectTherapist() {
     
     setFilteredTherapists(results);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [therapists, searchTerm, selectedSpecialties, sortOption]);
+  }, [therapists, searchTerm, selectedSpecialties, selectedTiers, sortOption]);
 
   // Pagination logic
   const indexOfLastTherapist = currentPage * therapistsPerPage;
@@ -104,6 +115,15 @@ function SelectTherapist() {
         : [...prev, specialty]
     );
   };
+
+  const toggleTier = (tier) => {
+    setSelectedTiers(prev =>
+      prev.includes(tier)
+        ? prev.filter(t => t !== tier)
+        : [...prev, tier]
+    );
+  };
+
 
   const PaginationControls = () => {
     const maxVisiblePages = 5;
@@ -283,12 +303,12 @@ function SelectTherapist() {
               </button>
             </div>
             
-            {/* Specialty Filters */}
+            {/* Specialty and Tier Filters */}
             <div className={`mt-4 ${showFilters ? 'block' : 'hidden'} md:block`}>
               <h3 className='text-xs md:text-sm font-semibold text-gray-500 mb-2 flex items-center'>
                 <Filter size={16} className='mr-2 hidden md:block' /> FILTER BY SPECIALTY
               </h3>
-              <div className='flex flex-wrap gap-2'>
+              <div className='flex flex-wrap gap-2 mb-4'>
                 {allSpecialties.map(specialty => (
                   <button
                     key={specialty}
@@ -298,6 +318,23 @@ function SelectTherapist() {
                     onClick={() => toggleSpecialty(specialty)}
                   >
                     {specialty}
+                  </button>
+                ))}
+              </div>
+              
+              <h3 className='text-xs md:text-sm font-semibold text-gray-500 mb-2 flex items-center'>
+                <Filter size={16} className='mr-2 hidden md:block' /> FILTER BY TIER
+              </h3>
+              <div className='flex flex-wrap gap-2'>
+                {allTiers.map(tier => (
+                  <button
+                    key={tier}
+                    className={`px-3 py-1 rounded-full text-xs md:text-sm ${selectedTiers.includes(tier) 
+                      ? 'bg-teal-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    onClick={() => toggleTier(tier)}
+                  >
+                    {tier.charAt(0).toUpperCase() + tier.slice(1)}
                   </button>
                 ))}
               </div>
@@ -319,6 +356,16 @@ function SelectTherapist() {
                           e.target.src = '/images/default-profile.jpg';
                         }}
                       />
+                      
+                      {/* Tier badge */}
+                      <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-semibold ${
+                        therapist.tier === 'platinum' ? 'bg-gradient-to-r from-gray-200 to-gray-400 text-gray-800' :
+                        therapist.tier === 'gold' ? 'bg-gradient-to-r from-yellow-200 to-yellow-400 text-yellow-800' :
+                        therapist.tier === 'silver' ? 'bg-gradient-to-r from-gray-300 to-gray-500 text-white' :
+                        'bg-gradient-to-r from-amber-700 to-amber-900 text-white' // bronze
+                      }`}>
+                        {therapist.tier?.charAt(0).toUpperCase() + therapist.tier?.slice(1)} Badge
+                      </div>
                     </div>
 
                     <div className="p-3 md:p-5">
@@ -328,6 +375,8 @@ function SelectTherapist() {
                       <div className="mt-2 text-gray-500 text-xs md:text-sm">
                         {therapist.yearsOfExperience} years experience
                       </div>
+
+        
 
                       <div className="flex items-center justify-between mt-3 md:mt-4">
                         <button

@@ -5,24 +5,57 @@ import { ToastContainer } from "react-toastify";
 import { loginUser } from '../../api/auth';
 import { Link, useNavigate } from "react-router-dom";
 import { checkRequested } from '../../api/therapist';
-import { getMYInfo } from '../../api/user';
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import GoogleAuth from '../../components/users/GoogleAuth';
+import { checkAuth, getMYInfo } from '../../api/user';
 
 function TherapistLogin() {
     const [formData, setFormData] = useState({
-        username: "",
-        password: ""
+        email: "",
+        password: "",
+        current_role: 'therapist'
     });
     const [isLoading, setIsLoading] = useState(false);
     const [isFocused, setIsFocused] = useState({
-        username: false,
+        email: false,
         password: false
     });
 
     const [showPassword, setShowPassword] = useState(false);
     const togglePasswordVisibility = () => setShowPassword(prev => !prev);
-
     const navigate = useNavigate();
+    
+  const checkIsAuth = async () => {
+            try {
+                const res = await checkAuth();
+                if (res.success) {
+                    if (res.data.role === "admin") {
+                        navigate("/adminDashboard");
+                    } else if(res.data.role === "therapist" && res.data.current_role === 'therapist'){
+                        navigate("/therapistHome");
+                    }else if(res.data.current_role === 'therapist'){
+                        const res = await checkRequested();
+                            if (res.success) {
+                                navigate('/submited');
+                            } else {
+                                navigate('/therapistDashboard');
+                            }
+                    }else if(res.data.current_role === "user"){
+                        navigate('/')
+                    }
+                }
+            } catch (err) {
+                console.log(err)
+            }
+        };
+  
+      useEffect(() => {
+          
+          checkIsAuth();
+      }, [navigate]);
+  
+
+  
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -43,7 +76,7 @@ function TherapistLogin() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         
-        if (!formData.username || !formData.password) {
+        if (!formData.email || !formData.password) {
             showToast("Please fill in all fields", "error");
             return;
         }
@@ -52,26 +85,22 @@ function TherapistLogin() {
         
         try {
             const response = await loginUser(formData);
-
             if (response.success) {
-                const myInfo = await getMYInfo()
-                localStorage.setItem('id', myInfo.info.id)
-                if (myInfo.info.role === 'admin') {
-                    localStorage.setItem('current_role', 'admin');
+                const role = response.data.role
+
+                if (role === 'admin') {
                     navigate('/adminDashboard');
-                } else if(myInfo.info.role === 'therapist') {
-                    localStorage.setItem('current_role', 'therapist');
+                } else if(role === 'therapist') {
                     navigate('/therapistHome');
                 } else {
                     const res = await checkRequested();
-                    console.log('jasir', res.success);
-
                     if (res.success) {
                         navigate('/submited');
                     } else {
                         navigate('/therapistDashboard');
                     }
                 }
+                showToast("Login successful!", "success");
             } else {
                 showToast(response.message || "Invalid credentials. Please try again.", "error");
             }
@@ -110,20 +139,20 @@ function TherapistLogin() {
                     
                     <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                                Username
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                Email
                             </label>
-                            <div className={`relative transition-all duration-200 ${isFocused.username ? 'ring-2 ring-indigo-500' : ''} rounded-lg`}>
+                            <div className={`relative transition-all duration-200 ${isFocused.email ? 'ring-2 ring-indigo-500' : ''} rounded-lg`}>
                                 <input 
-                                    id="username"
-                                    name="username"
-                                    type="text"
-                                    value={formData.username}
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    value={formData.email}
                                     onChange={handleChange}
-                                    onFocus={() => handleFocus('username')}
-                                    onBlur={() => handleBlur('username')}
+                                    onFocus={() => handleFocus('email')}
+                                    onBlur={() => handleBlur('email')}
                                     className="w-full px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-colors duration-200"
-                                    placeholder="Enter your username"
+                                    placeholder="Enter your email"
                                     required
                                 />
                             </div>
@@ -173,6 +202,10 @@ function TherapistLogin() {
                             ) : 'Sign In'}
                         </motion.button>
                     </form>
+
+                    <div className="mt-4">
+                        <GoogleAuth mode="login" current_role={formData.current_role} />
+                    </div>
 
                     <div className="mt-4 sm:mt-6 text-center space-y-2 sm:space-y-3">
                         <p className="text-gray-600 text-sm">

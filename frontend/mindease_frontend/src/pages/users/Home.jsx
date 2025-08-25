@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/users/Navbar';
 import CompleteForm from '../../components/users/completeForm';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Notifications from '../../components/users/Notifications';
+import { checkAuth, getMYInfo } from '../../api/user';
 
 function Home() {
   const features = [
@@ -29,11 +30,57 @@ function Home() {
   const therapists = [1, 2, 3, 4, 5];
   const [openModal, setOpenModal] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate()
+
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await checkAuth();
+        if (res.success) {
+          setIsLoggedIn(true);
+          if(res.data.role === 'admin'){
+            navigate('/adminDashboard')
+          }else if(res.data.current_role === 'therapist' && res.data.role === 'user'){
+            navigate("/therapistDashboard")
+          }else if(res.data.current_role === 'therapist'){
+            navigate('/therapistDashboard')
+          }
+        }
+        
+      } catch (err) {
+        setIsLoggedIn(false); // Not logged in
+      }finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+        <button 
+          className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-teal-600 text-white"
+          onClick={() => setMobileNavOpen(!mobileNavOpen)}
+        >
+          ☰
+        </button>
+        <Navbar onClose={() => setMobileNavOpen(false)} />
+        <div className="flex-1 p-4 md:p-8 flex justify-center items-center mt-16 md:mt-0">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+      </div>
+    );
+  }
+
   
-  const user = localStorage.getItem("id");
 
   const renderMainButton = () => {
-    if (user) {
+    if (isLoggedIn) {
       return (
         <Link to={'/selectTherapist'}>
           <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-md hover:shadow-lg">
@@ -53,7 +100,7 @@ function Home() {
   };
 
   const renderCTAButton = () => {
-    if (user) {
+    if (isLoggedIn) {
       return (
         <Link to={'/selectTherapist'}>
           <button className="bg-white hover:bg-gray-100 text-teal-700 px-8 py-3 md:px-10 md:py-4 rounded-xl font-semibold text-base md:text-lg transition duration-300 shadow-lg hover:shadow-xl">
@@ -84,14 +131,14 @@ function Home() {
 
       {/* Sidebar Navigation - Hidden on mobile unless toggled */}
       <div className={`${mobileNavOpen ? 'block' : 'hidden'} md:block w-full md:w-56 md:min-w-[14rem] bg-white shadow-md fixed md:relative z-40 h-full`}>
-        <Navbar onClose={() => setMobileNavOpen(false)} />
+        <Navbar onClose={() => setMobileNavOpen(false)} user={isLoggedIn}/>
       </div>
       
       {openModal && <CompleteForm/>}
       
       {/* Main Content */}
       <main className='flex-1 p-4 md:p-8 mt-16 md:mt-0'>
-        {user && <div className='fixed right-4 md:right-10 top-4 md:top-8'>
+        {isLoggedIn && <div className='fixed right-4 md:right-10 top-4 md:top-8'>
           <Notifications /> 
         </div> }    
         

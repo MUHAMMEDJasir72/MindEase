@@ -99,10 +99,15 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class SpecializationSerializer(serializers.ModelSerializer):
+    specialization = serializers.CharField(source="specialization.specialization")  
+    # this fetches the string field from SpecializationsList
+
     class Meta:
         model = Specializations
-        fields = ['specializations']
+        fields = ['specialization']   # ✅ now matches declared field
+
 
 
 class LanguageSerializer(serializers.ModelSerializer):
@@ -126,6 +131,7 @@ class GetTherapistProfileSerializer(serializers.ModelSerializer):
             'specializations',
             'languages',
             'average_rating',
+            'tier'
         ]
     def get_average_rating(self, obj):
         from django.db.models import Avg
@@ -139,4 +145,10 @@ class GetTherapistProfileSerializer(serializers.ModelSerializer):
 class PricesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prices
+        fields = '__all__'
+
+
+class UserWalletTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletTransaction
         fields = '__all__'

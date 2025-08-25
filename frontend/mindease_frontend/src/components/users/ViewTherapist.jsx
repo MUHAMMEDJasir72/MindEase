@@ -1,12 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import {
   FaStar,
-  FaCalendarAlt,
   FaClock,
   FaGraduationCap,
   FaLanguage
 } from 'react-icons/fa';
 import { getTherapsitProfile } from '../../api/user';
+
+// 🔹 Tier Badge Component
+const TierBadge = ({ tier }) => {
+  const tierStyles = {
+    bronze: "bg-amber-600 text-white",
+    silver: "bg-gray-400 text-white",
+    gold: "bg-yellow-500 text-white",
+    platinum: "bg-purple-600 text-white"
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold shadow ${tierStyles[tier] || "bg-gray-300 text-black"}`}
+    >
+      🥇 {tier?.charAt(0).toUpperCase() + tier?.slice(1)} Badge
+    </span>
+  );
+};
 
 function ViewTherapist({ onOpen, onClose, id }) {
   const [therapist, setTherapist] = useState(null);
@@ -29,6 +46,7 @@ function ViewTherapist({ onOpen, onClose, id }) {
       fetchTherapistDetails();
     }
   }, [onOpen, id]);
+
 
   if (!onOpen) return null;
 
@@ -59,8 +77,15 @@ function ViewTherapist({ onOpen, onClose, id }) {
                   <FaStar className="inline mr-1" /> {therapist.average_rating}
                 </div>
               </div>
+
               <h2 className="text-lg font-semibold mb-1">{therapist.fullname}</h2>
               <p className="text-sm italic">{therapist.professionalTitle}</p>
+
+              {/* 🔹 Tier Badge */}
+              <div className="mt-3">
+                <TierBadge tier={therapist.tier} />
+              </div>
+
               <div className="inline-flex items-center text-sm bg-white text-teal-700 px-3 py-1 rounded-full font-medium shadow-sm mt-4">
                 <FaClock className="mr-2" /> {therapist.yearsOfExperience} yrs
               </div>
@@ -68,7 +93,6 @@ function ViewTherapist({ onOpen, onClose, id }) {
 
             {/* Right Section */}
             <div className="md:w-2/3 p-6">
-              {/* <h1 className="text-xl font-bold text-gray-800 mb-2">{therapist.fullname}</h1> */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-md font-semibold text-teal-700 mb-2 flex items-center">
@@ -77,7 +101,7 @@ function ViewTherapist({ onOpen, onClose, id }) {
                   <ul className="list-disc list-inside text-gray-700 space-y-1">
                     {therapist.specializations?.length > 0
                       ? therapist.specializations.map((spec, i) => (
-                          <li key={i}>{spec.specializations || spec}</li>
+                          <li key={i}>{spec.specialization || spec}</li>
                         ))
                       : <li>No specializations listed.</li>}
                   </ul>

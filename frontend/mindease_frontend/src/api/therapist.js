@@ -23,7 +23,12 @@ export const registerTherapist = async (details) => {
         return { success: true, message: response.data.message };
     } catch (error) {
         
-        return { success: false, message:  error?.response?.data?.error || "You have already submitted your therapist details." };
+        const backendMessage = error?.response?.data?.message;
+        const backendError = error?.response?.data?.error;
+        return { 
+            success: false, 
+            message: backendMessage || backendError || "Something went wrong. Please try again." 
+        };
     }
 };
 
@@ -58,12 +63,15 @@ export const checkRequested = async () => {
 
 export const addSlot = async (slotData) => {
   try {
-    const response = await API.post('/therapists/add_slot/', slotData)
-    return { success: true, message: response.data.message}
-  }catch (error) {
-    return { success: false, message: error.message}
+    const response = await API.post('/therapists/add_slot/', slotData);
+    return { success: true, message: response.data.message };
+  } catch (error) {
+    // Try to get message from backend response
+    const errorMsg = error.response?.data?.message || error.message || "Something went wrong";
+    return { success: false, message: errorMsg };
   }
-}
+};
+
 
 
 export const getAvailableDates = async () => {

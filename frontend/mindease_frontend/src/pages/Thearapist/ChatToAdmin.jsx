@@ -4,23 +4,29 @@ import AdminTherapistChat from '../../components/Therapist/AdminTherapistChat';
 import { getAdmin } from '../../api/therapist';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import TherapistNotification from '../../components/Therapist/TherapistNotifications';
+import { getMYInfo } from '../../api/user';
 
 function ChatToAdmin() {
   const [admin, setAdmin] = useState(null);
   const [therapist, setTherapist] = useState(null);
   const [roomName, setRoomName] = useState(null);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
-    const id = localStorage.getItem("id");
-    if (id) setTherapist(id);
-
+    const fetchMyInfo = async () => {
+    const res = await getMYInfo();
+    if (res?.status === 200) {
+      setTherapist(res.data.id)
+      setRole(res.data.current_role)
+    }
+  }
     const fetchAdmin = async () => {
       const res = await getAdmin();
       if (res.success) {
         setAdmin(res.data.id);
       }
     };
-
+    fetchMyInfo()
     fetchAdmin();
   }, []);
 

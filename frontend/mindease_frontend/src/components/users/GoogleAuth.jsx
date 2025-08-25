@@ -3,14 +3,14 @@ import { useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { basicUrl } from '../../api/axiosInstance';
-import { getMYInfo } from '../../api/user';
+import { showToast } from '../../utils/toast';
+import { googleLogin } from '../../api/user';
+import { checkRequested } from '../../api/therapist';
 
  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const GoogleAuth = ({ mode = 'login' }) => {
+const GoogleAuth = ({ mode, current_role }) => {
   const navigate = useNavigate();
   const googleButtonRef = useRef(null);
-
- 
 
   useEffect(() => {
     if (window.google && googleButtonRef.current) {
@@ -38,24 +38,32 @@ const GoogleAuth = ({ mode = 'login' }) => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const response = await axios.post(`${basicUrl}api/users/auth/google/`, {
-        token: credentialResponse.credential,
-      });
+      const response = await googleLogin(credentialResponse.credential, current_role, mode)
+      
+      if (response.success){
+        const role = response.data.role
+      
 
-      localStorage.setItem('loginMethod', 'google');
-
-      const myInfo = await getMYInfo()
-
-      if (myInfo.info.role === 'admin') {
-        localStorage.setItem('current_role', 'admin');
-        navigate('/adminDashboard');
-      } else {
-        localStorage.setItem('current_role', 'user');
-        navigate('/');
+      if (role === 'admin') {
+          navigate('/adminDashboard');
+      }else if(role === 'user'){
+          navigate('/');
+      }else {
+          const res = await checkRequested();
+          if (res.success) {
+              navigate('/submited');
+          } else {
+              navigate('/therapistDashboard');
+          }
       }
+      showToast(response.data.message, 'success')
+    }else {
+    showToast(response.message, 'error'); // always correct error
+    console.error(response.message);
+  }
+    
     } catch (error) {
-      console.error('Google login failed:', error.response?.data || error.message);
-    }
+       }
   };
 
   return <div ref={googleButtonRef} style={{ marginTop: '1rem' }}></div>;
