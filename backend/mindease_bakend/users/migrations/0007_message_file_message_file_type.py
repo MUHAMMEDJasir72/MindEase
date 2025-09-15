@@ -6,18 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0006_alter_therapysession_session_mode'),
+        ("users", "0006_alter_therapysession_session_mode"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='message',
-            name='file',
-            field=models.FileField(blank=True, null=True, upload_to='chat_files/'),
+            model_name="message",
+            name="file",
+            field=models.FileField(blank=True, null=True,
+                                   upload_to="chat_files/"),
         ),
         migrations.AddField(
-            model_name='message',
-            name='file_type',
-            field=models.CharField(blank=True, choices=[('image', 'Image'), ('video', 'Video'), ('document', 'Document'), ('audio', 'Audio'), ('other', 'Other')], max_length=20, null=True),
+            model_name="message",
+            name="file_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("image", "Image"),
+                    ("video", "Video"),
+                    ("document", "Document"),
+                    ("audio", "Audio"),
+                    ("other", "Other"),
+                ],
+                max_length=20,
+                null=True,
+            ),
         ),
     ]

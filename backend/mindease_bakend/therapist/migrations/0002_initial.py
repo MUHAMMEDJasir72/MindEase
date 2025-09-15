@@ -10,34 +10,54 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('therapist', '0001_initial'),
+        ("therapist", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='availabledate',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='availabilities', to=settings.AUTH_USER_MODEL),
+            model_name="availabledate",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="availabilities",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='availabletimes',
-            name='date',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='available_times', to='therapist.availabledate'),
+            model_name="availabletimes",
+            name="date",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="available_times",
+                to="therapist.availabledate",
+            ),
         ),
         migrations.AddField(
-            model_name='therapistdetails',
-            name='user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='therapist_details', to=settings.AUTH_USER_MODEL),
+            model_name="therapistdetails",
+            name="user",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="therapist_details",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='specializations',
-            name='therapist_details',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='specializations', to='therapist.therapistdetails'),
+            model_name="specializations",
+            name="therapist_details",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="specializations",
+                to="therapist.therapistdetails",
+            ),
         ),
         migrations.AddField(
-            model_name='languages',
-            name='therapist_details',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='languages', to='therapist.therapistdetails'),
+            model_name="languages",
+            name="therapist_details",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="languages",
+                to="therapist.therapistdetails",
+            ),
         ),
     ]

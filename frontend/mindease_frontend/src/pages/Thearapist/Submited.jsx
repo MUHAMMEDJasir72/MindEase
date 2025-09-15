@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../api/auth';
 import TherapistNotification from '../../components/Therapist/TherapistNotifications'
 import { useEffect, useState } from 'react';
-import { getProfile, updateProfile } from '../../api/therapist';
+import { checkRequested, getProfile, updateProfile } from '../../api/therapist';
 import TherapistProfileEditModal from '../../components/Therapist/TherapistProfileEditModal';
 import { showToast } from '../../utils/toast';
 import { getMYInfo } from '../../api/user';
@@ -26,15 +26,21 @@ const TherapistApplicationSubmitted = () => {
       
             if (res.success) {
               const { role, current_role } = res.data;
+              console.log(role,current_role)
       
-              if (role === "therapist") {
+              if(role === "therapist") {
                   navigate("/therapistHome");  
                 }else if(current_role === 'user'){
                   navigate('/')
                 } else if(role === 'admin'){
                   navigate('/adminDashboard')
                 } else {
-                  navigate("/submited");
+                    const res = await checkRequested();
+                    if (res.success) {
+                        navigate('/submited');
+                    } else {
+                        navigate('/therapistDashboard');
+                    }
                 }
             } else {
               if (res.error?.response?.data?.detail === "Not logged in") {

@@ -38,6 +38,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    console.log('config',error.config._retry)
 
       if (error.response?.status === 403) {
         console.warn('[Response] 403 Forbidden detected. User may be blocked.');
@@ -63,7 +64,7 @@ axiosInstance.interceptors.response.use(
         // retry the original request
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.log('Session expired, please login again', 'error');
+        console.log('Session expired, please login again', 'error'); 
         handleLogout() // logout flow
         return Promise.reject(refreshError);
       }

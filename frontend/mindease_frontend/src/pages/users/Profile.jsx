@@ -6,6 +6,8 @@ import { logoutUser } from '../../api/auth';
 import { Pencil, Check } from 'lucide-react';
 import { profileInfo, updateProfileField, updateProfileImage } from '../../api/user';
 import Notifications from '../../components/users/Notifications';
+import { useDispatch } from 'react-redux';
+import { clearUser } from '../../userSlice';
 
 function Profile() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ function Profile() {
   const [editingField, setEditingField] = useState(null);
   const [editedValue, setEditedValue] = useState('');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -42,6 +45,7 @@ function Profile() {
     const response = await logoutUser();
     if (response.success) {
       showToast(response.message, 'success');
+      dispatch(clearUser())
       navigate('/login');
     } else {
       showToast(response.message, 'error');

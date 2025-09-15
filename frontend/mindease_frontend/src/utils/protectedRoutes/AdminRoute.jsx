@@ -1,31 +1,39 @@
 import { Navigate } from "react-router-dom";
 import Forbidden from "../../pages/Error Pages/Forbidden";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getMYInfo } from "../../api/user";
 import AdminSidebar from "../../components/admin/AdminSidebar";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "../../userSlice";
 
 const AdminRoute = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const user = useSelector((state)=> state.user.user)
   const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch()
 
-  useEffect(() => {
-    const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
       try {
         const res = await getMYInfo();
         if (res.success) {
-          setUser(res.data);
+          dispatch(setUser(res.data));
         } else {
-          setUser(null);
+          dispatch(setUser(null));
         }
       } catch (error) {
-        setUser(null);
+        console.error("Error fetching user:", error);
+        dispatch(setUser(null));
       } finally {
         setLoading(false);
       }
-    };
-
+    }, [dispatch]);
+  
+useEffect(() => {
+  if (!user) {
     fetchUser();
-  }, []);
+  } else {
+    setLoading(false);
+  }
+}, [user, fetchUser]);
 
 
   // While fetching user data → show loading
@@ -39,7 +47,8 @@ const AdminRoute = ({ children }) => {
       </div>
     );
   }
-
+ 
+  console.log(user)
   // If user is null after loading → redirect to login
   if (!user) {
     return <Navigate to="/login" />;
@@ -50,6 +59,8 @@ const AdminRoute = ({ children }) => {
     return children;
   }else if(user.current_role === 'user'){
     return <Navigate to="/" />
+  }else if(user.current_role == 'therapist' && user.role == 'user'){
+    return <Navigate to="/therapistDashboard" />;
   }else if(user.current_role === 'therapist'){
     return <Navigate to= "/therapistHome" />
   }else{

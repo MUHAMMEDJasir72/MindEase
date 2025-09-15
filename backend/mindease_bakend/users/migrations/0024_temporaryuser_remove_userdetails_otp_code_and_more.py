@@ -6,27 +6,35 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0023_clientwithdrawalrequest'),
+        ("users", "0023_clientwithdrawalrequest"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TemporaryUser',
+            name="TemporaryUser",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('email', models.EmailField(max_length=254, unique=True)),
-                ('username', models.CharField(max_length=150)),
-                ('password', models.CharField(max_length=128)),
-                ('otp', models.CharField(max_length=6)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("email", models.EmailField(max_length=254, unique=True)),
+                ("username", models.CharField(max_length=150)),
+                ("password", models.CharField(max_length=128)),
+                ("otp", models.CharField(max_length=6)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.RemoveField(
-            model_name='userdetails',
-            name='otp_code',
+            model_name="userdetails",
+            name="otp_code",
         ),
         migrations.RemoveField(
-            model_name='userdetails',
-            name='otp_created_at',
+            model_name="userdetails",
+            name="otp_created_at",
         ),
     ]

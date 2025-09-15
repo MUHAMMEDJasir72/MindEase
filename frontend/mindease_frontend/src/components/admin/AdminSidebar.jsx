@@ -18,6 +18,8 @@ import {
   ClipboardList,
   
 } from 'lucide-react';
+import { clearUser } from '../../userSlice';
+import { useDispatch } from 'react-redux';
 
 // Organized menu items into categories for better structure
 const menuItems = [
@@ -45,12 +47,14 @@ const menuItems = [
 function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch()
 
   const handleLogout = async () => {
     try {
       const response = await logoutUser();
       if (response.success) {
         navigate('/login');
+        dispatch(clearUser())
         showToast(response.message, 'success');
       } else {
         showToast(response.message, 'error');

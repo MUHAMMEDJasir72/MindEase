@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('therapist', '0006_remove_specializations_specializations_and_more'),
+        ("therapist", "0006_remove_specializations_specializations_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='specializations',
-            name='specialization',
+            model_name="specializations",
+            name="specialization",
         ),
         migrations.AddField(
-            model_name='specializations',
-            name='specializations',
+            model_name="specializations",
+            name="specializations",
             field=models.CharField(default=1, max_length=100),
             preserve_default=False,
         ),

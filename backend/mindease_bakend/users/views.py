@@ -1,3 +1,40 @@
+from .models import TherapySession  # Make sure this import is correct
+from datetime import datetime
+import os
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import MultiPartParser
+from django.contrib.auth import login
+from google.auth.transport import requests
+from google.oauth2 import id_token
+from django.contrib.sites.models import Site
+from dj_rest_auth.registration.views import SocialLoginView
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from rest_framework.decorators import api_view, permission_classes
+from datetime import time
+from .serializers import MessageSerializer
+from .models import Message
+from .models import TherapySession
+from django.utils.decorators import method_decorator
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.conf import settings
+import stripe
+from django.utils.timezone import localtime
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from datetime import timedelta
+from .serializers import MyTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .models import UserDetails, TemporaryUser
+from decouple import config
+import re
+import string
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,333 +48,254 @@ from django.shortcuts import get_object_or_404
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
-
+from rest_framework.exceptions import NotAuthenticated
 from .serializers import *
 from .models import *
 from therapist.models import AvailableDate, AvailableTimes, TherapistDetails
 from admins.models import *
-
 from rest_framework import permissions
+import logging
+logger = logging.getLogger("users")
+
+User = get_user_model()
+
 
 class IsNotBlockedUser(permissions.BasePermission):
-
     def has_permission(self, request, view):
         user = request.user
-        # ✅ Only block if user is therapist and is blocked
         if user.is_authenticated and not user.is_user_active:
             return False
         return True
 
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
-import string
-import re
-User = get_user_model()
-from decouple import config
-
-# class RegisterUserView(APIView):
-#     def post(self, request):
-
-#         print('data',request.data)
-        # email = request.data.get('email', '').strip()
-        # username = request.data.get('username', '').strip()
-        # password1 = request.data.get('password1', '').strip()
-        # password2 = request.data.get('password2', '').strip()
-        
-        # if not username:
-        #     return Response({"error": "User name is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # username_pattern = r'^[a-zA-Z0-9_-]+$'
-        # if not re.match(username_pattern, username):
-        #     return Response(
-        #         {"error": "Username can only contain letters, numbers, underscores, or hyphens (no other special characters)."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # if not (4 <= len(username) <= 15):
-        #     return Response(
-        #         {"error": "Username must be between 4 and 15 characters long."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # if User.objects.filter(username=username).exists():
-        #     return Response({"error": "Username already taken"}, status=status.HTTP_400_BAD_REQUEST)
-    
-        # if not email:
-        #     return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
-        # try:
-        #     validate_email(email)
-        # except ValidationError:
-        #     return Response({"error": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # if User.objects.filter(email=email).exists():
-        #     return Response({"error": "This Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # if not password1 and password2:
-        #     return Response({"error": "password is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # if not password1:
-        #     return Response({"error": "Please enter first password"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # if not (4 <= len(password1) <= 15):
-        #     return Response({"error": "Password must be between 4 and 15 characters long."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # allowed_chars = string.ascii_letters + string.digits + string.punctuation
-        # if any(char not in allowed_chars for char in password1):
-        #     return Response({"error": "Password must not contain emojis or unsupported characters."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # if not password2:
-        #     return Response({"error": "Please enter confirm password"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # if password1 != password2:
-        #     return Response({"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
-    
-        # temp_user = TemporaryUser.objects.filter(email=email, username=username)
-        # if temp_user.exists():
-        #     temp_user.delete()
-            
-        # otp_code = random.randint(100000, 999999)
-
-        # TemporaryUser.objects.create(
-        #     email=email,
-        #     username=username,
-        #     password=password1, 
-        #     otp=otp_code
-        # )
-        
-        # send_mail(
-        #     'Your MindEase Verification Code',
-        #     f'''Dear User,\n\nYour One-Time Password (OTP) for MindEase is:\n**{otp_code}**\n\nThis code expires in 5 minutes.
-        #         Please do not share it with anyone.\n\nIf you didn’t request this code, please secure your account by changing your password immediately or contacting our support team at [jasirsnr72@gmail.com].\n\nThank you,\nThe MindEase Team''',
-        #     config('EMAIL_HOST_USER'),
-        #     [email],
-        #     fail_silently=False
-        # )
-     
-
-        # return Response({"message": "User registered successfully. Please verify your OTP."}, status=status.HTTP_201_CREATED)
-    
-from django.contrib.auth.hashers import make_password
 
 
-import re
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-import random
-from decouple import config
-from django.core.mail import send_mail
-from .models import UserDetails, TemporaryUser
 
 class RegisterUserView(APIView):
     def post(self, request):
-
+        """Handle user registration with validation and OTP sending."""
         data = request.data
-        full_name = data.get('fullName')
-        email = data.get('email')
-        age = data.get('age')
-        place = data.get('place')
-        gender = data.get('gender')
-        language = data.get('language')
-        phone = data.get('phone')
-        password1 = data.get('password1')
-        password2 = data.get('password2')
+        full_name = data.get("fullName", "").strip()
+        email = data.get("email", "").strip()
+        age = data.get("age", "").strip()
+        place = data.get("place", "").strip()
+        gender = data.get("gender", "").strip()
+        language = data.get("language", "").strip()
+        phone = data.get("phone", "").strip()
+        password1 = data.get("password1", "")
+        password2 = data.get("password2", "")
 
-        if not all([full_name, email, age, place, gender, language, phone, password1, password2]):
+        logger.info("Received registration request with data: %s", data)
+
+        if not all(
+            [
+                full_name,
+                email,
+                age,
+                place,
+                gender,
+                language,
+                phone,
+                password1,
+                password2,
+            ]
+        ):
             return Response(
                 {"success": False, "error": "All fields are required."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ Validate fullname (letters only, 3–20 chars)
-        if not re.match(r'^[A-Za-z]{3,20}$', full_name):
+        if not re.match(r"^[A-Za-z]{3,20}$", full_name):
             return Response(
-                {"success": False, "error": "Fullname must contain only letters and be 3–20 characters long."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "success": False,
+                    "error": "Fullname must contain only letters and be 3–20 characters long.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ Validate email format
         try:
             validate_email(email)
         except ValidationError:
             return Response(
                 {"success": False, "error": "Invalid email format."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         if UserDetails.objects.filter(email=email).exists():
             return Response(
                 {"success": False, "error": "Email already registered."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ Validate age (only numbers, between 0 and 150)
         if not age.isdigit() or not (0 < int(age) <= 150):
             return Response(
                 {"success": False, "error": "Age must be a number between 1 and 150."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ Validate place (letters only, 3–50 chars)
-        if not re.match(r'^[A-Za-z\s]{3,50}$', place):
+        if not re.match(r"^[A-Za-z\s]{3,50}$", place):
             return Response(
-                {"success": False, "error": "Place must contain only letters and be 3–50 characters long."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "success": False,
+                    "error": "Place must contain only letters and be 3–50 characters long.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ Validate language (letters only, 2–30 chars)
-        if not re.match(r'^[A-Za-z\s]{2,30}$', language):
+        if not re.match(r"^[A-Za-z\s]{2,30}$", language):
             return Response(
-                {"success": False, "error": "Language must contain only letters and be 2–30 characters long."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "success": False,
+                    "error": "Language must contain only letters and be 2–30 characters long.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
-         # ✅ Validate phone number format
-        if not re.match(r'^\+?1?\d{9,15}$', phone):
+
+        if not re.match(r"^\+?[1-9]\d{8,14}$", phone):
             return Response(
                 {"success": False, "error": "Invalid phone number format."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ Validate password match
         if password1 != password2:
             return Response(
                 {"success": False, "error": "Passwords do not match."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ✅ Validate password strength (8–30 chars, must contain number + special char)
         if (
-            len(password1) < 8 or len(password1) > 30 or
-            not re.search(r"[0-9]", password1) or
-            not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password1)
+            len(password1) < 8
+            or len(password1) > 30
+            or not re.search(r"[0-9]", password1)
+            or not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password1)
         ):
             return Response(
-                {"success": False, "error": "Password must be 8–30 characters long, include at least one number and one special character."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "success": False,
+                    "error": "Password must be 8–30 characters long, include at least one number and one special character.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
-       
 
-        # Remove old temp user if exists
         temp_user = TemporaryUser.objects.filter(email=email)
         if temp_user.exists():
             temp_user.delete()
-            
-        # Generate OTP
+
         otp_code = random.randint(100000, 999999)
-        
+
         TemporaryUser.objects.create(
             email=email,
-            password=password1, 
+            password=password1,
             otp=otp_code,
             fullname=full_name,
             age=age,
             place=place,
             gender=gender,
-            language=language, 
+            language=language,
             phone=phone,
         )
 
-        # Send OTP mail
         send_mail(
-            'Your MindEase Verification Code',
-            f'''Dear User,\n\nYour One-Time Password (OTP) for MindEase is:\n**{otp_code}**\n\nThis code expires in 5 minutes.
-                Please do not share it with anyone.\n\nIf you didn’t request this code, please secure your account by changing your password immediately or contacting our support team at [jasirsnr72@gmail.com].\n\nThank you,\nThe MindEase Team''',
-            config('EMAIL_HOST_USER'),
+            "Your MindEase Verification Code",
+            f"""Dear User,\n\nYour One-Time Password (OTP) for MindEase is:\n**{otp_code}**\n\nThis code expires in 5 minutes.
+                Please do not share it with anyone.\n\nIf you didn’t request this code, please secure your account by changing your password immediately or contacting our support team at [jasirsnr72@gmail.com].\n\nThank you,\nThe MindEase Team""",
+            config("EMAIL_HOST_USER"),
             [email],
-            fail_silently=False
+            fail_silently=False,
         )
 
-        return Response({"message": "User registered successfully. Please verify your OTP."}, status=status.HTTP_201_CREATED)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import MyTokenObtainPairSerializer
-
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.response import Response
-from rest_framework import status
-from datetime import timedelta
-from django.utils.timezone import now
+        return Response(
+            {"message": "User registered successfully. Please verify your OTP."},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class LoginViews(APIView):
     def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        current_role = request.data.get('current_role')
-
+        """Authenticate user and return access & refresh tokens."""
+        email = request.data.get("email")
+        password = request.data.get("password")
+        current_role = request.data.get("current_role")
 
         try:
             user_obj = UserDetails.objects.get(email=email)
         except UserDetails.DoesNotExist:
             return Response(
-                {'detail': 'No account found with this email.'},
-                status=status.HTTP_404_NOT_FOUND
+                {"detail": "No account found with this email."},
+                status=status.HTTP_404_NOT_FOUND,
             )
-        user = authenticate(request, username=user_obj.username, password=password)
+        user = authenticate(
+            request, username=user_obj.username, password=password)
 
         if user is not None:
-            if not user.is_user_active and current_role == 'user':
-                return Response({"message": 'Your account is blocked'}, status=status.HTTP_403_FORBIDDEN)
-            
-            if not user.is_therapist_active and current_role == 'therapist':
-                return Response({"message": 'Your account is blocked'}, status=status.HTTP_403_FORBIDDEN)
+            if not user.is_user_active and current_role == "user":
+                return Response(
+                    {"message": "Your account is blocked"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if not user.is_therapist_active and current_role == "therapist":
+                return Response(
+                    {"message": "Your account is blocked"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
             refresh = RefreshToken.for_user(user)
 
-            if user.role == 'admin':
-                user.current_role = 'admin'
+            if user.role == "admin":
+                user.current_role = "admin"
             else:
                 user.current_role = current_role
             user.save()
 
             response = Response(
-            {'message': 'Login successful', 'role': user.role}, status=status.HTTP_200_OK)
+                {
+                    "message": "Login successful",
+                    "data": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "current_role": getattr(user, "current_role", None),
+                        "role": user.role,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
 
-            # Set HttpOnly cookies
             response.set_cookie(
-                key='access_token',
+                key="access_token",
                 value=str(refresh.access_token),
                 httponly=True,
-                secure=False,  # Use only on HTTPS
-                samesite='Lax',
+                secure=False,  
+                samesite="Lax",
                 max_age=10800,
             )
             response.set_cookie(
-                key='refresh_token',
+                key="refresh_token",
                 value=str(refresh),
                 httponly=True,
                 secure=False,
-                samesite='Lax',
+                samesite="Lax",
                 max_age=86400,
             )
             return response
-        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        return Response(
+            {"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
+        )
 
 
 class LogoutView(APIView):
+    """API endpoint to log out a user and clear tokens."""
+
     def post(self, request):
+        """Blacklist refresh token and remove cookies."""
         try:
-            refresh_token = request.COOKIES.get('refresh_token')
+            refresh_token = request.COOKIES.get("refresh_token")
             if not refresh_token:
-                return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Refresh token is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             token = RefreshToken(refresh_token)
             token.blacklist()
@@ -346,24 +304,31 @@ class LogoutView(APIView):
             user.current_role = None
             user.save()
 
-            response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
-            response.delete_cookie('access_token')
-            response.delete_cookie('refresh_token')
+            response = Response(
+                {"message": "Logged out successfully"}, status=status.HTTP_200_OK
+            )
+            response.delete_cookie("access_token")
+            response.delete_cookie("refresh_token")
 
             return response
 
         except Exception as e:
-            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(
+                {"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class VerifyOtp(APIView):
+    """API endpoint to verify OTP and create a new user account."""
     def post(self, request):
-        user_otp = request.data.get('otp')
-        email = request.data.get('email')
+        user_otp = request.data.get("otp")
+        email = request.data.get("email")
 
         if not email or not user_otp:
-            return Response({"message": "Email and OTP are required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Email and OTP are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             temp_user = TemporaryUser.objects.get(email=email, otp=user_otp)
@@ -371,10 +336,11 @@ class VerifyOtp(APIView):
             return Response({"message": "Invalid OTP"}, status=400)
 
         if temp_user.is_otp_expired():
-            return Response({"message": "OTP has expired. Please request a new one."}, status=400)
+            return Response(
+                {"message": "OTP has expired. Please request a new one."}, status=400
+            )
 
-        # Create real user
-        user=UserDetails.objects.create_user(
+        user = UserDetails.objects.create_user(
             username=temp_user.email.split("@")[0],
             email=temp_user.email,
             fullname=temp_user.fullname,
@@ -383,24 +349,27 @@ class VerifyOtp(APIView):
             gender=temp_user.gender,
             language=temp_user.language,
             phone=temp_user.phone,
-            )
-        user.set_password(temp_user.password)   # ✅ hash the password
+        )
+        user.set_password(temp_user.password)
         user.save()
 
-        # Optionally delete temp user
         temp_user.delete()
 
         return Response({"message": "Yout account created successfully"}, status=200)
 
 
-
 class VerifyForgetPasswordOtp(APIView):
+    """API endpoint to verify OTP for password reset."""
+
     def post(self, request):
-        user_otp = request.data.get('otp')
-        email = request.data.get('email')
+        user_otp = request.data.get("otp")
+        email = request.data.get("email")
 
         if not email or not user_otp:
-            return Response({"message": "Email and OTP are required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Email and OTP are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             temp_user = TemporaryUser.objects.get(email=email, otp=user_otp)
@@ -408,299 +377,330 @@ class VerifyForgetPasswordOtp(APIView):
             return Response({"message": "Invalid OTP"}, status=400)
 
         if temp_user.is_otp_expired():
-            return Response({"message": "OTP has expired. Please request a new one."}, status=400)
+            return Response(
+                {"message": "OTP has expired. Please request a new one."}, status=400
+            )
 
         temp_user.delete()
 
         return Response({"message": "OTP verified successfully"}, status=200)
+
 
 class ResendOtp(APIView):
     def post(self, request):
         email = request.data.get("email")
 
         if not email:
-            return Response({"message": "Email not found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Email not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user = get_object_or_404(User, email=email)
 
         if not user:
-            return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         otp_code = random.randint(100000, 999999)
         user.otp_code = otp_code
         user.otp_created_at = now()
         user.save()
 
-
         send_mail(
-            'Your MindEase Verification Code',
-            f'''Dear User,\n\nYour One-Time Password (OTP) for MindEase is:\n**{otp_code}**\n\nThis code expires in 5 minutes.
-                Please do not share it with anyone.\n\nIf you didn’t request this code, please secure your account by changing your password immediately or contacting our support team at [jasirsnr72@gmail.com].\n\nThank you,\nThe MindEase Team''',
-            config('EMAIL_HOST_USER'),
+            "Your MindEase Verification Code",
+            f"""Dear User,\n\nYour One-Time Password (OTP) for MindEase is:\n**{otp_code}**\n\nThis code expires in 5 minutes.
+                Please do not share it with anyone.\n\nIf you didn’t request this code, please secure your account by changing your password immediately or contacting our support team at [jasirsnr72@gmail.com].\n\nThank you,\nThe MindEase Team""",
+            config("EMAIL_HOST_USER"),
             [email],
-            fail_silently=False
+            fail_silently=False,
         )
 
-        return Response({"message": "New OTP sent to your email."}, status=status.HTTP_200_OK)
-    
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+        return Response(
+            {"message": "New OTP sent to your email."}, status=status.HTTP_200_OK
+        )
 
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 class RefreshTokenView(APIView):
+    """API endpoint to resend OTP to user's email."""
     def post(self, request):
-        # get refresh token from cookies
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
-            return Response({"detail": "No refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "No refresh token"}, status=status.HTTP_401_UNAUTHORIZED
+            )
 
         try:
-            # validate and create new access token
             refresh = RefreshToken(refresh_token)
             access_token = refresh.access_token
 
-            response = Response({"message": "Token refreshed"}, status=status.HTTP_200_OK)
+            response = Response(
+                {"message": "Token refreshed"}, status=status.HTTP_200_OK
+            )
 
-            # set new access token in cookies
             response.set_cookie(
                 key="access_token",
                 value=str(access_token),
                 httponly=True,
-                secure=False,   
+                secure=False,
                 samesite="Lax",
-                max_age=10800,  
+                max_age=10800,
             )
 
             return response
 
         except TokenError:
-            return Response({"detail": "Invalid or expired refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Invalid or expired refresh token"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
 
 class ProfileView(APIView):
+    """API endpoint to view and update user profile information."""
+
     permission_classes = [IsAuthenticated, IsNotBlockedUser]
 
     def get(self, request):
         user = request.user
         method = user.is_google_account
-     
+
         profile_data = {
             "username": user.username,
             "email": user.email,
-            "fullname":user.fullname,
-            "age":user.age,
-            'place':user.place,
-            'gender':user.gender,
-            'language':user.language,
-            'phone':user.phone,
-            'profile_image': user.profile_image.url if user.profile_image else None,
-
+            "fullname": user.fullname,
+            "age": user.age,
+            "place": user.place,
+            "gender": user.gender,
+            "language": user.language,
+            "phone": user.phone,
+            "profile_image": user.profile_image.url if user.profile_image else None,
         }
-        return Response({"success": True, "profile_info": profile_data, "login_method": method})
-    
+        return Response(
+            {"success": True, "profile_info": profile_data, "login_method": method}
+        )
+
     def patch(self, request):
         user = request.user
         data = request.data
 
-        # Update allowed fields only
-        allowed_fields = ["fullname", "age", "phone", "place", "gender", "language"]
+        allowed_fields = ["fullname", "age",
+                          "phone", "place", "gender", "language"]
         for field in allowed_fields:
             if field in data:
                 if hasattr(user, field):
                     setattr(user, field, data[field])
         user.save()
-    
-        return Response({"success": True, "message": "Profile updated successfully!"}, status=status.HTTP_200_OK)
-    
+
+        return Response(
+            {"success": True, "message": "Profile updated successfully!"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProfileImageUpdateView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def patch(self, request):
         user = request.user
-        if 'profile_image' in request.FILES:
-            user.profile_image = request.FILES['profile_image']
+        if "profile_image" in request.FILES:
+            user.profile_image = request.FILES["profile_image"]
             user.save()
-            return Response({'success': True, 'profile_image': user.profile_image.url, 'message': 'Profile image updated successfully!'}, status=status.HTTP_200_OK)
-        return Response({'success': False, 'message': 'No image uploaded'}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(
+                {
+                    "success": True,
+                    "profile_image": user.profile_image.url,
+                    "message": "Profile image updated successfully!",
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"success": False, "message": "No image uploaded"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class VerifyPasswordView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        typed_password = request.data.get('password')
+        typed_password = request.data.get("password")
         if typed_password and request.user.check_password(typed_password):
-            return Response({'success': True}, status=status.HTTP_200_OK)
-        return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-from django.core.exceptions import ObjectDoesNotExist
+            return Response({"success": True}, status=status.HTTP_200_OK)
+        return Response({"success": False}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ChangeForgotPasswordView(APIView):
 
     def post(self, request):
-
-        email = request.data.get('email')
-        password1 = request.data.get('password1')
-        password2 = request.data.get('password2')
-        if not password1 and  not password2:
+        email = request.data.get("email")
+        password1 = request.data.get("password1")
+        password2 = request.data.get("password2")
+        if not password1 and not password2:
             return Response(
                 {"success": False, "message": "All fields are required."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         if password1 != password2:
             return Response(
                 {"success": False, "message": "Passwords do not match."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         if (
-            len(password1) < 8 or len(password1) > 30 or
-            not re.search(r"[0-9]", password1) or
-            not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password1)
+            len(password1) < 8
+            or len(password1) > 30
+            or not re.search(r"[0-9]", password1)
+            or not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password1)
         ):
             return Response(
-                {"success": False, "message": "Password must be 8–30 characters long, include at least one number and one special character."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "success": False,
+                    "message": "Password must be 8–30 characters long, include at least one number and one special character.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
-        
+
         try:
             user = User.objects.get(email=email)
         except ObjectDoesNotExist:
-            return Response({'success': False, 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         user.set_password(password1)
         user.save()
 
-        return Response({'success': True, 'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
-    
-    
-    
+        return Response(
+            {"success": True, "message": "Password updated successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+
 class ChangePassword(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self,request):
-        password1 = request.data.get('password1')
-        password2 = request.data.get('password2')
-        if not password1 or  not password2:
+
+    def post(self, request):
+        password1 = request.data.get("password1")
+        password2 = request.data.get("password2")
+        if not password1 or not password2:
             return Response(
                 {"success": False, "message": "All fields are required."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         if password1 != password2:
             return Response(
                 {"success": False, "message": "Passwords do not match."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         if (
-            len(password1) < 8 or len(password1) > 30 or
-            not re.search(r"[0-9]", password1) or
-            not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password1)
+            len(password1) < 8
+            or len(password1) > 30
+            or not re.search(r"[0-9]", password1)
+            or not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password1)
         ):
             return Response(
-                {"success": False, "message": "Password must be 8–30 characters long, include at least one number and one special character."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "success": False,
+                    "message": "Password must be 8–30 characters long, include at least one number and one special character.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         user = request.user
         user.set_password(password1)
         user.save()
-        return Response({'success': True, 'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "message": "Password updated successfully"},
+            status=status.HTTP_200_OK,
+        )
 
-
-    
 
 class VerifyEmailView(APIView):
     def post(self, request):
-        entered_email = request.data.get('email', '').strip()
+        entered_email = request.data.get("email", "").strip()
 
         if not entered_email:
-            return Response({'success': False, 'message': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             user = User.objects.get(email=entered_email)
         except User.DoesNotExist:
-            return Response({'success': False, 'message': 'Email not found.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(
+                {"success": False, "message": "Email not found."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         temp_user = TemporaryUser.objects.filter(email=entered_email)
         if temp_user.exists():
             temp_user.delete()
 
-        # Generate 6-digit OTP
         otp_code = random.randint(100000, 999999)
 
-        
+        TemporaryUser.objects.create(email=entered_email, otp=otp_code)
 
-        TemporaryUser.objects.create(
-            email=entered_email,
-            otp=otp_code
-        )
-
-        # Send OTP email
         send_mail(
-            'Your MindEase Verification Code',
-            f'''Dear User,\n\nYour One-Time Password (OTP) for MindEase is:\n**{otp_code}**\n\nThis code expires in 5 minutes.
-                Please do not share it with anyone.\n\nIf you didn’t request this code, please secure your account by changing your password immediately or contacting our support team at [jasirsnr72@gmail.com].\n\nThank you,\nThe MindEase Team''',
-            config('EMAIL_HOST_USER'),
+            "Your MindEase Verification Code",
+            f"""Dear User,\n\nYour One-Time Password (OTP) for MindEase is:\n**{otp_code}**\n\nThis code expires in 5 minutes.
+                Please do not share it with anyone.\n\nIf you didn’t request this code, please secure your account by changing your password immediately or contacting our support team at [jasirsnr72@gmail.com].\n\nThank you,\nThe MindEase Team""",
+            config("EMAIL_HOST_USER"),
             [entered_email],
-            fail_silently=False
+            fail_silently=False,
         )
-        return Response({'success': True, 'message': 'OTP has been sent to your email.'}, status=status.HTTP_200_OK)
-    
+        return Response(
+            {"success": True, "message": "OTP has been sent to your email."},
+            status=status.HTTP_200_OK,
+        )
+
 
 class CreateAppointment(APIView):
     permission_classes = [IsAuthenticated, IsNotBlockedUser]
+
     def post(self, request):
         data = request.data
         client = request.user
-        therapist_id = data.get('therapist')
-        date_id = data.get('date')
-        time_id = data.get('time')
-        price = data.get('price')
-        session_mode = data.get('mode')
-        session_type = data.get('type')
+        therapist_id = data.get("therapist")
+        date_id = data.get("date")
+        time_id = data.get("time")
+        price = data.get("price")
+        session_mode = data.get("mode")
+        session_type = data.get("type")
 
         therapistInstance = TherapistDetails.objects.get(id=therapist_id)
         therapist = UserDetails.objects.get(id=therapistInstance.user.id)
-        
+
         get_date = get_object_or_404(AvailableDate, id=date_id)
         get_time = get_object_or_404(AvailableTimes, id=time_id, date=get_date)
 
         if get_time.is_booked:
             return Response(
                 {"success": False, "message": "This slot is already booked."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Check if the client is blocked from this slot
-        if BlockedSlot.objects.filter(client=request.user, date=get_date, time=get_time).exists():
-            return Response({"message": "You cannot rebook this time slot again."}, status=status.HTTP_400_BAD_REQUEST)
-        
+        if BlockedSlot.objects.filter(
+            client=request.user, date=get_date, time=get_time
+        ).exists():
+            return Response(
+                {"message": "You cannot rebook this time slot again."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         get_time.is_booked = True
         get_time.save()
 
         date = AvailableDate.objects.get(id=date_id)
         time = AvailableTimes.objects.get(id=time_id)
-        if session_type != 'new':
+        if session_type != "new":
             session_type = False
         else:
             session_type = True
-         
+
         session = TherapySession.objects.create(
             client=client,
             therapist=therapist,
@@ -708,7 +708,7 @@ class CreateAppointment(APIView):
             time=time,
             price=price,
             session_mode=session_mode,
-            is_new = session_type
+            is_new=session_type,
         )
         admin_user = UserDetails.objects.filter(is_superuser=True).first()
         admin_wallet = Wallet.objects.get(user=admin_user)
@@ -718,80 +718,73 @@ class CreateAppointment(APIView):
 
         WalletTransaction.objects.create(
             wallet=admin_wallet,
-            transaction_type='CREDIT',
+            transaction_type="CREDIT",
             amount=admin_share,
-            description=f"Admin commission from session #{session.id}"
+            description=f"Admin commission from session #{session.id}",
         )
 
         client_wallet = Wallet.objects.get(user=client)
         WalletTransaction.objects.create(
-        wallet=client_wallet,
-        transaction_type='DEBIT',
-        amount=price,
-        description=f"Stripe payment for session #{session.id} with therapist {therapist.fullname}"
+            wallet=client_wallet,
+            transaction_type="DEBIT",
+            amount=price,
+            description=f"Stripe payment for session #{session.id} with therapist {therapist.fullname}",
         )
-        
+
         Notification.objects.create(
-        user=client,
-        title="New Appointment",
-        message=f"You have a new appointment with therapist {therapist} on {date.date.strftime('%B %d, %Y')} at {time.time.strftime('%I:%M %p')}.",
-        type="success",
-        location="/appointments"
+            user=client,
+            title="New Appointment",
+            message=f"You have a new appointment with therapist {therapist} on {date.date.strftime('%B %d, %Y')} at {time.time.strftime('%I:%M %p')}.",
+            type="success",
+            location="/appointments",
         )
         TherapistNotification.objects.create(
-        user=therapist,
-        title="Slot Booked",
-        message=f"You have a new appointment with client {client} on {date.date.strftime('%B %d, %Y')} at {time.time.strftime('%I:%M %p')}.",
-        type="success",
-        location="/therapistAppointments"
-
+            user=therapist,
+            title="Slot Booked",
+            message=f"You have a new appointment with client {client} on {date.date.strftime('%B %d, %Y')} at {time.time.strftime('%I:%M %p')}.",
+            type="success",
+            location="/therapistAppointments",
         )
         AdminNotification.objects.create(
-        user=admin_user,
-        title="New Commision added to wallet",
-        message=f"Recieved {admin_share} to wallet by Commision from session #{session.id}",
-        type="success",
-        location="/adminEarnings"
-
+            user=admin_user,
+            title="New Commision added to wallet",
+            message=f"Recieved {admin_share} to wallet by Commision from session #{session.id}",
+            type="success",
+            location="/adminEarnings",
         )
-        return Response({"message": "Appointment created successfully"}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Appointment created successfully"},
+            status=status.HTTP_201_CREATED,
+        )
 
-
-
-
-
-
-from django.db.models import Q
-from django.utils import timezone
-from datetime import datetime, timedelta
-from django.db.models import Q
-from django.utils.timezone import localtime
 
 class GetAppointment(APIView):
     permission_classes = [IsAuthenticated, IsNotBlockedUser]
+
     def get(self, request):
 
-        sessions = TherapySession.objects.filter(status='Scheduled')
+        sessions = TherapySession.objects.filter(status="Scheduled")
 
         for session in sessions:
-            # Get naive datetime from date and time foreign keys
-            naive_session_datetime = datetime.combine(session.date.date, session.time.time)
+            naive_session_datetime = datetime.combine(
+                session.date.date, session.time.time
+            )
 
-            # Convert to timezone-aware datetime
-            session_datetime = timezone.make_aware(naive_session_datetime, timezone.get_current_timezone())
-      
+            session_datetime = timezone.make_aware(
+                naive_session_datetime, timezone.get_current_timezone()
+            )
 
-            now = localtime(timezone.now())  # This converts to your current timezone (e.g., IST)
-
-          
+            now = localtime(
+                timezone.now()
+            ) 
 
             if now > session_datetime + timedelta(hours=1):
                 if not session.user_attended and not session.therapist_attended:
-                    session.status = 'No Show - Both'
+                    session.status = "No Show - Both"
                 elif not session.user_attended:
-                    session.status = 'Absent - Client'
+                    session.status = "Absent - Client"
                 elif not session.therapist_attended:
-                    session.status = 'Absent - Therapist'
+                    session.status = "Absent - Therapist"
 
                     wallet = Wallet.objects.get(user=request.user)
                     admin_wallet = Wallet.objects.get(user__is_staff=True)
@@ -799,40 +792,41 @@ class GetAppointment(APIView):
                     admin_wallet.balance -= session.price
 
                     WalletTransaction.objects.create(
-                    wallet=wallet,
-                    transaction_type='CREDIT',
-                    amount=session.price,
-                    description=f"Refund from {session.id}, because of therapist not attended"
+                        wallet=wallet,
+                        transaction_type="CREDIT",
+                        amount=session.price,
+                        description=f"Refund from {session.id}, because of therapist not attended",
                     )
                     WalletTransaction.objects.create(
-                    wallet=admin_wallet,
-                    transaction_type='DEBIT',
-                    amount=session.price,
-                    description=f"gave refund to {session.client.fullname} from {session.id}, because of therapist not attended"
+                        wallet=admin_wallet,
+                        transaction_type="DEBIT",
+                        amount=session.price,
+                        description=f"gave refund to {session.client.fullname} from {session.id}, because of therapist not attended",
                     )
                     wallet.save()
                     admin_wallet.save()
 
                     Notification.objects.create(
-                    user=request.user,
-                    title="Refund from absent session",
-                    message=f"You got {session.price} to yout wallet , because of therapist absent of session {session.id}",
-                    type="success",
-                    location="/appointments"
+                        user=request.user,
+                        title="Refund from absent session",
+                        message=f"You got {session.price} to yout wallet , because of therapist absent of session {session.id}",
+                        type="success",
+                        location="/appointments",
                     )
-                 
+
                 else:
-                    session.status = 'Completed'
+                    session.status = "Completed"
                 session.save()
 
         user = request.user
 
-        # Assuming both clients and therapists can view their sessions
-        appointments = TherapySession.objects.filter(client=user ).order_by('date', 'time')
+        appointments = TherapySession.objects.filter(client=user).order_by(
+            "date", "time"
+        )
 
         serializer = TherapySessionSerializer(appointments, many=True)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
-    
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
 
 class CancelSession(APIView):
     permission_classes = [IsAuthenticated]
@@ -841,43 +835,56 @@ class CancelSession(APIView):
         try:
             session = TherapySession.objects.get(id=session_id)
 
-            if session.status == 'Cancelled':
-                return Response({"message": "Session is already cancelled."}, status=status.HTTP_400_BAD_REQUEST)
+            if session.status == "Cancelled":
+                return Response(
+                    {"message": "Session is already cancelled."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             session_date = session.date.date
             session_time = session.time.time
             session_datetime = datetime.combine(session_date, session_time)
 
             if datetime.now() > session_datetime - timedelta(hours=1):
-                return Response({"message": "Session can only be cancelled at least 1 hour before it starts."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {
+                        "message": "Session can only be cancelled at least 1 hour before it starts."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            reason = request.data.get('reason')
-            current_role = request.data.get('current_role')  # 'user' or 'therapist'
+            reason = request.data.get("reason")
+            current_role = request.data.get(
+                "current_role") 
 
-            if current_role == 'user':
-                session.canceled_person = 'Client'
+            if current_role == "user":
+                session.canceled_person = "Client"
                 cancelled_by = "Client"
             else:
-                session.canceled_person = 'Therapist'
+                session.canceled_person = "Therapist"
                 cancelled_by = "Therapist"
 
             admin_user = UserDetails.objects.filter(is_superuser=True).first()
             admin_wallet = Wallet.objects.get(user=admin_user)
             client_wallet = Wallet.objects.get(user=session.client)
-            admin_share = session.price * 0.2 #admin get 20% of session price , so remove that 
+            admin_share = (
+                session.price * 0.2
+            ) 
             client_wallet.balance += session.price
             admin_wallet.balance -= admin_share
             client_wallet.save()
             admin_wallet.save()
 
-            session.status = 'Cancelled'
+            session.status = "Cancelled"
             session.cancel_reason = reason
             session.save()
 
             session.time.is_booked = False
             session.time.save()
 
-            BlockedSlot.objects.get_or_create(client=session.client, date=session.date, time=session.time)
+            BlockedSlot.objects.get_or_create(
+                client=session.client, date=session.date, time=session.time
+            )
 
             if cancelled_by == "Client":
                 client_noti_message = f"You cancelled Session ({session.id}) with {session.therapist.therapist_details.fullname} on {session_date} at {session_time.strftime('%I:%M %p')}."
@@ -903,320 +910,282 @@ class CancelSession(APIView):
                 type="warning",
             )
 
-            return Response({"message": "Session cancelled successfully."}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Session cancelled successfully."},
+                status=status.HTTP_200_OK,
+            )
 
         except TherapySession.DoesNotExist:
-            return Response({"message": "Session not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response(
+                {"message": "Session not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
-# imports
-import stripe
-from django.conf import settings
-from django.http import JsonResponse
 
-# Set your secret key (add this safely later)
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-from django.views.decorators.csrf import csrf_exempt
-import json
-from django.utils.decorators import method_decorator
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class CreatePaymenIntent(APIView):
     permission_classes = [IsAuthenticated, IsNotBlockedUser]
 
     def post(self, request):
         try:
             data = json.loads(request.body)
-            amount_in_inr = data.get('amount')
+            amount_in_inr = data.get("amount")
 
             if not amount_in_inr:
-                return JsonResponse({'error': 'Amount is required'}, status=400)
+                return JsonResponse({"error": "Amount is required"}, status=400)
 
-            # --- Convert INR → USD ---
-            # Normally, use a currency API (like exchangerate.host, forex-python, etc.)
-            # For example: 1 INR = 0.01144 USD (sample rate)
             conversion_rate = 0.01144
             amount_in_usd = float(amount_in_inr) * conversion_rate
 
-            # Convert USD to cents
             amount_in_cents = int(round(amount_in_usd * 100))
-
 
             intent = stripe.PaymentIntent.create(
                 amount=amount_in_cents,
-                currency='usd',
-                automatic_payment_methods={'enabled': True},
+                currency="usd",
+                automatic_payment_methods={"enabled": True},
             )
-            return JsonResponse({'clientSecret': intent['client_secret']})
+            return JsonResponse({"clientSecret": intent["client_secret"]})
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
-
+            return JsonResponse({"error": str(e)}, status=400)
 
 
 @csrf_exempt
 def stripe_webhook(request):
     payload = request.body
-    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-    endpoint_secret = settings.STRIPE_ENDPOINT_SECRET  # This will be your webhook secret
+    sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+    endpoint_secret = (
+        settings.STRIPE_ENDPOINT_SECRET
+    )  
 
     event = None
 
     try:
-        # Verify the webhook signature
         event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
+            payload, sig_header, endpoint_secret)
     except ValueError as e:
-        # Invalid payload
-        return JsonResponse({'error': 'Invalid payload'}, status=400)
+        return JsonResponse({"error": "Invalid payload"}, status=400)
     except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
-        return JsonResponse({'error': 'Invalid signature'}, status=400)
+        return JsonResponse({"error": "Invalid signature"}, status=400)
 
-    # Handle the event
-    if event['type'] == 'payment_intent.succeeded':
-        payment_intent = event['data']['object']  # Contains a stripe.PaymentIntent
-        # Handle successful payment here (e.g., update order status)
-    elif event['type'] == 'payment_intent.payment_failed':
-        payment_intent = event['data']['object']  # Contains a stripe.PaymentIntent
-        # Handle payment failure here (e.g., notify user)
+    if event["type"] == "payment_intent.succeeded":
+        payment_intent = event["data"]["object"]
+    elif event["type"] == "payment_intent.payment_failed":
+        payment_intent = event["data"]["object"]
 
-    # Other event types can be handled here (e.g., 'checkout.session.completed')
+    return JsonResponse({"status": "success"}, status=200)
 
-    return JsonResponse({'status': 'success'}, status=200)
-
-
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import TherapySession
 
 class CreateFeedback(APIView):
     def patch(self, request):
-        appointment_id = request.data.get('appointment_id')
-        feedback = request.data.get('feedback')
-        rating = request.data.get('rating')
+        appointment_id = request.data.get("appointment_id")
+        feedback = request.data.get("feedback")
+        rating = request.data.get("rating")
 
         if not appointment_id or feedback is None or rating is None:
-            return Response({"message": "appointment_id, feedback, and rating are required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "appointment_id, feedback, and rating are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             session = TherapySession.objects.get(id=appointment_id)
         except TherapySession.DoesNotExist:
-            return Response({"message": "Therapy session not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "Therapy session not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         session.feedback = feedback
         session.rating = rating
         session.save()
 
-        return Response({"message": "Feedback updated successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Feedback updated successfully."}, status=status.HTTP_200_OK
+        )
 
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import Message
-from .serializers import MessageSerializer
-from rest_framework import status
-from django.core.exceptions import ObjectDoesNotExist
 
 class ConversationView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, user1_id, user2_id):
         try:
-            # Ensure that both users exist
             user1 = User.objects.get(id=user1_id)
             user2 = User.objects.get(id=user2_id)
 
-         
-            # Fetch all messages between user1 and user2
             messages = Message.objects.filter(
-                Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1)
-            ).order_by('timestamp')
+                Q(sender=user1, receiver=user2) | Q(
+                    sender=user2, receiver=user1)
+            ).order_by("timestamp")
 
-
-
-            # Serialize the messages
             serializer = MessageSerializer(messages, many=True)
 
             return Response(serializer.data)
 
         except ObjectDoesNotExist:
-            # Return an error if either user is not found
             return Response(
                 {"error": "One or both users not found."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-from datetime import time
 
-from rest_framework.decorators import api_view, permission_classes
-
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_notifications(request):
     user = request.user
     Notification.objects.filter(user=user, read=True).delete()
 
-    notifications = Notification.objects.filter(user=user).order_by('-time')
+    notifications = Notification.objects.filter(user=user).order_by("-time")
     serializer = NotificationSerializer(notifications, many=True)
     return Response(serializer.data)
 
 
-
-
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def mark_as_read(request):
-    notification_id = request.data.get('id')
+    notification_id = request.data.get("id")
 
     if not notification_id:
-        return Response({"message": "Notification ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"message": "Notification ID is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     try:
-        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification = Notification.objects.get(
+            id=notification_id, user=request.user)
         notification.read = True
         notification.save()
-        return Response({"message": "Notification marked as read."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Notification marked as read."}, status=status.HTTP_200_OK
+        )
     except Notification.DoesNotExist:
-        return Response({"message": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"message": "Notification not found."}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def mark_all_as_read(request):
     notifications = Notification.objects.filter(user=request.user, read=False)
     updated_count = notifications.update(read=True)
 
-    return Response({
-        "message": f"{updated_count} notifications marked as read."
-    }, status=status.HTTP_200_OK)
+    return Response(
+        {"message": f"{updated_count} notifications marked as read."},
+        status=status.HTTP_200_OK,
+    )
 
-
-
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from dj_rest_auth.registration.views import SocialLoginView
-from django.contrib.sites.models import Site
-
-# views.py
-from google.oauth2 import id_token
-from google.auth.transport import requests
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth import login
-User = get_user_model()
 
 class GoogleLoginView(APIView):
     def post(self, request):
-        token = request.data.get('token')
-        current_role= request.data.get('current_role')
-        mode = request.data.get('mode')
-        
+        token = request.data.get("token")
+        current_role = request.data.get("current_role")
+        mode = request.data.get("mode")
+
         if not token:
             return Response(
                 {"error": "Google OAuth token is required."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            # Verify Google token
             idinfo = id_token.verify_oauth2_token(
-                token, 
-                requests.Request(), 
-                config('GOOGLE_CLIENT_ID')
+                token, requests.Request(), config("GOOGLE_CLIENT_ID")
             )
 
-            # Extra checks
-            if idinfo.get("iss") not in ["accounts.google.com", "https://accounts.google.com"]:
+            if idinfo.get("iss") not in [
+                "accounts.google.com",
+                "https://accounts.google.com",
+            ]:
                 return Response(
                     {"error": "Invalid token issuer."},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             email = idinfo.get("email")
             if not email:
                 return Response(
                     {"error": "Email not found in Google account."},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-        
+
             name = idinfo.get("name", email.split("@")[0])
 
             if mode == "register":
                 if User.objects.filter(email=email).exists():
                     return Response(
-                        {"error": "This email is already registered. Please log in instead."},
-                        status=status.HTTP_400_BAD_REQUEST
+                        {
+                            "error": "This email is already registered. Please log in instead."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
-                # create a new Google user
                 user = User.objects.create(
-                    email=email,
-                    username=name,
-                    is_google_account=True
+                    email=email, username=name, is_google_account=True
                 )
 
             elif mode == "login":
                 user = User.objects.filter(email=email).first()
                 if not user:
                     return Response(
-                        {"error": "No account found with this email. Please register first."},
-                        status=status.HTTP_400_BAD_REQUEST
+                        {
+                            "error": "No account found with this email. Please register first."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
 
                 if not user.is_google_account:
                     return Response(
-                        {"error": "This email is registered using email/password. Please use normal login."},
-                        status=status.HTTP_403_FORBIDDEN
+                        {
+                            "error": "This email is registered using email/password. Please use normal login."
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
                     )
-                
-            if not user.is_user_active and current_role == 'user':
-                return Response({"error": 'Your account is blocked'}, status=status.HTTP_403_FORBIDDEN)
-            
-            if not user.is_therapist_active and current_role == 'therapist':
-                return Response({"error": 'Your account is blocked'}, status=status.HTTP_403_FORBIDDEN)
 
-                
-            if user.role == 'admin':
-                user.current_role = 'admin'
+            if not user.is_user_active and current_role == "user":
+                return Response(
+                    {"error": "Your account is blocked"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if not user.is_therapist_active and current_role == "therapist":
+                return Response(
+                    {"error": "Your account is blocked"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if user.role == "admin":
+                user.current_role = "admin"
             else:
                 user.current_role = current_role
             user.save()
 
-            # Create JWT tokens
             refresh = RefreshToken.for_user(user)
 
             response = Response(
                 {
-                    'message': 'Login successful',
-                    'role': user.current_role,
-                   
+                    "message": "Login successful",
+                    "role": user.current_role,
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
 
-            # Set cookies
             response.set_cookie(
-                key='access_token',
+                key="access_token",
                 value=str(refresh.access_token),
                 httponly=True,
-                secure=False,  # Change to True in production
-                samesite='Lax',
+                secure=False,
+                samesite="Lax",
                 max_age=10800,
             )
             response.set_cookie(
-                key='refresh_token',
+                key="refresh_token",
                 value=str(refresh),
                 httponly=True,
-                secure=False,  # Change to True in production
-                samesite='Lax',
+                secure=False, 
+                samesite="Lax",
                 max_age=86400,
             )
 
@@ -1225,188 +1194,169 @@ class GoogleLoginView(APIView):
         except ValueError:
             return Response(
                 {"error": "Invalid or expired Google OAuth token."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             return Response(
                 {"error": f"Authentication failed: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-# views.py
-from rest_framework.parsers import MultiPartParser
-from rest_framework.decorators import api_view, parser_classes
-from rest_framework.response import Response
-from django.conf import settings
-import os
-from datetime import datetime
 
-@api_view(['POST'])
+@api_view(["POST"])
 @parser_classes([MultiPartParser])
 def upload_media(request):
-    if 'file' not in request.FILES:
-        return Response({'error': 'No file provided'}, status=400)
-    
-    file = request.FILES['file']
-    sender = request.POST.get('sender')
-    receiver = request.POST.get('receiver')
-    
-    # Create directory if it doesn't exist
-    media_dir = os.path.join(settings.MEDIA_ROOT, 'chat_media')
+    if "file" not in request.FILES:
+        return Response({"error": "No file provided"}, status=400)
+
+    file = request.FILES["file"]
+    sender = request.POST.get("sender")
+    receiver = request.POST.get("receiver")
+
+    media_dir = os.path.join(settings.MEDIA_ROOT, "chat_media")
     os.makedirs(media_dir, exist_ok=True)
-    
-    # Generate unique filename
+
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    ext = file.name.split('.')[-1]
+    ext = file.name.split(".")[-1]
     filename = f"{timestamp}_{sender}_{receiver}.{ext}"
-    
-    # Save file
+
     file_path = os.path.join(media_dir, filename)
-    with open(file_path, 'wb+') as destination:
+    with open(file_path, "wb+") as destination:
         for chunk in file.chunks():
             destination.write(chunk)
-    
-    # Determine media type
-    media_type = 'other'
-    if ext.lower() in ['jpg', 'jpeg', 'png', 'gif']:
-        media_type = 'image'
-    elif ext.lower() in ['mp4', 'webm', 'ogg']:
-        media_type = 'video'
-    elif ext.lower() in ['pdf', 'doc', 'docx', 'txt']:
-        media_type = 'document'
-    
-    return Response({
-        'media_url': os.path.join('/media/chat_media', filename),
-        'media_type': media_type
-    })
 
+    media_type = "other"
+    if ext.lower() in ["jpg", "jpeg", "png", "gif"]:
+        media_type = "image"
+    elif ext.lower() in ["mp4", "webm", "ogg"]:
+        media_type = "video"
+    elif ext.lower() in ["pdf", "doc", "docx", "txt"]:
+        media_type = "document"
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import TherapySession  # Make sure this import is correct
+    return Response(
+        {
+            "media_url": os.path.join("/media/chat_media", filename),
+            "media_type": media_type,
+        }
+    )
+
 
 class MarkAsAttended(APIView):
     def post(self, request):
-        session_id = request.data.get('id')
-        role = request.data.get('role')
+        session_id = request.data.get("id")
+        role = request.data.get("role")
 
         try:
             session = TherapySession.objects.get(id=session_id)
         except TherapySession.DoesNotExist:
-            return Response({'message': 'Session not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "Session not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        if role == 'user':
+        if role == "user":
             session.user_attended = True
         else:
             session.therapist_attended = True
 
         session.save()
-        return Response({'message': 'Marked as attended'}, status=status.HTTP_200_OK)
-
+        return Response({"message": "Marked as attended"}, status=status.HTTP_200_OK)
 
 
 class ClientWithdrawRequest(APIView):
-    def post(self,request):
+    def post(self, request):
         user = request.user
-        amount = request.data.get('amount')
-        upi_id = request.data.get('upi_id')
+        amount = request.data.get("amount")
+        upi_id = request.data.get("upi_id")
 
         if amount < 500:
-            return Response({"message": "Minimum withdrawal amount is ₹500."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Minimum withdrawal amount is ₹500."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         ClientWithdrawalRequest.objects.create(
-                client=user,
-                amount=amount,
-                upi_id=upi_id
-            )
+            client=user, amount=amount, upi_id=upi_id
+        )
         admin_user = UserDetails.objects.filter(is_superuser=True).first()
 
         AdminNotification.objects.create(
-        user=admin_user,
-        title="Withdraw Request",
-        message=f"You have a withdrawal request of ₹{amount} from client {user.fullname if user.fullname else user.username}",
-        type="success",
-        location="/adminEarnings"
-
+            user=admin_user,
+            title="Withdraw Request",
+            message=f"You have a withdrawal request of ₹{amount} from client {user.fullname if user.fullname else user.username}",
+            type="success",
+            location="/adminEarnings",
         )
-        return Response({'message': 'Withdrawal request submitted successfully'}, status=status.HTTP_201_CREATED)    
+        return Response(
+            {"message": "Withdrawal request submitted successfully"},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class GetTherapistProfile(APIView):
-    def get(self,request,id):
-        therapist=TherapistDetails.objects.get(id=id)
-        serializer=GetTherapistProfileSerializer(therapist)
-        return Response({'profile_info': serializer.data})
-
-        
-# class GetSessionPrices(APIView):
-#     def get(self, request):
-#         prices = Prices.objects.first()
-
-#         if prices:
-#             data = {
-#                 "video": prices.video_call,
-#                 "voice": prices.voice_call,
-#                 "message": prices.message
-#             }
-#         else:
-#             data = {
-#                 "video": 0,
-#                 "voice": 0,
-#                 "message": 0
-#             }
-
-#         return Response({"prices": data}, status=status.HTTP_200_OK)
-    
-from rest_framework.exceptions import NotAuthenticated
+    def get(self, request, id):
+        therapist = TherapistDetails.objects.get(id=id)
+        serializer = GetTherapistProfileSerializer(therapist)
+        return Response({"profile_info": serializer.data})
 
 
 class MyInfoview(APIView):
     permission_classes = [IsAuthenticated]
 
+    def permission_denied(self, request, message=None, code=None):
+        raise NotAuthenticated(detail="Not logged in")
+
     def get(self, request):
         user = request.user
-        return Response({"data":{
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "current_role": getattr(user, "current_role", None),
-            "role": user.role},
-        }, status=status.HTTP_200_OK)
-    
+        return Response(
+            {
+                "data": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "current_role": getattr(user, "current_role", None),
+                    "role": user.role,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class GetTransactionsHistory(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user = request.user
         try:
             wallet = Wallet.objects.get(user=user)
-            transactions = wallet.transactions.all().order_by('-created_at')  # latest first
-            serializer = UserWalletTransactionSerializer(transactions, many=True)
-            return Response({
-                "data": serializer.data
-            }, status=status.HTTP_200_OK)
+            transactions = wallet.transactions.all().order_by(
+                "-created_at"
+            )  
+            serializer = UserWalletTransactionSerializer(
+                transactions, many=True)
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         except Wallet.DoesNotExist:
-            return Response({
-                "error": "Wallet not found"
-            }, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response(
+                {"error": "Wallet not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-class MyProtectedView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def permission_denied(self, request, message=None, code=None):
-        raise NotAuthenticated(detail="Not logged in")
-    
+class CheckAuth(APIView):
     def get(self, request):
-        user = request.user
-        return Response({"data":{
-            "current_role": getattr(user, "current_role", None),
-            "role": user.role},
-        }, status=status.HTTP_200_OK)
-    
+        if request.user.is_authenticated:
+            logger.info(
+                f"User {request.user.username} authenticated with role {request.user.role}"
+            )
+            return Response(
+                {
+                    "authenticated": True,
+                    "current_role": request.user.current_role,
+                    "role": request.user.role,
+                }
+            )
+
+        logger.warning("Unauthenticated request received")
+        return Response({"authenticated": False})
+
 
 class CheckSlotAvailability(APIView):
     permission_classes = [IsAuthenticated, IsNotBlockedUser]
@@ -1418,8 +1368,7 @@ class CheckSlotAvailability(APIView):
         get_time = get_object_or_404(AvailableTimes, id=time_id, date=get_date)
 
         if get_time.is_booked:
-            return Response({"available": False, "message": "Slot already booked"}, status=400)
+            return Response(
+                {"available": False, "message": "Slot already booked"}, status=400
+            )
         return Response({"available": True})
-
-
-

@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('therapist', '0009_tier_therapistdetails_tier'),
+        ("therapist", "0009_tier_therapistdetails_tier"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='therapistdetails',
-            name='tier',
-            field=models.CharField(choices=[('bronze', 'Bronze'), ('silver', 'Silver'), ('gold', 'Gold'), ('platinum', 'Platinum')], default='bronze', max_length=20),
+            model_name="therapistdetails",
+            name="tier",
+            field=models.CharField(
+                choices=[
+                    ("bronze", "Bronze"),
+                    ("silver", "Silver"),
+                    ("gold", "Gold"),
+                    ("platinum", "Platinum"),
+                ],
+                default="bronze",
+                max_length=20,
+            ),
         ),
     ]

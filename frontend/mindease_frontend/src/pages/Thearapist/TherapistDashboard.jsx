@@ -4,12 +4,14 @@ import { logoutUser } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
 import { getMYInfo } from '../../api/user';
 import { checkRequested } from '../../api/therapist';
+import { clearUser } from '../../userSlice';
+import { useDispatch } from 'react-redux';
 
 function TherapistDashboard() {
   const [isRequested, setIsrequested] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [isLoading, setIsLoading] = useState(true);
-  
+  const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useDispatch()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -52,7 +54,7 @@ function TherapistDashboard() {
     try {
       const response = await logoutUser();
       if (response.success) {
-        localStorage.clear()
+        dispatch(clearUser())
         navigate('/login');
         showToast(response.message, 'success');
       } else {

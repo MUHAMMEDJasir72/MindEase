@@ -6,6 +6,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import Wallet, UserDetails, TherapistNotification, AdminNotification
 
+
 @receiver(post_save, sender=Notification)
 def send_user_notification_on_save(sender, instance, created, **kwargs):
     if created:
@@ -23,10 +24,12 @@ def send_user_notification_on_save(sender, instance, created, **kwargs):
             },
         )
 
+
 @receiver(post_save, sender=UserDetails)
 def create_user_wallet(sender, instance, created, **kwargs):
     if created:
         Wallet.objects.create(user=instance)
+
 
 @receiver(post_save, sender=TherapistNotification)
 def send_therapist_notification_on_save(sender, instance, created, **kwargs):

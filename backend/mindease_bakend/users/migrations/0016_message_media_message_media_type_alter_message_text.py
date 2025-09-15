@@ -6,23 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0015_rename_adminchat_admintherapistchat'),
+        ("users", "0015_rename_adminchat_admintherapistchat"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='message',
-            name='media',
-            field=models.FileField(blank=True, null=True, upload_to='chat_media/'),
+            model_name="message",
+            name="media",
+            field=models.FileField(blank=True, null=True,
+                                   upload_to="chat_media/"),
         ),
         migrations.AddField(
-            model_name='message',
-            name='media_type',
+            model_name="message",
+            name="media_type",
             field=models.CharField(blank=True, max_length=20, null=True),
         ),
         migrations.AlterField(
-            model_name='message',
-            name='text',
+            model_name="message",
+            name="text",
             field=models.TextField(blank=True, null=True),
         ),
     ]

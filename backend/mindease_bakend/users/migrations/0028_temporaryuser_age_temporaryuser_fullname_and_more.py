@@ -6,38 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0027_remove_temporaryuser_username'),
+        ("users", "0027_remove_temporaryuser_username"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='temporaryuser',
-            name='age',
+            model_name="temporaryuser",
+            name="age",
             field=models.CharField(blank=True, max_length=200, null=True),
         ),
         migrations.AddField(
-            model_name='temporaryuser',
-            name='fullname',
+            model_name="temporaryuser",
+            name="fullname",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='temporaryuser',
-            name='gender',
+            model_name="temporaryuser",
+            name="gender",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='temporaryuser',
-            name='language',
+            model_name="temporaryuser",
+            name="language",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='temporaryuser',
-            name='phone',
+            model_name="temporaryuser",
+            name="phone",
             field=models.CharField(blank=True, max_length=15, null=True),
         ),
         migrations.AddField(
-            model_name='temporaryuser',
-            name='place',
+            model_name="temporaryuser",
+            name="place",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
     ]

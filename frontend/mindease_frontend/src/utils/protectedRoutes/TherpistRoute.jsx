@@ -1,34 +1,41 @@
-import React, { useEffect, useState } from 'react'
-import { getMYInfo } from '../../api/user';
+import React, { useCallback, useEffect, useState } from 'react';
 import TherapistSidebar from '../../components/Therapist/TherapistSidebar';
-import Forbidden from '../../pages/Error Pages/Forbidden';
 import { Navigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getMYInfo } from '../../api/user';
+import { setUser } from '../../userSlice';
 
 function TherpistRoute({ children }) {
-  const [user, setUser] = useState(null);
+  const user = useSelector((state) => state.user.user);
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
+  const [checked, setChecked] = useState(false);
+
+  const fetchUser = useCallback(async () => {
+    try {
+      const res = await getMYInfo();
+      if (res.success) {
+        dispatch(setUser(res.data));
+      } else {
+        dispatch(setUser(null));
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      dispatch(setUser(null));
+    } finally {
+      setLoading(false);
+      setChecked(true);
+    }
+  }, [dispatch]);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await getMYInfo();
-        if (res.success) {
-          setUser(res.data);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!user) {
+      fetchUser();
+    } else {
+      setLoading(false);
+    }
+  }, [user, fetchUser]);
 
-    fetchUser();
-  }, []);
-
-
-  // While fetching user data → show loading
   if (loading) {
     return (
       <div className='flex min-h-screen bg-gray-50'>
@@ -40,32 +47,24 @@ function TherpistRoute({ children }) {
     );
   }
 
+  console.log('jasir',user,user.current_role,user.role)
 
+  if (checked && !user) return <Navigate to="/login" />;
 
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-
-  if(user.current_role === 'therapist' && user.role === 'user'){
+  if (user?.current_role === 'therapist' && user?.role === 'user') {
     return <Navigate to="/therapistDashboard" />;
   }
-  if(user.role === 'user'){
+  if (user?.role === 'user' || user?.current_role === 'user') {
     return <Navigate to="/" />;
   }
-
-  if(user.current_role === 'user'){
-    return <Navigate to="/" />;
-  }
-
-  if(user.role === 'admin'){
+  if (user?.role === 'admin') {
     return <Navigate to="/adminDashboard" />;
   }
-
-  if (user.role === "therapist") {
+  if (user?.role === 'therapist') {
     return children;
   }
 
   return <Navigate to="/" />;
-};
+}
 
-export default TherpistRoute
+export default TherpistRoute;

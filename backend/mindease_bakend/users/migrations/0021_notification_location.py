@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0020_alter_therapysession_status'),
+        ("users", "0020_alter_therapysession_status"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='notification',
-            name='location',
+            model_name="notification",
+            name="location",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

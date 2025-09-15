@@ -6,17 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('admins', '0001_initial'),
+        ("admins", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Prices',
+            name="Prices",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('video_call', models.IntegerField(default=0)),
-                ('voice_call', models.IntegerField(default=0)),
-                ('message', models.IntegerField(default=0)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("video_call", models.IntegerField(default=0)),
+                ("voice_call", models.IntegerField(default=0)),
+                ("message", models.IntegerField(default=0)),
             ],
         ),
     ]

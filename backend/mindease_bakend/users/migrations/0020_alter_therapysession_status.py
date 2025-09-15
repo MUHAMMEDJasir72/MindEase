@@ -6,13 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0019_therapysession_therapist_attended_and_more'),
+        ("users", "0019_therapysession_therapist_attended_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='therapysession',
-            name='status',
-            field=models.CharField(choices=[('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Cancelled', 'Cancelled'), ('Absent - Client', 'Absent - Client'), ('Absent - Therapist', 'Absent - Therapist'), ('No Show - Both', 'No Show - Both')], default='Scheduled', max_length=100),
+            model_name="therapysession",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("Scheduled", "Scheduled"),
+                    ("Completed", "Completed"),
+                    ("Cancelled", "Cancelled"),
+                    ("Absent - Client", "Absent - Client"),
+                    ("Absent - Therapist", "Absent - Therapist"),
+                    ("No Show - Both", "No Show - Both"),
+                ],
+                default="Scheduled",
+                max_length=100,
+            ),
         ),
     ]

@@ -263,15 +263,6 @@ try {
 }
 };
 
-export const checkAuth = async () => {
-try {
-  const response = await API.get(`/users/check-auth/`);
-  return { success: true, data:response.data.data};
-} catch (error) {
-  console.error('Error fetching profile:', error); // Optionally log the error
-  return { success: false, message: error.message || 'An error occurred' };
-}
-};
 
 
 
@@ -282,4 +273,15 @@ export const checkSlot = async (data) => {
   } catch (error) {
     return { success: false, message: error.response?.data?.message || 'An error occurred' };
   }
+};
+
+
+export const checkAuth = async () => {
+try {
+  const response = await API.get(`/users/check-auth/`);
+  return { success: true, data: response.data };
+} catch (error) {
+  console.error('Error fetching profile:', error); // Optionally log the error
+  return { success: false, message: error.message || 'An error occurred' };
+}
 };

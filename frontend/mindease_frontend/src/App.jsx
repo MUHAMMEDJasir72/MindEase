@@ -42,8 +42,30 @@ import { Toaster } from 'sonner';
 import NotFound from "./pages/Error Pages/NotFound";
 import Forbidden from "./pages/Error Pages/Forbidden";
 import Prices from "./pages/admin/Prices";
+import { useEffect } from "react";
+import { getMYInfo } from "./api/user";
+import { useSelector } from "react-redux";
 
 function App() {
+
+  // const user = useSelector((state)=>state.user.user)
+
+  // useEffect(()=>{
+
+  //   const fetchInfo = async()=>{
+  //     const res = await getMYInfo()
+  //     if (res.success){
+  //       console.log("jasir",res.data)
+  //     }else{
+  //       console.log('somthing')
+  //     }
+
+  //   }
+  //   fetchInfo()
+
+  // },[])
+
+  // console.log(user,user)
   return (
     <BrowserRouter>
          <Toaster richColors position="top-center" />
@@ -59,7 +81,7 @@ function App() {
         <Route path="/therapistLogin" element={<TherapistLogin />} />
 
         {/* user routes */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<UserRoute><Home /></UserRoute>} />
         <Route path="/Profile" element={<UserRoute><Profile /></UserRoute>} />
         <Route path="/change_password" element={<UserRoute><ChangePassword /></UserRoute>} />
         <Route path="/selectTherapist" element={<UserRoute><SelectTherapist/></UserRoute>} />

@@ -6,22 +6,22 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0001_initial'),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='message',
-            name='chat_room',
+            model_name="message",
+            name="chat_room",
         ),
         migrations.RemoveField(
-            model_name='message',
-            name='sender',
+            model_name="message",
+            name="sender",
         ),
         migrations.DeleteModel(
-            name='ChatRoom',
+            name="ChatRoom",
         ),
         migrations.DeleteModel(
-            name='Message',
+            name="Message",
         ),
     ]

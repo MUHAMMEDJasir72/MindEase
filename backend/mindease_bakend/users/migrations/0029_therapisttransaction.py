@@ -7,19 +7,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0028_temporaryuser_age_temporaryuser_fullname_and_more'),
+        ("users", "0028_temporaryuser_age_temporaryuser_fullname_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TherapistTransaction',
+            name="TherapistTransaction",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('transaction_type', models.CharField(choices=[('CREDIT', 'Credit'), ('DEBIT', 'Debit')], max_length=10)),
-                ('amount', models.IntegerField()),
-                ('description', models.TextField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('wallet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='therapist_transactions', to='users.wallet')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "transaction_type",
+                    models.CharField(
+                        choices=[("CREDIT", "Credit"), ("DEBIT", "Debit")],
+                        max_length=10,
+                    ),
+                ),
+                ("amount", models.IntegerField()),
+                ("description", models.TextField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "wallet",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="therapist_transactions",
+                        to="users.wallet",
+                    ),
+                ),
             ],
         ),
     ]

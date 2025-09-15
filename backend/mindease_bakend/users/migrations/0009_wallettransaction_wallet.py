@@ -7,14 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0008_wallettransaction_remove_message_file_and_more'),
+        ("users", "0008_wallettransaction_remove_message_file_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wallettransaction',
-            name='wallet',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='users.wallet'),
+            model_name="wallettransaction",
+            name="wallet",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="transactions",
+                to="users.wallet",
+            ),
             preserve_default=False,
         ),
     ]

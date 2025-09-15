@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0018_adminnotification'),
+        ("users", "0018_adminnotification"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='therapysession',
-            name='therapist_attended',
+            model_name="therapysession",
+            name="therapist_attended",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='therapysession',
-            name='user_attended',
+            model_name="therapysession",
+            name="user_attended",
             field=models.BooleanField(default=False),
         ),
     ]

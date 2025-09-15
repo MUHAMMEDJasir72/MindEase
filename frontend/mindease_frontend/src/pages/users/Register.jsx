@@ -4,9 +4,9 @@ import { showToast } from "../../utils/toast";
 import { ToastContainer } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../../api/auth";
-import { validateForm } from "../../utils/validateForm";
 import GoogleAuth from "../../components/users/GoogleAuth";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { SignupValidation } from "../../utils/SignupValidation";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -42,7 +42,7 @@ function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const errorMessage = validateForm(
+    const errorMessage = SignupValidation(
       formData.fullName,
       formData.email,
       formData.age,
@@ -53,6 +53,11 @@ function Register() {
       formData.password1,
       formData.password2
     );
+
+    if (errorMessage) {
+    showToast(errorMessage, "error"); // Show frontend validation error
+    return;
+  }
 
     setIsLoading(true);
 

@@ -7,19 +7,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('admins', '0002_prices'),
-        ('therapist', '0005_remove_therapistdetails_rejected_and_more'),
+        ("admins", "0002_prices"),
+        ("therapist", "0005_remove_therapistdetails_rejected_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='specializations',
-            name='specializations',
+            model_name="specializations",
+            name="specializations",
         ),
         migrations.AddField(
-            model_name='specializations',
-            name='specialization',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='therapist_specializations', to='admins.specializationslist'),
+            model_name="specializations",
+            name="specialization",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="therapist_specializations",
+                to="admins.specializationslist",
+            ),
             preserve_default=False,
         ),
     ]

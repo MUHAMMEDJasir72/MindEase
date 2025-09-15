@@ -13,7 +13,7 @@ export const registerUser = async (userData) => {
 export const loginUser = async (userData) => {
   try {
     const response = await API.post("/users/login/", userData);
-    return { success: true, data: response.data };
+    return { success: true, data: response.data.data};
   } catch (error) {
      console.log("LOGIN ERROR RESPONSE:", error.response?.data);
     const message =

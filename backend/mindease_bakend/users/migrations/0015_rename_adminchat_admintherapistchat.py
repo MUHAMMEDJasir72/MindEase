@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0014_adminchat'),
+        ("users", "0014_adminchat"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='AdminChat',
-            new_name='AdminTherapistChat',
+            old_name="AdminChat",
+            new_name="AdminTherapistChat",
         ),
     ]

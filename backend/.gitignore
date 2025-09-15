@@ -1,1 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Django stuff
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+
+# Environment variables
 *.env
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+
+# Byte-compiled / cache
+*.pytest_cache/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.pyre/

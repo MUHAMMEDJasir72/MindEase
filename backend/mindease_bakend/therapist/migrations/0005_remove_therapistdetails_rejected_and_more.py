@@ -6,17 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('therapist', '0004_blockedslot'),
+        ("therapist", "0004_blockedslot"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='therapistdetails',
-            name='rejected',
+            model_name="therapistdetails",
+            name="rejected",
         ),
         migrations.AddField(
-            model_name='therapistdetails',
-            name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending', max_length=20),
+            model_name="therapistdetails",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Pending"),
+                    ("approved", "Approved"),
+                    ("rejected", "Rejected"),
+                ],
+                default="pending",
+                max_length=20,
+            ),
         ),
     ]

@@ -7,7 +7,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { checkRequested } from '../../api/therapist';
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import GoogleAuth from '../../components/users/GoogleAuth';
-import { checkAuth, getMYInfo } from '../../api/user';
+import { useDispatch } from 'react-redux';
+import { checkAuth } from '../../api/user';
+import { setUser } from '../../userSlice';
 
 function TherapistLogin() {
     const [formData, setFormData] = useState({
@@ -24,35 +26,26 @@ function TherapistLogin() {
     const [showPassword, setShowPassword] = useState(false);
     const togglePasswordVisibility = () => setShowPassword(prev => !prev);
     const navigate = useNavigate();
-    
-  const checkIsAuth = async () => {
-            try {
-                const res = await checkAuth();
-                if (res.success) {
-                    if (res.data.role === "admin") {
-                        navigate("/adminDashboard");
-                    } else if(res.data.role === "therapist" && res.data.current_role === 'therapist'){
-                        navigate("/therapistHome");
-                    }else if(res.data.current_role === 'therapist'){
-                        const res = await checkRequested();
-                            if (res.success) {
-                                navigate('/submited');
-                            } else {
-                                navigate('/therapistDashboard');
-                            }
-                    }else if(res.data.current_role === "user"){
-                        navigate('/')
-                    }
-                }
-            } catch (err) {
-                console.log(err)
-            }
-        };
-  
-      useEffect(() => {
-          
-          checkIsAuth();
-      }, [navigate]);
+    const dispatch = useDispatch()
+
+    const checkUserAuth = async()=>{
+        const res = await checkAuth()
+        if (res.success && res.data.authenticated){
+            if(res.data.role === 'user' && res.data.current_role === 'therapist'){
+                navigate('/therapistDashboard')
+            }else if (res.data.current_role === 'therapist') {
+                navigate('/therapistHome');
+            } else if (res.data.current_role === 'user') {
+                navigate('/');
+            } else if (res.data.current_role === 'admin') {
+                navigate('/adminDashboard');
+            }}   
+        }
+
+    useEffect(() => {
+        checkUserAuth()
+    }, []);
+
   
 
   
@@ -87,7 +80,7 @@ function TherapistLogin() {
             const response = await loginUser(formData);
             if (response.success) {
                 const role = response.data.role
-
+                dispatch(setUser(response.data))
                 if (role === 'admin') {
                     navigate('/adminDashboard');
                 } else if(role === 'therapist') {

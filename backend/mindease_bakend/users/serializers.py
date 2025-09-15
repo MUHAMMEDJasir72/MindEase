@@ -1,4 +1,5 @@
 # users/serializers.py
+from .models import Message
 from rest_framework import serializers
 from .models import *
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -9,7 +10,7 @@ from admins.models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDetails
-        fields = '__all__'
+        fields = "__all__"
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -18,29 +19,35 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
 
         # Add custom claims
-        token['username'] = user.username
-        token['role'] = user.role
-        token['email'] = user.email  
-        token['id'] = user.id  
-        
+        token["username"] = user.username
+        token["role"] = user.role
+        token["email"] = user.email
+        token["id"] = user.id
 
         return token
-    
+
 
 class TherapistDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = TherapistDetails
-        exclude = ['governmentIssuedID', 'professionalLicense', 'educationalCertificate', 'additionalCertificationDocument']
+        exclude = [
+            "governmentIssuedID",
+            "professionalLicense",
+            "educationalCertificate",
+            "additionalCertificationDocument",
+        ]
+
 
 class AvailableDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailableDate
-        fields = ['id', 'date']  # Only send what's needed
+        fields = ["id", "date"] 
+
 
 class AvailableTimeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailableTimes
-        fields = ['id', 'time'] 
+        fields = ["id", "time"]
 
 
 class TherapySessionSerializer(serializers.ModelSerializer):
@@ -52,7 +59,7 @@ class TherapySessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TherapySession
-        fields = '__all__'
+        fields = "__all__"
 
     def get_therapist_details(self, obj):
         try:
@@ -63,12 +70,12 @@ class TherapySessionSerializer(serializers.ModelSerializer):
 
     def get_date_value(self, obj):
         if obj.date and obj.date.date:
-            return obj.date.date.strftime("%d,%b,%Y")  # Format: 02,May,2024
+            return obj.date.date.strftime("%d,%b,%Y") 
         return None
 
     def get_time_value(self, obj):
         if obj.time and obj.time.time:
-            return obj.time.time.strftime("%I:%M %p")  # Format: 08:30 PM
+            return obj.time.time.strftime("%I:%M %p") 
         return None
 
     def get_client_name(self, obj):
@@ -76,44 +83,40 @@ class TherapySessionSerializer(serializers.ModelSerializer):
 
     def get_client_profile_image(self, obj):
         if obj.client.profile_image:
-            request = self.context.get('request')
+            request = self.context.get("request")
             if request:
                 return request.build_absolute_uri(obj.client.profile_image.url)
             return obj.client.profile_image.url
         return None
 
 
-from rest_framework import serializers
-from .models import Message
-
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = '__all__'
-
+        fields = "__all__"
 
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = '__all__'
-
+        fields = "__all__"
 
 
 class SpecializationSerializer(serializers.ModelSerializer):
-    specialization = serializers.CharField(source="specialization.specialization")  
+    specialization = serializers.CharField(
+        source="specialization.specialization")
     # this fetches the string field from SpecializationsList
 
     class Meta:
         model = Specializations
-        fields = ['specialization']   # ✅ now matches declared field
-
+        fields = ["specialization"]  # ✅ now matches declared field
 
 
 class LanguageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Languages
-        fields = ['languages']
+        fields = ["languages"]
+
 
 class GetTherapistProfileSerializer(serializers.ModelSerializer):
     specializations = SpecializationSerializer(many=True, read_only=True)
@@ -123,32 +126,35 @@ class GetTherapistProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TherapistDetails
         fields = [
-            'id',
-            'fullname',
-            'yearsOfExperience',
-            'professionalTitle',
-            'profile_image',
-            'specializations',
-            'languages',
-            'average_rating',
-            'tier'
+            "id",
+            "fullname",
+            "yearsOfExperience",
+            "professionalTitle",
+            "profile_image",
+            "specializations",
+            "languages",
+            "average_rating",
+            "tier",
         ]
+
     def get_average_rating(self, obj):
         from django.db.models import Avg
-        # TherapistDetails has OneToOneField to User, sessions use UserDetails
-        return TherapySession.objects.filter(
-            therapist=obj.user,
-            rating__isnull=False
-        ).aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
-    
+
+        return (
+            TherapySession.objects.filter(
+                therapist=obj.user, rating__isnull=False
+            ).aggregate(avg_rating=Avg("rating"))["avg_rating"]
+            or 0
+        )
+
 
 class PricesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prices
-        fields = '__all__'
+        fields = "__all__"
 
 
 class UserWalletTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = WalletTransaction
-        fields = '__all__'
+        fields = "__all__"

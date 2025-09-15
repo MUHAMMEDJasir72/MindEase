@@ -3,7 +3,7 @@ import Navbar from '../../components/users/Navbar';
 import CompleteForm from '../../components/users/completeForm';
 import { Link, useNavigate } from 'react-router-dom';
 import Notifications from '../../components/users/Notifications';
-import { checkAuth, getMYInfo } from '../../api/user';
+import { useSelector } from 'react-redux';
 
 function Home() {
   const features = [
@@ -31,34 +31,38 @@ function Home() {
   const [openModal, setOpenModal] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const isLoggedIn = useSelector((state)=> state.user.user)
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate()
+  const user = useSelector((state) => state.user);
+  
 
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await checkAuth();
-        if (res.success) {
-          setIsLoggedIn(true);
-          if(res.data.role === 'admin'){
-            navigate('/adminDashboard')
-          }else if(res.data.current_role === 'therapist' && res.data.role === 'user'){
-            navigate("/therapistDashboard")
-          }else if(res.data.current_role === 'therapist'){
-            navigate('/therapistDashboard')
-          }
-        }
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const res = await checkAuth();
+  //       if (res.success) {
+  //         setIsLoggedIn(true);
+  //         if(res.data.role === 'admin'){
+  //           navigate('/adminDashboard')
+  //         }else if(res.data.current_role === 'therapist' && res.data.role === 'user'){
+  //           navigate("/therapistDashboard")
+  //         }else if(res.data.current_role === 'therapist'){
+  //           navigate('/therapistDashboard')
+  //         }
+  //       }
         
-      } catch (err) {
-        setIsLoggedIn(false); // Not logged in
-      }finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
+  //     } catch (err) {
+  //       setIsLoggedIn(false); // Not logged in
+  //     }finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   fetchUser();
+  // }, []);
+
+  console.log('user',user)
 
   if (isLoading) {
     return (
@@ -131,7 +135,7 @@ function Home() {
 
       {/* Sidebar Navigation - Hidden on mobile unless toggled */}
       <div className={`${mobileNavOpen ? 'block' : 'hidden'} md:block w-full md:w-56 md:min-w-[14rem] bg-white shadow-md fixed md:relative z-40 h-full`}>
-        <Navbar onClose={() => setMobileNavOpen(false)} user={isLoggedIn}/>
+        <Navbar onClose={() => setMobileNavOpen(false)} />
       </div>
       
       {openModal && <CompleteForm/>}

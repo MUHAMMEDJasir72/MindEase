@@ -7,64 +7,118 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='AvailableDate',
+            name="AvailableDate",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
             ],
         ),
         migrations.CreateModel(
-            name='AvailableTimes',
+            name="AvailableTimes",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('time', models.TimeField()),
-                ('is_booked', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("time", models.TimeField()),
+                ("is_booked", models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
-            name='Languages',
+            name="Languages",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('languages', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("languages", models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
-            name='Specializations',
+            name="Specializations",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('specializations', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("specializations", models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
-            name='TherapistDetails',
+            name="TherapistDetails",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fullname', models.CharField(max_length=100)),
-                ('dateOfBirth', models.DateField()),
-                ('gender', models.CharField(max_length=100)),
-                ('phone', models.CharField(max_length=100)),
-                ('state', models.CharField(max_length=100)),
-                ('country', models.CharField(max_length=100)),
-                ('address', models.CharField(max_length=100)),
-                ('professionalTitle', models.CharField(max_length=100)),
-                ('yearsOfExperience', models.CharField(max_length=100)),
-                ('professionalLicenseNumber', models.CharField(max_length=100)),
-                ('licenseIssuingAuthority', models.CharField(max_length=100)),
-                ('licenseExpiryDate', models.DateField()),
-                ('degree', models.CharField(max_length=100)),
-                ('university', models.CharField(max_length=100)),
-                ('yearOfGraduation', models.CharField(max_length=100)),
-                ('additionalCertifications', models.CharField(blank=True, max_length=100, null=True)),
-                ('governmentIssuedID', models.FileField(upload_to='documents/')),
-                ('professionalLicense', models.FileField(upload_to='documents/')),
-                ('educationalCertificate', models.FileField(upload_to='documents/')),
-                ('additionalCertificationDocument', models.FileField(blank=True, null=True, upload_to='documents/')),
-                ('profile_image', models.ImageField(blank=True, max_length=255, null=True, upload_to='therapist_profile_images/')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("fullname", models.CharField(max_length=100)),
+                ("dateOfBirth", models.DateField()),
+                ("gender", models.CharField(max_length=100)),
+                ("phone", models.CharField(max_length=100)),
+                ("state", models.CharField(max_length=100)),
+                ("country", models.CharField(max_length=100)),
+                ("address", models.CharField(max_length=100)),
+                ("professionalTitle", models.CharField(max_length=100)),
+                ("yearsOfExperience", models.CharField(max_length=100)),
+                ("professionalLicenseNumber", models.CharField(max_length=100)),
+                ("licenseIssuingAuthority", models.CharField(max_length=100)),
+                ("licenseExpiryDate", models.DateField()),
+                ("degree", models.CharField(max_length=100)),
+                ("university", models.CharField(max_length=100)),
+                ("yearOfGraduation", models.CharField(max_length=100)),
+                (
+                    "additionalCertifications",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                ("governmentIssuedID", models.FileField(upload_to="documents/")),
+                ("professionalLicense", models.FileField(upload_to="documents/")),
+                ("educationalCertificate", models.FileField(upload_to="documents/")),
+                (
+                    "additionalCertificationDocument",
+                    models.FileField(blank=True, null=True,
+                                     upload_to="documents/"),
+                ),
+                (
+                    "profile_image",
+                    models.ImageField(
+                        blank=True,
+                        max_length=255,
+                        null=True,
+                        upload_to="therapist_profile_images/",
+                    ),
+                ),
             ],
         ),
     ]

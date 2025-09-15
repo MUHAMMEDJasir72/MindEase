@@ -14,6 +14,8 @@ import {
   Wallet,
   LogOut,
 } from 'lucide-react';
+import { clearUser } from '../../userSlice';
+import { useDispatch } from 'react-redux';
 
 
 const menuItems = [
@@ -29,12 +31,14 @@ const menuItems = [
 function TherapistSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch()
 
   const handleLogout = async () => {
     try {
       const response = await logoutUser();
       if (response.success) {
         navigate('/therapistLogin');
+        dispatch(clearUser())
         showToast(response.message, 'success');
       } else {
         showToast(response.message, 'error');

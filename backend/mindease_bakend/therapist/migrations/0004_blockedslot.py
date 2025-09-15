@@ -8,21 +8,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('therapist', '0003_therapistdetails_rejected'),
+        ("therapist", "0003_therapistdetails_rejected"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BlockedSlot',
+            name="BlockedSlot",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='blocked_slots', to=settings.AUTH_USER_MODEL)),
-                ('date', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='therapist.availabledate')),
-                ('time', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='therapist.availabletimes')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "client",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="blocked_slots",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "date",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="therapist.availabledate",
+                    ),
+                ),
+                (
+                    "time",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="therapist.availabletimes",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('client', 'date', 'time')},
+                "unique_together": {("client", "date", "time")},
             },
         ),
     ]
