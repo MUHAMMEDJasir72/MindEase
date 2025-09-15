@@ -4,6 +4,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import { markAsAttended } from "../api/user";
 import { routerBaseUrl } from "../api/axiosInstance";
 import { Mic, MicOff, Video, VideoOff, PhoneOff } from "lucide-react";
+import { useSelector } from "react-redux";
 
 const VideoCall = () => {
   const { role, roomName, type } = useParams();
@@ -17,7 +18,7 @@ const VideoCall = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(type === "voice");
   const [isRemoteConnected, setIsRemoteConnected] = useState(false);
-
+  const user = useSelector((state) => state.user.user);
 
   const servers = {
     iceServers: [
@@ -195,10 +196,10 @@ const VideoCall = () => {
     setIsRemoteConnected(false);
     remoteVideoRef.current.srcObject = null;
 
-    // if (current_role === "user") navigate("/appointments");
-    // else if (current_role === "therapist") navigate("/therapistAppointments");
-    // else navigate("/");
-    navigate(`/${role}`)
+    if (user.current_role === "user") navigate("/appointments");
+    else if (current_role === "therapist") navigate("/therapistAppointments");
+    else navigate("/");
+    // navigate(`/${role}`)
   };
 
   const endCall = () => {
