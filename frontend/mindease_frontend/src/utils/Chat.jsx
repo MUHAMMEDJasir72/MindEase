@@ -93,8 +93,8 @@ function Chat() {
 
 
     const url = role === 'therapist'
-      ? `${basicUrl}api/users/chat/conversation/${therapistId}/${userId}/`
-      : `${basicUrl}api/users/chat/conversation/${userId}/${therapistId}/`;
+      ? `${basicUrl}api/users/chat/${therapistId}/${userId}/`
+      : `${basicUrl}api/users/chat/${userId}/${therapistId}/`;
 
     axios
       .get(url)
