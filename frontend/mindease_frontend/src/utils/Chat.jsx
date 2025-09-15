@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getTherapistInfo, getUserInfo } from '../api/therapist';
 import { basicUrl, routerBaseUrl } from '../api/axiosInstance';
 import { markAsAttended } from '../api/user';
+import { useSelector } from 'react-redux';
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -25,7 +26,7 @@ function Chat() {
 
   const { userId, therapistId, sessionId } = useParams();
   const roomName = `${userId}-${therapistId}`;
-  const [role, setRole] = useState(null)
+  const role = useSelector((state)=>state.user.user.current_role)
 
   // Role-based sender/receiver logic
   const sender = role === 'therapist' ? therapistId : userId;
