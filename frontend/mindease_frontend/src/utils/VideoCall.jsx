@@ -197,7 +197,7 @@ const VideoCall = () => {
     remoteVideoRef.current.srcObject = null;
 
     if (user.current_role === "user") navigate("/appointments");
-    else if (current_role === "therapist") navigate("/therapistAppointments");
+    else if (user.current_role === "therapist") navigate("/therapistAppointments");
     else navigate("/");
     // navigate(`/${role}`)
   };
