@@ -1,9 +1,10 @@
+import { message } from "antd";
 import API from "./axiosInstance";
 
 
 export const getTherapist = async () => {
     try {
-      const response = await API.get('/admin/get_therapists/');
+      const response = await API.get('/admin/get-therapists/');
       return { success: true, data: response.data.data };
     } catch (error) {
       return { success: false, error: error.response?.data || error.message };
@@ -21,7 +22,7 @@ export const getAllTherapist = async () => {
 
   export const getTherapistInformation = async (id) => {
     try {
-      const response = await API.get(`/admin/get_therapist_information/${id}/`);
+      const response = await API.get(`/admin/get-therapist-information/${id}/`);
       return { success: true, data: response.data.data };
     } catch (error) {
       return { success: false, error: error.response?.data || error.message };
@@ -30,7 +31,7 @@ export const getAllTherapist = async () => {
 
   export const getUsers = async () => {
     try {
-      const response = await API.get(`/admin/get_users/`);
+      const response = await API.get(`/admin/get-users/`);
       return { success: true, data: response.data.data };
     } catch (error) {
       return { success: false, error: error.response?.data || error.message };
@@ -39,7 +40,7 @@ export const getAllTherapist = async () => {
 
   export const getUserInfo = async (id) => {
     try {
-      const response = await API.get(`/admin/get_user_details/${id}/`);
+      const response = await API.get(`/admin/get-user-details/${id}/`);
       return { success: true, data: response.data.data };
     } catch (error) {
       return { success: false, error: error.response?.data || error.message };
@@ -54,9 +55,9 @@ export const getAllTherapist = async () => {
       return { success: false, error: error.response?.data || error.message };
     }
   };
-export const rejectTherapist = async (id) => {
+export const rejectTherapist = async (id, reason) => {
   try {
-    const response = await API.patch(`/admin/reject-therapist/${id}/`);
+    const response = await API.patch(`/admin/reject-therapist/`, {id, reason});
     return { success: true, message: response.data.message };
   } catch (error) {
     return { success: false, message: error.response?.data || error.message };
@@ -127,7 +128,7 @@ export const rejectTherapist = async (id) => {
   
   export const changeTherapistStatus = async (id) => {
     try {
-      const response = await API.patch(`/admin/change_therapist_status/${id}/`);
+      const response = await API.patch(`/admin/change-therapist-status/${id}/`);
       return { success: true, message: response.data.message };
     } catch (error) {
       return {
@@ -139,7 +140,7 @@ export const rejectTherapist = async (id) => {
 
   export const changeUserStatus = async (id) => {
     try {
-      const response = await API.patch(`/admin/change_user_status/${id}/`);
+      const response = await API.patch(`/admin/change-user-status/${id}/`);
       return { success: true, message: response.data.message };
     } catch (error) {
       return {
@@ -217,7 +218,7 @@ export const fetchAllSessions = async () => {
 
 export const getAdminNotifications = async () => {
   try {
-    const response = await API.get('/admin/get_notifications/');
+    const response = await API.get('/admin/get-notifications/');
     return { success: true, data: response.data };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'An error occurred';
@@ -301,5 +302,23 @@ export const updateTherapistTier = async ({id, selectedTier}) => {
         success: false,
         error: error.response?.data?.error || error.message,
       };
+    }
+  };
+
+export const getMinimumWithdrawalAmount = async () => {
+    try {
+      const response = await API.get('/admin/get-minimum-withdrawal-amount/');
+      return { success: true, amount: response.data.amount };
+    } catch (error) {
+      return { success: false, error: error.response?.data || error.message };
+    }
+  };
+
+export const updateMinimumWithdrawalAmount = async (amount) => {
+    try {
+      const response = await API.patch('/admin/get-minimum-withdrawal-amount/',{amount});
+      return { success: true, message: response.data.message};
+    } catch (error) {
+      return { success: false, error: error.response?.data || error.message };
     }
   };

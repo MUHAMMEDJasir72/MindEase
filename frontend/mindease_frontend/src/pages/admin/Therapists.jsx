@@ -45,7 +45,7 @@ function Therapists() {
       statusMatch = therapist.status === 'rejected';
     }
     
-    const nameMatch = therapist.fullname.toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch = therapist.user.fullname.toLowerCase().includes(searchTerm.toLowerCase());
     return statusMatch && (searchTerm === '' || nameMatch);
   });
 
@@ -66,6 +66,8 @@ function Therapists() {
       </div>
     );
   }
+
+  console.log(therapists)
 
   return (
     <div className='flex h-screen bg-gray-100'>
@@ -175,7 +177,7 @@ function Therapists() {
                         </div>
                         <div className='ml-4 flex-1 min-w-0'>
                           <p className='text-sm font-medium text-gray-900 truncate'>
-                            {therapist.fullname}
+                            {therapist.user.fullname}
                           </p>
                           <p className='text-sm text-gray-500 truncate'>
                             {therapist.professionalTitle || 'Psychologist'}

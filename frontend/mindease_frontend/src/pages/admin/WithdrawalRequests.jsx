@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
-import { Table, Button, message, Tabs, Modal } from 'antd';
+import { Table, Button, message, Tabs, Modal, Input, Form, Card, Space } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
-import { clientWithdrawalRequests, processClientWithdraw, processTherapistWithdraw, therapistWithdrawalRequests } from '../../api/admin';
+import { 
+  clientWithdrawalRequests, 
+  processClientWithdraw, 
+  processTherapistWithdraw, 
+  therapistWithdrawalRequests,
+  getMinimumWithdrawalAmount,
+  updateMinimumWithdrawalAmount 
+} from '../../api/admin';
 import { showToast } from '../../utils/toast';
 import AdminNotification from '../../components/admin/AdminNotifications';
 
@@ -14,9 +21,14 @@ function WithdrawalRequests() {
   const [processingId, setProcessingId] = useState(null);
   const [isClientRequest, setIsClientRequest] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [minimumAmount, setMinimumAmount] = useState(null);
+  const [isAmountModalVisible, setIsAmountModalVisible] = useState(false);
+  const [amountLoading, setAmountLoading] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchWithdrawalRequests();
+    fetchMinimumAmount();
   }, []);
 
   const fetchWithdrawalRequests = async () => {
@@ -29,6 +41,20 @@ function WithdrawalRequests() {
       setTherapistRequests(therapistRes.data);
     } catch (error) {
       message.error('Failed to fetch withdrawal requests');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMinimumAmount = async () => {
+    setLoading(true);
+    try {
+      const res = await getMinimumWithdrawalAmount();
+      if (res.success) {
+        setMinimumAmount(res.amount);
+      }
+    } catch (error) {
+      message.error('Failed to fetch minimum withdrawal amount');
     } finally {
       setLoading(false);
     }
@@ -70,12 +96,43 @@ function WithdrawalRequests() {
     setIsClientRequest(false);
   };
 
+  const showAmountModal = () => {
+    form.setFieldsValue({
+      minimumAmount: minimumAmount
+    });
+    setIsAmountModalVisible(true);
+  };
+
+  const handleUpdateMinimumAmount = async (values) => {
+    try {
+      setAmountLoading(true);
+      const res = await updateMinimumWithdrawalAmount(values.minimumAmount);
+      
+      if (res.success) {
+        showToast(res.message, 'success');
+        setMinimumAmount(values.minimumAmount);
+        setIsAmountModalVisible(false);
+        form.resetFields();
+      } else {
+        message.error(res.message || 'Failed to update minimum amount');
+      }
+    } catch (error) {
+      message.error('Failed to update minimum amount');
+    } finally {
+      setAmountLoading(false);
+    }
+  };
+
+  const handleAmountCancel = () => {
+    setIsAmountModalVisible(false);
+    form.resetFields();
+  };
+
   const clientColumns = [
     {
       title: 'Client',
-      dataIndex: 'client',
-      key: 'client',
-      render: (client) => client.username,
+      dataIndex: 'client_fullname',
+      key: 'client_fullname',
     },
     {
       title: 'Amount (₹)',
@@ -123,9 +180,8 @@ function WithdrawalRequests() {
   const therapistColumns = [
     {
       title: 'Therapist',
-      dataIndex: 'therapist',
-      key: 'therapist',
-      render: (therapist) => therapist.username,
+      dataIndex: 'therapist_fullname',
+      key: 'therapist_fullname',
     },
     {
       title: 'Amount (₹)',
@@ -208,11 +264,30 @@ function WithdrawalRequests() {
       <div className="flex-1 ml-[220px] p-6">
         <h1 className="text-2xl font-bold mb-6">Withdrawal Requests</h1>
         
+        {/* Minimum Amount Card */}
+        <Card 
+          title="Minimum Withdrawal Amount" 
+          className="mb-6"
+          extra={
+            <Button type="primary" onClick={showAmountModal}>
+              Change Amount
+            </Button>
+          }
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-lg">
+              Current Minimum Withdrawal Amount: 
+              <span className="font-bold ml-2">₹{minimumAmount}</span>
+            </span>
+          </div>
+        </Card>
+
         <Tabs 
           defaultActiveKey="1"
           items={tabItems}
         />
 
+        {/* Process Withdrawal Confirmation Modal */}
         <Modal
           title="Confirm Processing"
           visible={isModalVisible}
@@ -223,6 +298,61 @@ function WithdrawalRequests() {
         >
           <p>Are you sure you want to process this withdrawal request?</p>
           <p>This action cannot be undone.</p>
+        </Modal>
+
+        {/* Update Minimum Amount Modal */}
+        <Modal
+          title="Update Minimum Withdrawal Amount"
+          visible={isAmountModalVisible}
+          onCancel={handleAmountCancel}
+          footer={null}
+        >
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleUpdateMinimumAmount}
+          >
+            <Form.Item
+              name="minimumAmount"
+              label="Minimum Withdrawal Amount (₹)"
+              rules={[
+                { required: true, message: 'Please enter minimum amount' },
+                { 
+                  pattern: /^[0-9]+$/,
+                  message: 'Please enter a valid number'
+                },
+                {
+                  validator: (_, value) => {
+                    if (value && value < 1) {
+                      return Promise.reject(new Error('Amount must be at least ₹1'));
+                    }
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <Input 
+                type="number" 
+                placeholder="Enter minimum withdrawal amount"
+                min="1"
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Space>
+                <Button 
+                  type="primary" 
+                  htmlType="submit" 
+                  loading={amountLoading}
+                >
+                  Update Amount
+                </Button>
+                <Button onClick={handleAmountCancel}>
+                  Cancel
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
         </Modal>
       </div>
     </div>

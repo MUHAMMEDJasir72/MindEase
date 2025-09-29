@@ -672,6 +672,11 @@ class CreateAppointment(APIView):
         session_type = data.get("type")
 
         therapistInstance = TherapistDetails.objects.get(id=therapist_id)
+        if not therapistInstance.specializations.exists():
+            return Response(
+                {"success": False, "message": "Sorry, you can't book session with this therapist. Please try with another therapist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         therapist = UserDetails.objects.get(id=therapistInstance.user.id)
 
         get_date = get_object_or_404(AvailableDate, id=date_id)
@@ -734,7 +739,7 @@ class CreateAppointment(APIView):
         Notification.objects.create(
             user=client,
             title="New Appointment",
-            message=f"You have a new appointment with therapist {therapist} on {date.date.strftime('%B %d, %Y')} at {time.time.strftime('%I:%M %p')}.",
+            message=f"You have a new appointment with therapist {therapist.fullname} on {date.date.strftime('%B %d, %Y')} at {time.time.strftime('%I:%M %p')}.",
             type="success",
             location="/appointments",
         )
@@ -887,10 +892,10 @@ class CancelSession(APIView):
             )
 
             if cancelled_by == "Client":
-                client_noti_message = f"You cancelled Session ({session.id}) with {session.therapist.therapist_details.fullname} on {session_date} at {session_time.strftime('%I:%M %p')}."
+                client_noti_message = f"You cancelled Session ({session.id}) with {session.therapist.fullname} on {session_date} at {session_time.strftime('%I:%M %p')}."
                 therapist_noti_message = f"The client {session.client.fullname if session.client.fullname else session.client.username} cancelled session with you on {session_date} at {session_time.strftime('%I:%M %p')}."
             else:
-                client_noti_message = f"The Therapist {session.therapist.therapist_details.fullname} cancelled session with you on {session_date} at {session_time.strftime('%I:%M %p')}."
+                client_noti_message = f"The Therapist {session.therapist.fullname} cancelled session with you on {session_date} at {session_time.strftime('%I:%M %p')}."
                 therapist_noti_message = f"You cancelled Session ({session.id}) with {session.client.fullname if session.client.fullname else session.client.username} on {session_date} at {session_time.strftime('%I:%M %p')}."
 
             Notification.objects.create(
@@ -1123,7 +1128,7 @@ class GoogleLoginView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 user = User.objects.create(
-                    email=email, username=name, is_google_account=True
+                    email=email, username=name, is_google_account=True, fullname=name
                 )
 
             elif mode == "login":
@@ -1268,9 +1273,13 @@ class ClientWithdrawRequest(APIView):
         amount = request.data.get("amount")
         upi_id = request.data.get("upi_id")
 
-        if amount < 500:
+        min_amount_instance = MinimumWithdrawAmount.objects.first()
+        min_amount = int(min_amount_instance.amount) if min_amount_instance else 0
+
+        # Check against minimum amount
+        if amount < min_amount:
             return Response(
-                {"message": "Minimum withdrawal amount is ₹500."},
+                {"message": f"Minimum withdrawal amount is ₹{min_amount}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

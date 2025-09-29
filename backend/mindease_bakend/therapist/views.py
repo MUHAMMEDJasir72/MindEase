@@ -88,13 +88,6 @@ class RegisterTherapistView(APIView):
 
             therapist = TherapistDetails.objects.create(
                 user=user,
-                fullname=data.get("fullname"),
-                dateOfBirth=data.get("dateOfBirth"),
-                gender=data.get("gender"),
-                phone=data.get("phone"),
-                state=data.get("state"),
-                country=data.get("country"),
-                address=data.get("address"),
                 professionalTitle=data.get("professionalTitle"),
                 yearsOfExperience=data.get("yearsOfExperience"),
                 professionalLicenseNumber=data.get(
@@ -140,7 +133,7 @@ class RegisterTherapistView(APIView):
             AdminNotification.objects.create(
                 user=admin_user,
                 title="New Therapist Request",
-                message=f"New Therapist Request from {therapist.fullname} ",
+                message=f"New Therapist Request from {user.fullname} ",
                 type="success",
                 location=f"/therapistDetails/{therapist.id}",
             )
@@ -395,17 +388,17 @@ class UpdateTherapistProfile(APIView):
     def put(self, request):
         data = request.data
         user = request.user
+        print('data',data)
 
         try:
             details = TherapistDetails.objects.get(user=user)
 
-            details.fullname = data.get("fullname", details.fullname)
-            details.dateOfBirth = data.get("dateOfBirth", details.dateOfBirth)
-            details.gender = data.get("gender", details.gender)
-            details.phone = data.get("phone", details.phone)
-            details.state = data.get("state", details.state)
-            details.country = data.get("country", details.country)
-            details.address = data.get("address", details.address)
+            user.fullname = data.get("user[fullname]", user.fullname)
+            user.age = data.get("user[age]", user.age)
+            user.gender = data.get("user[gender]", user.gender)
+            user.phone = data.get("user[phone]", user.phone)
+            user.place = data.get("user[place]", user.place)
+
             details.professionalTitle = data.get(
                 "professionalTitle", details.professionalTitle
             )
@@ -455,8 +448,9 @@ class UpdateTherapistProfile(APIView):
                 if request.FILES.getlist("additionalCertificationDocument")
                 else details.additionalCertificationDocument
             )
-
+            details.status = "pending"
             details.save()
+            user.save()
 
             Specializations.objects.filter(therapist_details=details).delete()
             specializations_data = []
@@ -492,9 +486,17 @@ class UpdateTherapistProfile(APIView):
                     therapist_details=details, languages=language.get(
                         "languages")
                 )
+            admin_user = UserDetails.objects.filter(is_superuser=True).first()
+            AdminNotification.objects.create(
+                user=admin_user,
+                title="Rerequest for therapist",
+                message=f"{user.fullname} rerequested for therapist",
+                type="success",
+                location=f"/therapistDetails/{details.id}",
+            )
 
             return Response(
-                {"message": "Profile updated successfully"}, status=status.HTTP_200_OK
+                {"message": "form resubmitted successfully"}, status=status.HTTP_200_OK
             )
 
         except TherapistDetails.DoesNotExist:
@@ -654,21 +656,26 @@ class RequestWithdraw(APIView):
         amount = request.data.get("amount")
         upi_id = request.data.get("upi_id")
 
-        if amount < 500:
+        min_amount_instance = MinimumWithdrawAmount.objects.first()
+        min_amount = int(min_amount_instance.amount) if min_amount_instance else 0
+
+        if amount < min_amount:
             return Response(
-                {"message": "Minimum withdrawal amount is ₹500."},
+                {"message": f"Minimum withdrawal amount is ₹{min_amount}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
 
         WithdrawalRequest.objects.create(
             therapist=user, amount=amount, upi_id=upi_id)
         admin_user = UserDetails.objects.filter(is_superuser=True).first()
         therapist = TherapistDetails.objects.get(user=user)
+        user = request.user
 
         AdminNotification.objects.create(
             user=admin_user,
             title="Withdraw Request",
-            message=f"You have a withdrawal request of ₹{amount} from therapist {therapist.fullname if therapist.fullname else user.username}",
+            message=f"You have a withdrawal request of ₹{amount} from therapist {user.fullname if user.fullname else user.username}",
             type="success",
             location="/adminEarnings",
         )

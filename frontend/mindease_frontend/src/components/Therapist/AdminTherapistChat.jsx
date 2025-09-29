@@ -17,11 +17,12 @@ import {
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
+import CloseIcon from '@mui/icons-material/Close'; // Added close icon
 import { deepPurple, green } from '@mui/material/colors';
 import { routerBaseUrl } from '../../api/axiosInstance';
 import { useSelector } from 'react-redux';
 
-function AdminTherapistChat({ roomName, sender, receiver }) {
+function AdminTherapistChat({ roomName, sender, receiver, onClose }) { // Added onClose prop
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +30,6 @@ function AdminTherapistChat({ roomName, sender, receiver }) {
   const ws = useRef(null);
   const theme = useTheme();
   const [currentUser, setCurrentUser] = useState('');
-
 
   useEffect(() => {
     const fetchChatHistory = async () => {
@@ -146,9 +146,21 @@ function AdminTherapistChat({ roomName, sender, receiver }) {
           backgroundColor: theme.palette.primary.main, 
           color: 'white',
           borderTopLeftRadius: '4px',
-          borderTopRightRadius: '4px'
+          borderTopRightRadius: '4px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
           <Typography variant="h6">Chat with {currentUser === String(sender) ? 'Therapist' : 'Admin'}</Typography>
+          {onClose && (
+            <IconButton 
+              onClick={onClose}
+              sx={{ color: 'white' }}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
         </Box>
         
         {/* Messages area */}

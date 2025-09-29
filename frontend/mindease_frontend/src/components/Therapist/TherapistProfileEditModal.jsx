@@ -121,10 +121,23 @@ const handleCheckboxChange = (field, value, checked) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Check if this is a user field (personal information)
+    if (name.startsWith('user.')) {
+      const userField = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          [userField]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     
     // Clear error when field is filled
     if (errors[name]) {
@@ -167,9 +180,9 @@ const handleCheckboxChange = (field, value, checked) => {
     
     // Validation
     const newErrors = {};
-    if (!formData.fullname?.trim()) newErrors.fullname = 'Full name is required';
+    // if (!formData.user?.fullname?.trim()) newErrors.fullname = 'Full name is required';
     if (!formData.professionalTitle?.trim()) newErrors.professionalTitle = 'Professional title is required';
-    if (!formData.phone?.trim()) newErrors.phone = 'Phone number is required';
+    // if (!formData.user?.phone?.trim()) newErrors.phone = 'Phone number is required';
     
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -192,7 +205,7 @@ const handleCheckboxChange = (field, value, checked) => {
     onClose();
   };
 
-
+  console.log('formData',formData)
 
   // Check file type for proper preview display
   const isImageFile = (fileName) => {
@@ -231,7 +244,6 @@ const handleCheckboxChange = (field, value, checked) => {
     { id: 'education', label: 'Education', icon: <FaGraduationCap /> },
     { id: 'documents', label: 'Documents & Images', icon: <FaFileAlt /> }
   ];
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -281,8 +293,8 @@ const handleCheckboxChange = (field, value, checked) => {
                   </label>
                   <input
                     type="text"
-                    name="fullname"
-                    value={formData.fullname || ''}
+                    name="user.fullname"
+                    value={formData.user?.fullname || ''}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.fullname ? 'border-red-500' : 'border-gray-300'
@@ -292,12 +304,14 @@ const handleCheckboxChange = (field, value, checked) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
                   <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={formData.dateOfBirth ? formData.dateOfBirth.split('T')[0] : ''}
+                    type="number"
+                    name="user.age"
+                    value={formData.user?.age || ''}
                     onChange={handleChange}
+                    min="18"
+                    max="100"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -305,8 +319,8 @@ const handleCheckboxChange = (field, value, checked) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                   <select
-                    name="gender"
-                    value={formData.gender || ''}
+                    name="user.gender"
+                    value={formData.user?.gender || ''}
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -324,8 +338,8 @@ const handleCheckboxChange = (field, value, checked) => {
                   </label>
                   <input
                     type="tel"
-                    name="phone"
-                    value={formData.phone || ''}
+                    name="user.phone"
+                    value={formData.user?.phone || ''}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.phone ? 'border-red-500' : 'border-gray-300'
@@ -334,38 +348,30 @@ const handleCheckboxChange = (field, value, checked) => {
                   {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={formData.country || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={formData.state || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                  <textarea
-                    name="address"
-                    value={formData.address || ''}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Place</label>
+                  <input
+                    type="text"
+                    name="user.place"
+                    value={formData.user?.place || ''}
                     onChange={handleChange}
-                    rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter your location"
                   />
                 </div>
+
+                {/* <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    name="user.email"
+                    value={formData.user?.email || ''}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                </div> */}
               </div>
             </div>
 
@@ -449,8 +455,8 @@ const handleCheckboxChange = (field, value, checked) => {
                             className="mt-1 mr-2"
                             value={item.specialization}
                             checked={formData?.specializations?.some(
-  (spec) => spec.specialization === item.specialization
-)}
+                              (spec) => spec.specialization === item.specialization
+                            )}
                             onChange={(e) => {
                               handleCheckboxChange('specializations', item.specialization, e.target.checked);
                             }}
@@ -543,104 +549,104 @@ const handleCheckboxChange = (field, value, checked) => {
 
             {/* Documents Section - All documents with previews */}
             <div className={activeTab === 'documents' ? 'block' : 'hidden'}>
-  <h3 className="text-lg font-semibold mb-4 border-b pb-2 text-gray-800">Documents & Images</h3>
-  
-  <div className="space-y-6">
-    {Object.keys(documentLabels).map(docKey => (
-      <div key={docKey} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-        <h4 className="font-medium text-gray-800 mb-2">{documentLabels[docKey]}</h4>
-        
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
-          {/* Document preview area */}
-          <div className="w-full md:w-1/3 flex-shrink-0">
-            {previews[docKey] ? (
-              <div className="relative border border-gray-300 rounded-md overflow-hidden bg-white flex items-center justify-center">
-                {getDocumentFileType(docKey, previews[docKey]) === 'image' ? (
-                  <img 
-                    src={previews[docKey]} 
-                    alt={documentLabels[docKey]} 
-                    className="w-full h-40 object-contain"
-                  />
-                ) : (
-                  <div className="w-full h-40 flex flex-col items-center justify-center p-4 text-center">
-                    <FaFileAlt className="text-4xl text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-600">
-                      {documents[docKey] instanceof File ? documents[docKey].name : 'Document file'}
-                    </p>
+              <h3 className="text-lg font-semibold mb-4 border-b pb-2 text-gray-800">Documents & Images</h3>
+              
+              <div className="space-y-6">
+                {Object.keys(documentLabels).map(docKey => (
+                  <div key={docKey} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <h4 className="font-medium text-gray-800 mb-2">{documentLabels[docKey]}</h4>
+                    
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
+                      {/* Document preview area */}
+                      <div className="w-full md:w-1/3 flex-shrink-0">
+                        {previews[docKey] ? (
+                          <div className="relative border border-gray-300 rounded-md overflow-hidden bg-white flex items-center justify-center">
+                            {getDocumentFileType(docKey, previews[docKey]) === 'image' ? (
+                              <img 
+                                src={previews[docKey]} 
+                                alt={documentLabels[docKey]} 
+                                className="w-full h-40 object-contain"
+                              />
+                            ) : (
+                              <div className="w-full h-40 flex flex-col items-center justify-center p-4 text-center">
+                                <FaFileAlt className="text-4xl text-gray-400 mb-2" />
+                                <p className="text-sm text-gray-600">
+                                  {documents[docKey] instanceof File ? documents[docKey].name : 'Document file'}
+                                </p>
+                              </div>
+                            )}
+                            
+                            {/* Document actions */}
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white flex justify-center p-2 gap-3">
+                              {previews[docKey] && (
+                                <>
+                                  <a 
+                                    href={previews[docKey]} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-white hover:text-blue-300 transition-colors"
+                                    title="View"
+                                  >
+                                    <FaEye />
+                                  </a>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="border border-gray-300 border-dashed rounded-md h-40 flex items-center justify-center bg-gray-100">
+                            <p className="text-sm text-gray-500">No {documentLabels[docKey]} uploaded</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Upload controls */}
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-3">
+                          {/* Upload Icon */}
+                          <label 
+                            htmlFor={`upload-${docKey}`} 
+                            className="inline-flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full text-white cursor-pointer hover:bg-blue-600 transition"
+                            title="Upload New File"
+                          >
+                            <FaUpload className="text-xl" />
+                          </label>
+
+                          {/* Hidden input */}
+                          <input
+                            id={`upload-${docKey}`}
+                            type="file"
+                            accept={docKey === 'profile_image' ? "image/*" : ".pdf,.doc,.docx,.jpg,.jpeg,.png"}
+                            onChange={(e) => handleFileChange(e, docKey)}
+                            className="hidden"
+                          />
+
+                          {/* Show selected file name */}
+                          {documents[docKey] instanceof File && (
+                            <p className="text-sm text-green-600">
+                              New file selected: {documents[docKey].name}
+                            </p>
+                          )}
+                        </div>
+
+                        <p className="text-xs text-gray-500 mt-2">
+                          {docKey === 'profile_image'
+                            ? 'Recommended: Square image, at least 300x300px'
+                            : 'Accepted formats: PDF, DOC, DOCX, JPG, PNG'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                )}
-                
-                {/* Document actions */}
-                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white flex justify-center p-2 gap-3">
-                  {previews[docKey] && (
-                    <>
-                      <a 
-                        href={previews[docKey]} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-white hover:text-blue-300 transition-colors"
-                        title="View"
-                      >
-                        <FaEye />
-                      </a>
-                    </>
-                  )}
-                </div>
+                ))}
               </div>
-            ) : (
-              <div className="border border-gray-300 border-dashed rounded-md h-40 flex items-center justify-center bg-gray-100">
-                <p className="text-sm text-gray-500">No {documentLabels[docKey]} uploaded</p>
-              </div>
-            )}
-          </div>
-          
-          {/* Upload controls */}
-          <div className="flex-grow">
-            <div className="flex items-center gap-3">
-              {/* Upload Icon */}
-              <label 
-                htmlFor={`upload-${docKey}`} 
-                className="inline-flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full text-white cursor-pointer hover:bg-blue-600 transition"
-                title="Upload New File"
-              >
-                <FaUpload className="text-xl" />
-              </label>
-
-              {/* Hidden input */}
-              <input
-                id={`upload-${docKey}`}
-                type="file"
-                accept={docKey === 'profile_image' ? "image/*" : ".pdf,.doc,.docx,.jpg,.jpeg,.png"}
-                onChange={(e) => handleFileChange(e, docKey)}
-                className="hidden"
-              />
-
-              {/* Show selected file name */}
-              {documents[docKey] instanceof File && (
-                <p className="text-sm text-green-600">
-                  New file selected: {documents[docKey].name}
+              
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mt-6 rounded">
+                <h4 className="text-blue-800 font-medium">Documents Security Note</h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  All uploaded documents are securely stored and encrypted. Only authorized personnel will have access to your documents for verification purposes.
                 </p>
-              )}
+              </div>
             </div>
-
-            <p className="text-xs text-gray-500 mt-2">
-              {docKey === 'profile_image'
-                ? 'Recommended: Square image, at least 300x300px'
-                : 'Accepted formats: PDF, DOC, DOCX, JPG, PNG'}
-            </p>
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
-  
-  <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mt-6 rounded">
-    <h4 className="text-blue-800 font-medium">Documents Security Note</h4>
-    <p className="text-sm text-blue-700 mt-1">
-      All uploaded documents are securely stored and encrypted. Only authorized personnel will have access to your documents for verification purposes.
-    </p>
-  </div>
-</div>
           </form>
         </div>
 

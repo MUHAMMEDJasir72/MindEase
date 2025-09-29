@@ -79,7 +79,6 @@ function TherapistProfile() {
       </div>
     );
   }
-
   return (
     <div className="flex h-screen bg-gray-50">
       <TherapistSidebar />
@@ -105,7 +104,7 @@ function TherapistProfile() {
               
               {/* Basic Info */}
               <div className="flex-1 text-center md:text-left">
-                <h2 className="text-2xl font-bold text-gray-800">{therapistData.fullname}</h2>
+                <h2 className="text-2xl font-bold text-gray-800">{therapistData.user.fullname}</h2>
                 <p className="text-blue-600 font-medium mb-2">{therapistData.professionalTitle}</p>
                 <p className="text-gray-800 mb-2">
                   {therapistData.specializations?.map((item) => item.specialization).join(', ') || 'N/A'}
@@ -114,7 +113,7 @@ function TherapistProfile() {
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
                   <div className="flex items-center text-gray-600">
                     <FaMapMarkerAlt className="mr-2 text-blue-500" />
-                    <span>{therapistData.state}, {therapistData.country}</span>
+                    <span>{therapistData.user.place}</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <FaBriefcase className="mr-2 text-blue-500" />
@@ -122,7 +121,7 @@ function TherapistProfile() {
                   </div>
                   <div className="flex items-center text-gray-600">
                     <FaUser className="mr-2 text-blue-500" />
-                    <span>{therapistData.gender}</span>
+                    <span>{therapistData.user.gender}</span>
                   </div>
                 </div>
               </div>
@@ -197,47 +196,47 @@ function TherapistProfile() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Full Name</label>
-                <p className="text-gray-800">{therapistData.fullname || 'N/A'}</p>
+                <p className="text-gray-800">{therapistData.user.fullname || 'N/A'}</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">Date of Birth</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Age</label>
                 <div className="flex items-center">
                   <FaCalendarAlt className="text-gray-400 mr-2" />
-                  <p className="text-gray-800">{formatDate(therapistData.dateOfBirth)}</p>
+                  <p className="text-gray-800">{therapistData.user.age}</p>
                 </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Gender</label>
-                <p className="text-gray-800">{therapistData.gender || 'N/A'}</p>
+                <p className="text-gray-800">{therapistData.user.gender || 'N/A'}</p>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Phone</label>
                 <div className="flex items-center">
                   <FaPhone className="text-gray-400 mr-2" />
-                  <p className="text-gray-800">{therapistData.phone || 'N/A'}</p>
+                  <p className="text-gray-800">{therapistData.user.phone || 'N/A'}</p>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">State/Country</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Place</label>
                 <div className="flex items-center">
                   <FaMapMarkerAlt className="text-gray-400 mr-2" />
                   <p className="text-gray-800">
-                    {therapistData.state || 'N/A'}, {therapistData.country || 'N/A'}
+                    {therapistData.user.place || 'N/A'}
                   </p>
                 </div>
               </div>
               
-              <div className="md:col-span-2 lg:col-span-3">
+              {/* <div className="md:col-span-2 lg:col-span-3">
                 <label className="block text-sm font-medium text-gray-500 mb-1">Address</label>
                 <div className="flex items-center">
                   <FaMapMarkerAlt className="text-gray-400 mr-2" />
                   <p className="text-gray-800">{therapistData.address || 'N/A'}</p>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
           
@@ -259,7 +258,7 @@ function TherapistProfile() {
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Specializations</label>
                 <p className="text-gray-800">
-                  {therapistData.specializations?.map((item) => item.specializations).join(', ') || 'N/A'}
+                  {therapistData.specializations?.map((item) => item.specialization).join(', ') || 'N/A'}
                 </p>
               </div>
               

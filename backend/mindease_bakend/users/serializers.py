@@ -51,6 +51,7 @@ class AvailableTimeSerializer(serializers.ModelSerializer):
 
 
 class TherapySessionSerializer(serializers.ModelSerializer):
+    therapist_fullname = serializers.SerializerMethodField()
     therapist_details = serializers.SerializerMethodField()
     date_value = serializers.SerializerMethodField()
     time_value = serializers.SerializerMethodField()
@@ -60,6 +61,11 @@ class TherapySessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TherapySession
         fields = "__all__"
+
+    def get_therapist_fullname(self, obj):
+        if obj.therapist and obj.therapist.fullname:
+            return obj.therapist.fullname
+        return obj.therapist.username if obj.therapist else None
 
     def get_therapist_details(self, obj):
         try:
@@ -101,6 +107,23 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = "__all__"
 
+class UserDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDetails
+        fields = [
+            "id",
+            "username",
+            "fullname",
+            "email",
+            "age",
+            "place",
+            "gender",
+            "language",
+            "phone",
+            "profile_image",
+            "role",
+        ]
+
 
 class SpecializationSerializer(serializers.ModelSerializer):
     specialization = serializers.CharField(
@@ -119,6 +142,7 @@ class LanguageSerializer(serializers.ModelSerializer):
 
 
 class GetTherapistProfileSerializer(serializers.ModelSerializer):
+    user = UserDetailsSerializer(read_only=True)
     specializations = SpecializationSerializer(many=True, read_only=True)
     languages = LanguageSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
@@ -127,7 +151,7 @@ class GetTherapistProfileSerializer(serializers.ModelSerializer):
         model = TherapistDetails
         fields = [
             "id",
-            "fullname",
+            "user",
             "yearsOfExperience",
             "professionalTitle",
             "profile_image",

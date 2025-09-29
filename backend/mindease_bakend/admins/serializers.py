@@ -124,6 +124,8 @@ class SpecializationsListSerializer(serializers.ModelSerializer):
 
 
 class TherapistWithdrawalRequestSerializer(serializers.ModelSerializer):
+    therapist_fullname = serializers.CharField(source="therapist.fullname", read_only=True)
+
 
     class Meta:
         model = WithdrawalRequest
@@ -131,6 +133,7 @@ class TherapistWithdrawalRequestSerializer(serializers.ModelSerializer):
 
 
 class ClientWithdrawalRequestSerializer(serializers.ModelSerializer):
+    client_fullname = serializers.CharField(source="client.fullname", read_only=True)
 
     class Meta:
         model = ClientWithdrawalRequest

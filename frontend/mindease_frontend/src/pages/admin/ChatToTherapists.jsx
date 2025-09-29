@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminTherapistChat from '../../components/Therapist/AdminTherapistChat';
 import { getAllTherapist, getTherapist } from '../../api/admin';
-import { User } from 'lucide-react';
+import { User, X } from 'lucide-react'; // Added X icon
 import AdminNotification from '../../components/admin/AdminNotifications';
 import { getMYInfo } from '../../api/user';
 
@@ -37,8 +37,12 @@ function ChatToTherapists() {
     fetchTherapists();
   }, []);
 
- 
+  // Function to close the chat
+  const handleCloseChat = () => {
+    setSelectedTherapist(null);
+  };
 
+  console.log('therapists',therapists)
 
   return (
     <div className="flex min-h-screen w-full">
@@ -55,11 +59,42 @@ function ChatToTherapists() {
         {/* Chat window - takes 70% width */}
         <div className="w-3/4 border-r border-gray-200 h-full">
           {selectedTherapist ? (
-            <AdminTherapistChat 
-              roomName={`${admin}-${selectedTherapist.user.id}`} 
-              sender={admin} 
-              receiver={selectedTherapist.user.id} 
-            />
+            <div className="h-full flex flex-col">
+              {/* Chat header with close button */}
+              <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-white">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <User className="h-5 w-5 text-blue-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {selectedTherapist.user.fullname}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {selectedTherapist.professionalTitle}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCloseChat}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                  title="Close chat"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              {/* Chat component */}
+              <div className="flex-grow">
+                <AdminTherapistChat 
+                  roomName={`${admin}-${selectedTherapist.user.id}`} 
+                  sender={admin} 
+                  receiver={selectedTherapist.user.id} 
+                />
+              </div>
+            </div>
           ) : (
             <div className="flex justify-center items-center h-full bg-gray-50">
               <p className="text-lg text-gray-500">
@@ -85,7 +120,7 @@ function ChatToTherapists() {
                   key={therapist.id}
                   onClick={() => setSelectedTherapist(therapist)}
                   className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    selectedTherapist?.id === therapist.id ? 'bg-blue-50' : 'bg-white'
+                    selectedTherapist?.id === therapist.id ? 'bg-blue-50 border-r-2 border-blue-500' : 'bg-white'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
@@ -96,7 +131,7 @@ function ChatToTherapists() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {therapist.fullname}
+                        {therapist.user.fullname}
                       </p>
                       <p className="text-sm text-gray-500 truncate">
                         {therapist.professionalTitle}

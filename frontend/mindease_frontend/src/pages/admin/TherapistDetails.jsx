@@ -19,6 +19,8 @@ function TherapistDetails() {
     const [selectedTier, setSelectedTier] = useState('')
     const [showTierModal, setShowTierModal] = useState(false)
     const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+    const [showRejectModal, setShowRejectModal] = useState(false)
+    const [rejectReason, setRejectReason] = useState('')
     const navigate = useNavigate()
     const [confirmConfig, setConfirmConfig] = useState({
       isOpen: false,
@@ -99,15 +101,28 @@ function TherapistDetails() {
       setShowUpgradeModal(true);
     };
 
-   const rejectRequest = async () => {
-    const info = await rejectTherapist(id);
-    if (info.success) {
-        showToast(info.message, 'success');
-        navigate('/therapists');
-    } else {
-        showToast(info.message, 'error');
-    }
-  };
+    const openRejectModal = () => {
+      setRejectReason('');
+      setShowRejectModal(true);
+    };
+
+    const handleReject = async () => {
+      if (!rejectReason.trim()) {
+        showToast('Please provide a rejection reason', 'error');
+        return;
+      }
+
+      setIsLoading(true);
+      const info = await rejectTherapist(id, rejectReason);
+      if (info.success) {
+          showToast(info.message, 'success');
+          setShowRejectModal(false);
+          navigate('/therapists');
+      } else {
+          showToast(info.message, 'error');
+      }
+      setIsLoading(false);
+    };
 
     const handleBlock = async () => {
         try {
@@ -132,12 +147,6 @@ function TherapistDetails() {
         }
     };
 
-    function calculateAge(dateOfBirth) {
-      const dob = new Date(dateOfBirth);
-      const today = new Date();
-      return differenceInYears(today, dob);
-    }
-
     const getTierColor = (tier) => {
       switch(tier) {
         case 'bronze': return 'bg-amber-500';
@@ -157,6 +166,8 @@ function TherapistDetails() {
         default: return 'Not Set';
       }
     };
+
+    console.log('details',details)
 
     if (isLoading) {
         return (
@@ -187,7 +198,7 @@ function TherapistDetails() {
                                 alt='Therapist profile'
                             />
                         </div>
-                        <h1 className='mt-4 text-2xl font-bold text-white'>{details.fullname}</h1>
+                        <h1 className='mt-4 text-2xl font-bold text-white'>{details.user?.fullname}</h1>
                         <p className='text-indigo-100 font-medium'>{details.professionalTitle}</p>
                         
                         {/* Tier Badge */}
@@ -251,15 +262,13 @@ function TherapistDetails() {
                                     Personal Information
                                 </h2>
                                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                                    <InfoItem label="Full Name" value={details.fullname} />
-                                    <InfoItem label="Email" value={details.user.email} />
-                                    <InfoItem label="Age" value={`${calculateAge(details.dateOfBirth)} years`} />
-                                    <InfoItem label="Gender" value={details.gender} />
-                                    <InfoItem label="Mobile Number" value={details.phone} />
+                                    <InfoItem label="Full Name" value={details.user?.fullname} />
+                                    <InfoItem label="Email" value={details.user?.email} />
+                                    <InfoItem label="Age" value={details.user?.age} />
+                                    <InfoItem label="Gender" value={details.user?.gender} />
+                                    <InfoItem label="Mobile Number" value={details.user?.phone} />
                                     <InfoItem label="Languages" value={details.languages?.map((lang) => lang.languages).join(', ')} />
-                                    <InfoItem label="Address" value={details.address} />
-                                    <InfoItem label="Country" value={details.country}/>
-                                    <InfoItem label="State" value={details.state} />
+                                    <InfoItem label="Place" value={details.user?.place} />
                                 </div>
                             </div>
 
@@ -331,14 +340,7 @@ function TherapistDetails() {
                             </button>
                             {details.status !== 'rejected' &&
                             <button className='flex-1 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center'
-                            onClick={() =>
-                            setConfirmConfig({
-                                isOpen: true,
-                                title: 'Reject Therapist',
-                                message: 'Are you sure you want to reject this therapist?',
-                                onConfirm: rejectRequest,
-                            })
-                            }
+                            onClick={openRejectModal}
                             >
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -451,6 +453,40 @@ function TherapistDetails() {
                 </div>
             )}
 
+            {/* Reject Reason Modal */}
+            {showRejectModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                        <h3 className="text-xl font-semibold mb-4">Reject Therapist Application</h3>
+                        <p className="text-gray-600 mb-4">Please provide a reason for rejection:</p>
+                        
+                        <textarea
+                            className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Enter rejection reason..."
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                        />
+                        
+                        <div className="flex justify-end space-x-3 mt-6">
+                            <button 
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                onClick={() => setShowRejectModal(false)}
+                                disabled={isLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-300"
+                                onClick={handleReject}
+                                disabled={!rejectReason.trim() || isLoading}
+                            >
+                                {isLoading ? 'Rejecting...' : 'Confirm Rejection'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Confirmation Modal */}
             {confirmConfig.isOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -506,7 +542,7 @@ function InfoItem({ label, value }) {
     return (
         <div className='bg-gray-50 p-3 rounded-lg'>
             <p className='text-xs font-medium text-gray-500 uppercase tracking-wider'>{label}</p>
-            <p className='mt-1 text-sm font-medium text-gray-900'>{value}</p>
+            <p className='mt-1 text-sm font-medium text-gray-900'>{value || 'Not provided'}</p>
         </div>
     )
 }
@@ -514,7 +550,7 @@ function InfoItem({ label, value }) {
 // Reusable component for document items
 function DocumentItem({ label, fileUrl }) {
     const fullUrl = `${import.meta.env.VITE_API_URL}/admin/secure-documents/${
-     fileUrl.replace(/^\/?media\//, '').replace(/\/$/, '')
+     fileUrl?.replace(/^\/?media\//, '').replace(/\/$/, '')
    }`;
 
     return (

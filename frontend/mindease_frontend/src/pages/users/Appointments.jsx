@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Video, Phone, MessageSquare, User, ChevronRight, Star, MessageCircle, Menu } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { data, Link, useNavigate } from 'react-router-dom';
 import { cancelSession, getAppointments, submitFeedback } from '../../api/user';
 import Navbar from '../../components/users/Navbar';
 import { CancelConfirmationDialog } from '../../components/users/CancelConfirmationDialog';
@@ -36,6 +36,7 @@ function Appointments() {
     try {
       const response = await getAppointments();
       if (response.success) {
+        console.log('data',response.data)
         setAppointments(response.data);
       } else {
         setError("Failed to load appointments");
@@ -363,7 +364,7 @@ function Appointments() {
                         )}
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-800 text-base md:text-lg">{appointment.therapist_details.fullname}</h3>
+                        <h3 className="font-bold text-gray-800 text-base md:text-lg">{appointment.therapist_fullname}</h3>
                         <p className="text-teal-600 text-xs md:text-sm">{appointment.therapist_details.professionalTitle}</p>
                         <button
                           onClick={() =>

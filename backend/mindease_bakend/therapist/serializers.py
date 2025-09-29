@@ -2,10 +2,33 @@
 from .models import TherapistDetails, Specializations, Languages
 from rest_framework import serializers
 from .models import AvailableDate, AvailableTimes
-from users.models import WalletTransaction, TherapistNotification
+from users.models import WalletTransaction, TherapistNotification, UserDetails
 from admins.models import SpecializationsList
 from rest_framework import serializers
 from .models import AvailableDate, AvailableTimes
+
+class UserDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDetails
+        fields = [
+            "id",
+            "username",
+            "email",
+            "fullname",
+            "age",
+            "place",
+            "gender",
+            "language",
+            "phone",
+            # "profile_image",
+            # "role",
+            # "is_therapist_active",
+            # "is_user_active",
+            # "is_therapist",
+            # "current_role",
+            # "is_google_account",
+        ]
+
 
 
 class AvailableTimeSerializer(serializers.ModelSerializer):
@@ -41,17 +64,12 @@ class LanguagesSerializer(serializers.ModelSerializer):
 class TherapistDetailsSerializer(serializers.ModelSerializer):
     specializations = SpecializationsSerializer(many=True, read_only=True)
     languages = LanguagesSerializer(many=True, read_only=True)
+    user = UserDetailsSerializer(read_only=True)
 
     class Meta:
         model = TherapistDetails
         fields = [
-            "fullname",
-            "dateOfBirth",
-            "gender",
-            "phone",
-            "state",
-            "country",
-            "address",
+            "user",
             "professionalTitle",
             "yearsOfExperience",
             "professionalLicenseNumber",

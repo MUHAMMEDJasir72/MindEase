@@ -25,15 +25,19 @@ function SelectTherapist() {
     close: false
   });
 
-  // Get all unique specialties from therapists
+  // Get all unique specialties from therapists (only from therapists with specializations)
   const allSpecialties = [...new Set(
     therapists.flatMap(t => 
       t.specializations?.map(spec => spec.specialization) || []
     )
   )];
 
-  // Get all unique tiers from therapists
-  const allTiers = [...new Set(therapists.map(t => t.tier))].filter(tier => tier);
+  // Get all unique tiers from therapists (only from therapists with specializations)
+  const allTiers = [...new Set(
+    therapists
+      .filter(t => t.specializations && t.specializations.length > 0)
+      .map(t => t.tier)
+  )].filter(tier => tier);
 
   useEffect(() => {
     const fetchTherapists = async () => {
@@ -41,6 +45,7 @@ function SelectTherapist() {
       try {
         const info = await getTherapist();
         if (info.success) {
+          console.log('data',info.data)
           setTherapists(info.data);
         }
       } catch (error) {
@@ -56,6 +61,13 @@ function SelectTherapist() {
   useEffect(() => {
     let results = [...therapists];
     
+    // FIRST: Filter out therapists with no specializations (empty array or null/undefined)
+    results = results.filter(therapist => 
+      therapist.specializations && 
+      therapist.specializations.length > 0
+    );
+    
+    // THEN: Apply other filters
     // Filter by specialty
     if (selectedSpecialties.length > 0) {
       results = results.filter(therapist => 
@@ -75,7 +87,7 @@ function SelectTherapist() {
     // Search by name
     if (searchTerm) {
       results = results.filter(therapist =>
-        therapist.fullname.toLowerCase().includes(searchTerm.toLowerCase())
+        therapist.user?.fullname?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -83,13 +95,13 @@ function SelectTherapist() {
     results = results.sort((a, b) => {
       switch (sortOption) {
         case 'name-asc':
-          return a.fullname.localeCompare(b.fullname);
+          return (a.user?.fullname || '').localeCompare(b.user?.fullname || '');
         case 'name-desc':
-          return b.fullname.localeCompare(a.fullname);
+          return (b.user?.fullname || '').localeCompare(a.user?.fullname || '');
         case 'experience-asc':
-          return (a.yearsOfExperience || 0) - (b.yearsOfExperience || 0);
+          return (parseInt(a.yearsOfExperience) || 0) - (parseInt(b.yearsOfExperience) || 0);
         case 'experience-desc':
-          return (b.yearsOfExperience || 0) - (a.yearsOfExperience || 0);
+          return (parseInt(b.yearsOfExperience) || 0) - (parseInt(a.yearsOfExperience) || 0);
         case 'rating-asc':
           return (a.rating || 0) - (b.rating || 0);
         case 'rating-desc':
@@ -152,6 +164,7 @@ function SelectTherapist() {
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i);
     }
+
 
     return (
       <div className="flex flex-col sm:flex-row justify-between items-center mt-8">
@@ -350,7 +363,7 @@ function SelectTherapist() {
                     <div className="h-40 md:h-[240px] w-full overflow-hidden relative">
                       <img
                         src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
-                        alt={therapist.fullname}
+                        alt={therapist.user?.fullname || 'Therapist'}
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         onError={(e) => {
                           e.target.src = '/images/default-profile.jpg';
@@ -369,14 +382,26 @@ function SelectTherapist() {
                     </div>
 
                     <div className="p-3 md:p-5">
-                      <h3 className="text-lg md:text-xl font-semibold text-gray-800">{therapist.fullname}</h3>
+                      <h3 className="text-lg md:text-xl font-semibold text-gray-800">{therapist.user?.fullname || 'Unknown Therapist'}</h3>
                       <p className="text-teal-600 font-medium text-sm md:text-base mt-1">{therapist.professionalTitle}</p>
 
                       <div className="mt-2 text-gray-500 text-xs md:text-sm">
                         {therapist.yearsOfExperience} years experience
                       </div>
 
-        
+                      {/* Display specializations */}
+                      {/* <div className="mt-2">
+                        <div className="flex flex-wrap gap-1">
+                          {therapist.specializations?.map((spec, index) => (
+                            <span 
+                              key={index}
+                              className="px-2 py-1 bg-teal-100 text-teal-800 text-xs rounded-full"
+                            >
+                              {spec.specialization}
+                            </span>
+                          ))}
+                        </div>
+                      </div> */}
 
                       <div className="flex items-center justify-between mt-3 md:mt-4">
                         <button
@@ -406,7 +431,9 @@ function SelectTherapist() {
           ) : (
             <div className='bg-white rounded-xl shadow-md p-6 md:p-8 text-center'>
               <h3 className='text-base md:text-lg font-medium text-gray-700'>No therapists found matching your criteria</h3>
-              <p className='text-gray-500 mt-2 text-sm md:text-base'>Try adjusting your filters or search term</p>
+              <p className='text-gray-500 mt-2 text-sm md:text-base'>
+                {therapists.length > 0 ? 'Try adjusting your filters or search term' : 'No therapists available at the moment'}
+              </p>
             </div>
           )}
         </div>

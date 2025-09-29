@@ -36,3 +36,6 @@ class TierPriceConfig(models.Model):
 
     def __str__(self):
         return "Tier Price Configuration"
+
+class MinimumWithdrawAmount(models.Model):
+    amount = models.IntegerField(default=0)

@@ -28,13 +28,6 @@ function BookTherapist() {
   const stripe = useStripe();
   const elements = useElements();
 
-  // // Pricing based on therapy mode
-  // const  = {
-  //   video: 1500,
-  //   voice: 1000,
-  //   message: 500,
-  // };
-
   const [pricing, setPricing] = useState({})
 
   const cardElementOptions = {
@@ -66,6 +59,7 @@ function BookTherapist() {
       try {
         const info = await getTherapistInformation(id);
         if (info.success) {
+          console.log('info',info.data)
           setTherapist(info.data);
           setPricing(info.data.price)
         }
@@ -77,31 +71,17 @@ function BookTherapist() {
       }
     };
     
-    const fetchUserapistInfo = async () => {
-      setIsLoading(true);
-      const userId = localStorage.getItem('id')
-      try {
-        const info = await getUserInfo(userId);
-        if (info.success) {
-          setUser(info.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-        showToast('Failed to load user information', 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    // const fetchPrices = async () => {
+    // const fetchUserapistInfo = async () => {
     //   setIsLoading(true);
+    //   const userId = localStorage.getItem('id')
     //   try {
-    //     const info = await getSessionPrices();
+    //     const info = await getUserInfo(userId);
     //     if (info.success) {
-    //       setPricing(info.prices);
+    //       setUser(info.data);
     //     }
     //   } catch (error) {
-    //     console.error('Failed to fetch therapist:', error);
-    //     showToast('Failed to load price information', 'error');
+    //     console.error('Failed to fetch user:', error);
+    //     showToast('Failed to load user information', 'error');
     //   } finally {
     //     setIsLoading(false);
     //   }
@@ -109,8 +89,7 @@ function BookTherapist() {
 
     if (id) {
       fetchTherapistInfo();
-      fetchUserapistInfo()
-      // fetchPrices()
+      // fetchUserapistInfo()
     }
   }, [id]);
 
@@ -254,10 +233,10 @@ function BookTherapist() {
         <div className="flex flex-col items-center mb-6">
           <img
             src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
-            alt={therapist.fullname}
+            alt={therapist.user.fullname}
             className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-teal-100"
           />
-          <h2 className="text-xl font-bold text-gray-800">{therapist.fullname}</h2>
+          <h2 className="text-xl font-bold text-gray-800">{therapist.user.fullname}</h2>
           <p className="text-teal-600 font-medium">{therapist.professionalTitle}</p>
         </div>
 
@@ -282,11 +261,11 @@ function BookTherapist() {
             <div className="flex items-center gap-4 mb-4">
               <img
                 src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
-                alt={therapist.fullname}
+                alt={therapist.user.fullname}
                 className="w-14 h-14 rounded-full object-cover border-2 border-teal-100"
               />
               <div>
-                <h2 className="text-lg font-bold text-gray-800">{therapist.fullname}</h2>
+                <h2 className="text-lg font-bold text-gray-800">{therapist.user.fullname}</h2>
                 <p className="text-teal-600 text-sm">{therapist.professionalTitle}</p>
               </div>
             </div>
@@ -485,7 +464,7 @@ function BookTherapist() {
                     <div className="space-y-4">
                       <div>
                         <h3 className="text-sm font-medium text-gray-500">Therapist</h3>
-                        <p className="font-medium">{therapist.fullname}</p>
+                        <p className="font-medium">{therapist.user.fullname}</p>
                       </div>
 
                       <div>

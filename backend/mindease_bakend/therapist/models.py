@@ -21,13 +21,6 @@ class TherapistDetails(models.Model):
         on_delete=models.CASCADE,
         related_name="therapist_details",
     )
-    fullname = models.CharField(max_length=100)
-    dateOfBirth = models.DateField()
-    gender = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
     professionalTitle = models.CharField(max_length=100)
     yearsOfExperience = models.CharField(max_length=100)
     professionalLicenseNumber = models.CharField(max_length=100)
@@ -44,9 +37,9 @@ class TherapistDetails(models.Model):
     profile_image = models.ImageField(upload_to="therapist_profile_images/", max_length=255, blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     tier = models.CharField(max_length=20, choices=TIER_CHOICES, default="bronze")
+    reject_reason = models.CharField(max_length=100, blank=True, null=True)
 
-    def __str__(self):
-        return self.fullname
+    
 
 
 class Specializations(models.Model):

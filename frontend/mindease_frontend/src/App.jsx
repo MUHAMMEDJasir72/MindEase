@@ -48,24 +48,6 @@ import { useSelector } from "react-redux";
 
 function App() {
 
-  // const user = useSelector((state)=>state.user.user)
-
-  // useEffect(()=>{
-
-  //   const fetchInfo = async()=>{
-  //     const res = await getMYInfo()
-  //     if (res.success){
-  //       console.log("jasir",res.data)
-  //     }else{
-  //       console.log('somthing')
-  //     }
-
-  //   }
-  //   fetchInfo()
-
-  // },[])
-
-  // console.log(user,user)
   return (
     <BrowserRouter>
          <Toaster richColors position="top-center" />
@@ -89,7 +71,7 @@ function App() {
         <Route path="/appointments" element={<UserRoute><Appointments/></UserRoute>} />
         <Route path="/videoCall/:role/:roomName/:type" element={<VideoCall/>} />
         <Route path="/chat/:userId/:therapistId/:sessionId" element={<Chat/>} />
-        <Route path="/wallet" element={<Wallet/>} />
+        <Route path="/wallet" element={<UserRoute><Wallet/></UserRoute>} />
        
         {/* therapist routes */}
         <Route path="/therapistDashboard" element={< ThearapistDashboard/>} />

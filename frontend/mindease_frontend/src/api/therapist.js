@@ -14,7 +14,7 @@ export const registerTherapist = async (details) => {
             
         }
 
-        const response = await API.post("/therapists/request_therapist/", formData, {
+        const response = await API.post("/therapists/request-therapist/", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
@@ -35,7 +35,7 @@ export const registerTherapist = async (details) => {
 
 export const checkRequested = async () => {
     try {
-      const response = await API.get(`/therapists/check_requested/`);
+      const response = await API.get(`/therapists/check-requested/`);
       return { success: response.data.success};
     } catch (error) {
       return { success: false};
@@ -44,7 +44,7 @@ export const checkRequested = async () => {
 
   export const checkIsApproved = async () => {
     try {
-      const response = await API.get(`/therapists/check_approve/`);
+      const response = await API.get(`/therapists/check-approve/`);
       return { success: true};
     } catch (error) {
       return { success: false};
@@ -53,7 +53,7 @@ export const checkRequested = async () => {
 
   export const getProfile = async () => {
     try {
-      const response = await API.get(`/therapists/get_profile/`);
+      const response = await API.get(`/therapists/get-profile/`);
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error('Error fetching profile:', error); 
@@ -63,7 +63,7 @@ export const checkRequested = async () => {
 
 export const addSlot = async (slotData) => {
   try {
-    const response = await API.post('/therapists/add_slot/', slotData);
+    const response = await API.post('/therapists/add-slot/', slotData);
     return { success: true, message: response.data.message };
   } catch (error) {
     // Try to get message from backend response
@@ -76,7 +76,7 @@ export const addSlot = async (slotData) => {
 
 export const getAvailableDates = async () => {
   try {
-    const response = await API.get(`/therapists/get_availability/`);
+    const response = await API.get(`/therapists/get-availability/`);
     return { success: true, data: response.data.data }; // corrected here
   } catch (error) {
     return {
@@ -89,7 +89,7 @@ export const getAvailableDates = async () => {
 
 export const getTherapistAppointments = async () => {
   try {
-    const response = await API.get('/therapists/get_therapist_appointments/');
+    const response = await API.get('/therapists/get-therapist-appointments/');
     return { success: true, data: response.data.data };
   } catch (error) {
     return {
@@ -116,10 +116,9 @@ export const getAvailableSlots = async (date) => {
 };
 
 
-// api/therapist.js
 export const removeSlot = async (timeSlotId) => {
   try {
-    const response = await API.delete(`/therapists/remove_slots/${timeSlotId}/`);
+    const response = await API.delete(`/therapists/remove-slots/${timeSlotId}/`);
     return { success: true, data: response.data, message: response.data.message };
   } catch (error) {
     return {
@@ -136,7 +135,7 @@ export const removeSlot = async (timeSlotId) => {
 
 export const updateProfile = async (data) => {
   try {
-    const response = await API.put('/therapists/update_therapist_profile/', data, {
+    const response = await API.put('/therapists/update-therapist-profile/', data, {
       headers: {
         'Content-Type': 'multipart/form-data',  // <-- Important!!
       }
@@ -152,7 +151,7 @@ export const updateProfile = async (data) => {
 
 export const makeCompleted = async (id) => {
   try {
-    const response = await API.patch('/therapists/make_completed/', { id });
+    const response = await API.patch('/therapists/make-completed/', { id });
     return { success: true, message: response.data.message };
   } catch (error) {
     const message =
@@ -167,7 +166,7 @@ export const makeCompleted = async (id) => {
 
 export const getTherapistInfo = async (id) => {
   try {
-    const response = await API.get(`/therapists/get_therapist_info/${id}/`);
+    const response = await API.get(`/therapists/get-therapist-info/${id}/`);
     return { success: true, data: response.data.data };
   } catch (error) {
     console.error('Error fetching profile:', error); // Optionally log the error
@@ -178,7 +177,7 @@ export const getTherapistInfo = async (id) => {
 
 export const getUserInfo = async (id) => {
   try {
-    const response = await API.get(`/therapists/get_user_info/${id}/`);
+    const response = await API.get(`/therapists/get-user-info/${id}/`);
     return { success: true, data: response.data.data };
   } catch (error) {
     console.error('Error fetching profile:', error); // Optionally log the error
@@ -189,7 +188,7 @@ export const getUserInfo = async (id) => {
 
 export const getWalletAmount = async () => {
   try {
-    const response = await API.get(`/therapists/get_wallet_amount/`);
+    const response = await API.get(`/therapists/get-wallet-amount/`);
     return { success: true, data: response.data.data };
   } catch (error) {
     console.error('Error fetching profile:', error); // Optionally log the error
@@ -200,7 +199,7 @@ export const getWalletAmount = async () => {
 
 export const getTransactions = async () => {
   try {
-    const response = await API.get(`/therapists/get_transactions/`);
+    const response = await API.get(`/therapists/get-transactions/`);
     return { success: true, data: response.data.data };
   } catch (error) {
     console.error('Error fetching profile:', error); // Optionally log the error
@@ -211,7 +210,7 @@ export const getTransactions = async () => {
 
 export const requestWithdraw = async (data) => {
   try {
-    const response = await API.post(`/therapists/request_withdraw/`, data);
+    const response = await API.post(`/therapists/request-withdraw/`, data);
     return { success: true, message: response.data.message };  // <-- FIXED
   } catch (error) {
     const errorMessage =
@@ -223,7 +222,7 @@ export const requestWithdraw = async (data) => {
 
 export const getAdmin = async () => {
   try {
-    const response = await API.get(`/therapists/get_admin/`);
+    const response = await API.get(`/therapists/get-admin/`);
     return { success: true, data: response.data.data };
   } catch (error) {
     console.error('Error fetching profile:', error); // Optionally log the error
@@ -253,7 +252,7 @@ export const getInfoForTherapistDash = async (id) => {
 
 export const getTherapistNotifications = async () => {
   try {
-    const response = await API.get('/therapists/get_notifications/');
+    const response = await API.get('/therapists/get-notifications/');
     return { success: true, data: response.data };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'An error occurred';
@@ -265,7 +264,7 @@ export const getTherapistNotifications = async () => {
 
 export const getTotalRating = async (id) => {
   try {
-    const response = await API.get(`/therapists/get_total_raiting/`);
+    const response = await API.get(`/therapists/get-total-raiting/`);
     return { success: true, rate: response.data.rate };  // Make sure your backend returns `rate`
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'An error occurred';

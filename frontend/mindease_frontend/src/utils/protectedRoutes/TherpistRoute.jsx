@@ -47,7 +47,6 @@ function TherpistRoute({ children }) {
     );
   }
 
-  console.log('jasir',user,user.current_role,user.role)
 
   if (checked && !user) return <Navigate to="/login" />;
 

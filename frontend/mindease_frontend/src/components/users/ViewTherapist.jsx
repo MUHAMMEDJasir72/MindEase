@@ -47,7 +47,7 @@ function ViewTherapist({ onOpen, onClose, id }) {
     }
   }, [onOpen, id]);
 
-
+ console.log('therapist',therapist)
   if (!onOpen) return null;
 
   return (
@@ -70,7 +70,7 @@ function ViewTherapist({ onOpen, onClose, id }) {
               <div className="relative w-32 h-32 mb-4">
                 <img
                   src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
-                  alt={therapist?.fullname || 'Therapist'}
+                  alt={therapist.user.fullname || 'Therapist'}
                   className="w-full h-full object-cover rounded-full border-4 border-white shadow-lg"
                 />
                 <div className="absolute -bottom-3 -right-3 bg-yellow-500 text-white rounded-full px-2 py-1 shadow text-sm font-semibold">
@@ -78,7 +78,7 @@ function ViewTherapist({ onOpen, onClose, id }) {
                 </div>
               </div>
 
-              <h2 className="text-lg font-semibold mb-1">{therapist.fullname}</h2>
+              <h2 className="text-lg font-semibold mb-1">{therapist.user.fullname}</h2>
               <p className="text-sm italic">{therapist.professionalTitle}</p>
 
               {/* 🔹 Tier Badge */}

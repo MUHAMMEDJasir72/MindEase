@@ -48,7 +48,6 @@ useEffect(() => {
     );
   }
  
-  console.log(user)
   // If user is null after loading → redirect to login
   if (!user) {
     return <Navigate to="/login" />;

@@ -3,7 +3,7 @@ import API from "./axiosInstance";
 
 export const profileInfo = async () => {
     try {
-      const response = await API.get('/users/get_profile/');
+      const response = await API.get('/users/get-profile/');
       console.log(response.data)
       return { success: true, profile_info: response.data.profile_info, loginMethod: response.data.login_method };
     } catch (error) {
@@ -13,7 +13,7 @@ export const profileInfo = async () => {
 
   export const updateProfileField = async (field, value) => {
     try {
-      const response = await API.patch('/users/get_profile/', {
+      const response = await API.patch('/users/get-profile/', {
         [field]: value,
       });
       return response.data;
@@ -80,7 +80,7 @@ export const changePassword = async (password1, password2) => {
 
   export const createAppointment = async (data) => {
     try {
-      const response = await API.post('/users/create_appointment/', data);
+      const response = await API.post('/users/create-appointment/', data);
       return { success: true, message: response.data.message };
     } catch (error) {
       return {
@@ -92,7 +92,7 @@ export const changePassword = async (password1, password2) => {
   
   export const getAppointments = async () => {
     try {
-      const response = await API.get('/users/get_appointments/');
+      const response = await API.get('/users/get-appointments/');
       return { success: true, data: response.data.data };
     } catch (error) {
       return {
@@ -104,7 +104,7 @@ export const changePassword = async (password1, password2) => {
 
   export const cancelSession = async ({ id, reason, current_role }) => {
     try {
-      const response = await API.patch(`/users/cancel_session/${id}/`, { reason, current_role });
+      const response = await API.patch(`/users/cancel-session/${id}/`, { reason, current_role });
   
       return { success: true, message: response.data.message };
     } catch (error) {
@@ -143,7 +143,7 @@ export const createPayment = async (amount) => {
 
 export const submitFeedback = async (feedbackData) => {
   try {
-    const response = await API.patch('/users/create_feedback/', feedbackData);
+    const response = await API.patch('/users/create-feedback/', feedbackData);
     return { success: true };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'An error occurred';
@@ -154,7 +154,7 @@ export const submitFeedback = async (feedbackData) => {
 
 export const getNotifications = async () => {
   try {
-    const response = await API.get('/users/get_notifications/');
+    const response = await API.get('/users/get-notifications/');
     return { success: true, data: response.data };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'An error occurred';
@@ -165,7 +165,7 @@ export const getNotifications = async () => {
 
 export const markNotificationAsRead = async (id) => {
   try {
-    const response = await API.post('/users/mark_as_read/', { id }); // send as an object
+    const response = await API.post('/users/mark-as-read/', { id }); // send as an object
     return { success: true };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'An error occurred';
@@ -175,7 +175,7 @@ export const markNotificationAsRead = async (id) => {
 
 export const markAllNotifications = async () => {
   try {
-    const response = await API.post('/users/mark_all_as_read/');
+    const response = await API.post('/users/mark-all-as-read/');
     return { success: true };
   } catch (error) {
     const errorMessage = error.response?.data?.message || 'An error occurred';

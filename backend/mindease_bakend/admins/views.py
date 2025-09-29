@@ -50,6 +50,7 @@ class GetAllTherapist(APIView):
     def get(self, request):
         therapists = TherapistDetails.objects.all()
         serializer = TherapistDetailsSerializer(therapists, many=True)
+        print(serializer.data)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
@@ -111,20 +112,23 @@ class ApproveTherapist(APIView):
 
 
 class RejectTherapist(APIView):
-    def patch(self, request, id):
-        therapist = get_object_or_404(TherapistDetails, id=id)
+    def patch(self, request):
+        therapist_id = request.data.get("id")
+        reason = request.data.get("reason")
+        therapist = get_object_or_404(TherapistDetails, id=therapist_id)
         therapist.status = "rejected"
+        therapist.reject_reason = reason
         therapist.save()
 
         TherapistNotification.objects.create(
             user=therapist.user,
             title="Rejected Request",
-            message="Your therapist request rejected.",
+            message=f"Your therapist request was rejected. Reason: {reason}",
             type="Your therapist request has been rejected.",
         )
 
         return Response(
-            {"success": True, "message": f"Rejected {therapist.fullname}'s request"},
+            {"success": True, "message": f"Rejected {therapist.user.fullname}'s request"},
             status=status.HTTP_200_OK,
         )
 
@@ -142,6 +146,14 @@ class SpecializationsView(APIView):
         )
 
     def post(self, request):
+        specialization_name = request.data.get("specialization", "").strip()
+
+        # Case-insensitive check
+        if SpecializationsList.objects.filter(specialization__iexact=specialization_name).exists():
+            return Response(
+                {"error": "This specialization already exists."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         serializer = SpecializationsListSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -423,21 +435,21 @@ class ReportForAdminDashboard(APIView):
 
         therapist_most_sessions = (
             TherapySession.objects.filter(status="Completed")
-            .values("therapist__id", "therapist__therapist_details__fullname")
+            .values("therapist__id", "therapist__fullname")
             .annotate(count=Count("id"))
             .order_by("-count")[:5]
         )
 
         therapist_least_sessions = (
             TherapySession.objects.filter(status="Completed")
-            .values("therapist__id", "therapist__therapist_details__fullname")
+            .values("therapist__id", "therapist__fullname")
             .annotate(count=Count("id"))
             .order_by("count")[:5]
         )
 
         therapist_most_cancelled = (
             TherapySession.objects.filter(status="Cancelled")
-            .values("therapist__id", "therapist__therapist_details__fullname")
+            .values("therapist__id", "therapist__fullname")
             .annotate(count=Count("id"))
             .order_by("-count")[:5]
         )
@@ -597,8 +609,8 @@ class get_notifications(APIView):
         return Response(serializer.data)
 
 
-@permission_classes([IsAuthenticated])
-@login_required
+# @permission_classes([IsAuthenticated])
+# @login_required
 def protected_document_view(request, path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if not os.path.exists(file_path):
@@ -688,3 +700,21 @@ class UpdateTier(APIView):
             {"success": True, "message": "Updated Successfully"},
             status=status.HTTP_200_OK,
         )
+
+
+class GetMinimumWithdrawalAmount(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        amount_instance = MinimumWithdrawAmount.objects.first()
+        if not amount_instance:
+            return Response({"amount": 0}, status=status.HTTP_200_OK)
+        return Response({"amount": amount_instance.amount}, status=status.HTTP_200_OK)
+    
+    def patch(self, request):
+        new_amount = request.data.get("amount")
+        amount_instance, _ = MinimumWithdrawAmount.objects.get_or_create(id=1)  
+        amount_instance.amount = new_amount
+        amount_instance.save()
+        return Response({"message": f"Withdraw amount changed to {new_amount}"}, status=status.HTTP_200_OK)
+

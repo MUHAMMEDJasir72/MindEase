@@ -23,6 +23,8 @@ function SpecializeManage() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   useEffect(() => {
     fetchSpecializations();
@@ -152,38 +154,43 @@ function SpecializeManage() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!specializationName.trim()) return;
+  if (!specializationName.trim()) return;
+  if (isSubmitting) return; // prevent double submit
 
-    try {
-      let response;
-      if (currentSpecialization) {
-        // Editing existing specialization
-        response = await editSpecialize(currentSpecialization.id, {
-          specialization: specializationName,
-        });
-      } else {
-        // Creating new specialization
-        response = await createSpecialize({
-          specialization: specializationName,
-        });
-      }
+  setIsSubmitting(true);
 
-      if (response.success) {
-        showToast(response.message, 'success');
-        fetchSpecializations();
-      } else {
-        showToast(response.error || 'Something went wrong', 'error');
-      }
-
-      setSpecializationName('');
-      setIsModalOpen(false);
-      setCurrentSpecialization(null);
-    } catch (err) {
-      showToast('An unexpected error occurred.', 'error');
+  try {
+    let response;
+    if (currentSpecialization) {
+      // Editing existing specialization
+      response = await editSpecialize(currentSpecialization.id, {
+        specialization: specializationName,
+      });
+    } else {
+      // Creating new specialization
+      response = await createSpecialize({
+        specialization: specializationName,
+      });
     }
-  };
+
+    if (response.success) {
+      showToast(response.message, 'success');
+      fetchSpecializations();
+    } else {
+      showToast(response.error || 'Something went wrong', 'error');
+    }
+
+    setSpecializationName('');
+    setIsModalOpen(false);
+    setCurrentSpecialization(null);
+  } catch (err) {
+    showToast('An unexpected error occurred.', 'error');
+  } finally {
+    setIsSubmitting(false); // re-enable button
+  }
+};
 
   const handleEdit = (spec) => {
     setCurrentSpecialization(spec);
@@ -334,11 +341,13 @@ function SpecializeManage() {
                       Cancel
                     </button>
                     <button
-                      type='submit'
-                      className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded'
-                    >
-                      {currentSpecialization ? 'Update' : 'Save'}
-                    </button>
+  type='submit'
+  disabled={isSubmitting}
+  className={`px-4 py-2 rounded text-white ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+>
+  {isSubmitting ? 'Saving...' : currentSpecialization ? 'Update' : 'Save'}
+</button>
+
                   </div>
                 </form>
               </div>
