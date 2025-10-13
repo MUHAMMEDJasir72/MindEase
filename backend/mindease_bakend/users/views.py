@@ -1251,6 +1251,8 @@ class MarkAsAttended(APIView):
         session_id = request.data.get("id")
         role = request.data.get("role")
 
+        print("role",role)
+
         try:
             session = TherapySession.objects.get(id=session_id)
         except TherapySession.DoesNotExist:
@@ -1258,7 +1260,7 @@ class MarkAsAttended(APIView):
                 {"message": "Session not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        if role == "user":
+        if role == "videoCallWithTherapist" or role == "user":
             session.user_attended = True
         else:
             session.therapist_attended = True

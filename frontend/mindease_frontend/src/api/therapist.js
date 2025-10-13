@@ -149,9 +149,9 @@ export const updateProfile = async (data) => {
 }
 
 
-export const makeCompleted = async (id) => {
+export const makeCompleted = async (id, note) => {
   try {
-    const response = await API.patch('/therapists/make-completed/', { id });
+    const response = await API.patch('/therapists/make-completed/', { id, note });
     return { success: true, message: response.data.message };
   } catch (error) {
     const message =

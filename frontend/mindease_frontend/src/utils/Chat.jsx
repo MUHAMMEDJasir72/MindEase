@@ -24,9 +24,8 @@ function Chat() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const { userId, therapistId, sessionId } = useParams();
+  const { userId, therapistId, sessionId, role } = useParams();
   const roomName = `${userId}-${therapistId}`;
-  const role = useSelector((state)=>state.user.user.current_role)
 
   // Role-based sender/receiver logic
   const sender = role === 'therapist' ? therapistId : userId;
@@ -83,7 +82,6 @@ function Chat() {
       const info = await getUserInfo(userId);
       if (info.success) {
         setUser(info.data);
-        setRole(info.data.current_role)
       } else {
         console.log('Failed to load user information.');
       }
@@ -343,7 +341,6 @@ function Chat() {
   };
 
   const groupedMessages = groupMessagesByDate(messages);
-  console.log('mmmm',messages)
 
   return (
     <div className="max-w-4xl mx-auto rounded-lg shadow-xl h-[85vh] flex flex-col bg-slate-50 border border-slate-200">
@@ -355,18 +352,18 @@ function Chat() {
               <img 
                 className="h-full w-full object-cover" 
                 src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
-                alt={therapist.fullname || "Therapist"}
+                alt={therapist.user.fullname || "Therapist"}
               />
             ) : user.profile_image && role === 'therapist' ? (
               <img 
                 className="h-full w-full object-cover" 
                 src={`${import.meta.env.VITE_BASE_URL}${user.profile_image}`}
-                alt={user.fullname || "User"}
+                alt={user.user.fullname || "User"}
               />
             ) : (
               <div className="h-full w-full bg-teal-600 flex items-center justify-center text-white font-bold text-xl">
                 {role === 'user' 
-                  ? therapist.fullname?.charAt(0) || "T" 
+                  ? therapist.user?.fullname?.charAt(0) || "T" 
                   : user.username?.charAt(0) || "U"}
               </div>
             )}
@@ -375,7 +372,7 @@ function Chat() {
           <div className="ml-4">
             <h1 className="font-semibold text-lg">
               {role === 'user' 
-                ? therapist.fullname || therapist.username 
+                ? therapist.user?.fullname || therapist.username 
                 : user.fullname || user.username}
             </h1>
           </div>
@@ -442,7 +439,7 @@ function Chat() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             <p className="font-medium">No messages yet</p>
-            <p className="text-sm">Start the conversation with {role === 'user' ? therapist.fullname : user.fullname}</p>
+            <p className="text-sm">Start the conversation with {role === 'user' ? therapist.user?.fullname : user.fullname}</p>
           </div>
         ) : (
           Object.keys(groupedMessages).map((date) => (

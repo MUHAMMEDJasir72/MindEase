@@ -66,28 +66,21 @@ class TherapySession(models.Model):
 
     CANCEL_PERSON = (("Client", "Client"), ("Therapist", "Therapist"))
 
-    client = models.ForeignKey(
-        UserDetails, on_delete=models.CASCADE, related_name="client_sessions"
-    )
-    therapist = models.ForeignKey(
-        UserDetails, on_delete=models.CASCADE, related_name="therapist_sessions"
-    )
+    client = models.ForeignKey(UserDetails, on_delete=models.CASCADE, related_name="client_sessions")
+    therapist = models.ForeignKey(UserDetails, on_delete=models.CASCADE, related_name="therapist_sessions")
     date = models.ForeignKey(AvailableDate, on_delete=models.CASCADE)
     time = models.ForeignKey(AvailableTimes, on_delete=models.CASCADE)
     price = models.IntegerField()
-    status = models.CharField(
-        max_length=100, choices=SESSION_STATUS, default="Scheduled"
-    )
+    status = models.CharField(max_length=100, choices=SESSION_STATUS, default="Scheduled")
     session_mode = models.CharField(max_length=100)
     is_new = models.BooleanField(default=True)
     feedback = models.TextField(blank=True, null=True)
     rating = models.IntegerField(blank=True, null=True)
     cancel_reason = models.TextField(blank=True, null=True)
-    canceled_person = models.CharField(
-        max_length=100, choices=CANCEL_PERSON, blank=True, null=True
-    )
+    canceled_person = models.CharField(max_length=100, choices=CANCEL_PERSON, blank=True, null=True)
     user_attended = models.BooleanField(default=False)
     therapist_attended = models.BooleanField(default=False)
+    note =  models.TextField(blank=True, null=True)
 
 
 class Notification(models.Model):

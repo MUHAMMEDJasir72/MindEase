@@ -154,9 +154,10 @@ function Profile() {
           <div className="relative w-24 h-24 sm:w-32 sm:h-32 border-[#336c6d] border-[3px] rounded-3xl overflow-hidden">
             <img
               className="w-full h-full object-cover"
-              src={user.profile_image ? `${import.meta.env.VITE_BASE_URL}${user.profile_image}` : '/default_profile-2.png'}
+              src={user.profile_image ? `${user.profile_image}` : '/default_profile-2.png'}
               alt="Profile"
             />
+            {console.log('profile', user.profile_image)}
             <label className="absolute bottom-0 right-0 bg-[#336c6d] hover:bg-[#013435] p-1 rounded-tl-xl transition cursor-pointer">
               <Pencil size={16} className="text-[#d8dede]" />
               <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />

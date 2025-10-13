@@ -511,6 +511,9 @@ class UpdateTherapistProfile(APIView):
 class MakeCompleted(APIView):
     def patch(self, request):
         session_id = request.data.get("id")
+        note = request.data.get("note")
+        print('jjjjjjjjjjjjjjjjjjjjjjjjjjj',session_id, note)
+         
         if not session_id:
             return Response(
                 {"message": "Session ID is required"},
@@ -531,6 +534,7 @@ class MakeCompleted(APIView):
                 )
 
             session.status = "Completed"
+            session.note = note
             session.save()
 
             therapist_share = session.price * 0.8 

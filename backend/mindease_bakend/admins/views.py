@@ -50,7 +50,6 @@ class GetAllTherapist(APIView):
     def get(self, request):
         therapists = TherapistDetails.objects.all()
         serializer = TherapistDetailsSerializer(therapists, many=True)
-        print(serializer.data)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )

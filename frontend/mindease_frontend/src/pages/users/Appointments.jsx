@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Video, Phone, MessageSquare, User, ChevronRight, Star, MessageCircle, Menu } from 'lucide-react';
+import { Calendar, Clock, Video, Phone, MessageSquare, User, ChevronRight, Star, MessageCircle, Menu, FileText } from 'lucide-react';
 import { data, Link, useNavigate } from 'react-router-dom';
 import { cancelSession, getAppointments, submitFeedback } from '../../api/user';
 import Navbar from '../../components/users/Navbar';
@@ -36,7 +36,7 @@ function Appointments() {
     try {
       const response = await getAppointments();
       if (response.success) {
-        console.log('data',response.data)
+        console.log('data', response.data);
         setAppointments(response.data);
       } else {
         setError("Failed to load appointments");
@@ -52,6 +52,43 @@ function Appointments() {
   useEffect(() => {
     fetchAppointments();
   }, []);
+
+  // Render prescription note component
+  const renderPrescriptionNote = (appointment) => {
+    if (appointment.status !== 'Completed') return null;
+    
+    if (appointment.note) {
+      return (
+        <div className="mt-4 bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <div className="flex items-start gap-3">
+            <FileText className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
+            <div className="flex-1">
+              <h4 className="font-medium text-blue-800 text-sm md:text-base mb-2">
+                Session Notes & Prescription
+              </h4>
+              <div className="bg-white rounded-lg p-3 border border-blue-100">
+                <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
+                  {appointment.note}
+                </p>
+              </div>
+              <p className="text-xs text-blue-600 mt-2">
+                Provided by your therapist
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 text-gray-500">
+            <FileText size={16} />
+            <span className="text-sm">No prescription or notes added for this session</span>
+          </div>
+        </div>
+      );
+    }
+  };
 
   // Pagination logic
   const indexOfLastAppointment = currentPage * appointmentsPerPage;
@@ -420,6 +457,9 @@ function Appointments() {
                     </div>
                   </div>
 
+                  {/* Prescription Note Section */}
+                  {renderPrescriptionNote(appointment)}
+
                   {/* Feedback Section */}
                   {appointment.status === 'Completed' && (
                     <div className="mt-4 pt-4 border-t border-gray-100">
@@ -538,7 +578,7 @@ function Appointments() {
                               <Link
                                 to={
                                   appointment.session_mode === 'message'
-                                    ? `/chat/${appointment.client}/${appointment.therapist}/${appointment.id}`
+                                    ? `/chat/${appointment.client}/${appointment.therapist}/${appointment.id}/user`
                                     : `/videoCall/videoCallWithTherapist/${appointment.id}/${appointment.session_mode}`
                                 }
                                 className="block w-full"

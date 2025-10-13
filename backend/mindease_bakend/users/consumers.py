@@ -276,7 +276,7 @@ class ChatAdminTherapistConsumer(AsyncWebsocketConsumer):
             AdminNotification.objects.create(
                 user=receiver,
                 message=message,
-                title=f"New Message from {sender.therapist_details.fullname}",
+                title=f"New Message from {sender.therapist_details.user.fullname}",
                 type="chat",
                 location="/chatToTherapists",
             )

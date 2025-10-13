@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TherapistSidebar from '../../components/Therapist/TherapistSidebar';
-import { Video, MessageCircle, Mic, Calendar, User, Clock, X, Check, Star, AlertTriangle } from 'lucide-react';
+import { Video, MessageCircle, Mic, Calendar, User, Clock, X, Check, Star, AlertTriangle, FileText } from 'lucide-react';
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { getTherapistAppointments, makeCompleted } from '../../api/therapist';
 import { Link, useNavigate } from 'react-router-dom';
@@ -8,6 +8,69 @@ import { CancelConfirmationDialog } from '../../components/users/CancelConfirmat
 import { cancelSession } from '../../api/user';
 import { showToast } from '../../utils/toast';
 import TherapistNotification from '../../components/Therapist/TherapistNotifications';
+
+// Prescription Dialog Component
+const PrescriptionDialog = ({ isOpen, onClose, onConfirm, isLoading }) => {
+  const [note, setNote] = useState("");
+
+  const handleConfirm = () => {
+    onConfirm(note);
+    setNote(""); // Reset after confirmation
+  };
+
+  const handleClose = () => {
+    setNote(""); // Reset on close
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Add Prescription or Note
+        </h3>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Prescription/Note (Optional)
+          </label>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Enter prescription details or session notes..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            rows="4"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            This note will be associated with the completed session
+          </p>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={handleClose}
+            disabled={isLoading}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+            ) : null}
+            Confirm Completion
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function TherapistAppointments() {
   const navigate = useNavigate();
@@ -21,6 +84,10 @@ function TherapistAppointments() {
   const appointmentsPerPage = 10;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  
+  // New states for prescription functionality
+  const [isPrescriptionDialogOpen, setIsPrescriptionDialogOpen] = useState(false);
+  const [tempSessionId, setTempSessionId] = useState(null);
 
   const handleCancelClick = (id) => {
     setSelectedId(id);
@@ -69,10 +136,19 @@ function TherapistAppointments() {
     fetchAppointments();
   }, []);
 
-  const handleCompleteSession = async (id) => {
+  const handleOpenPrescriptionDialog = (sessionId) => {
+    setTempSessionId(sessionId);
+    setIsPrescriptionDialogOpen(true);
+  };
+
+  const handleCompleteSession = async (note = "") => {
+    if (!tempSessionId) return;
+    
     setIsProcessing(true);
     try {
-      const res = await makeCompleted(id);
+      // Call your API with the prescription note
+      const res = await makeCompleted(tempSessionId, note);
+      
       if (res.success) {
         showToast(res.message, 'success');
         const response = await getTherapistAppointments();
@@ -84,8 +160,12 @@ function TherapistAppointments() {
       showToast('An error occurred while completing the session', 'error');
     } finally {
       setIsProcessing(false);
+      setIsPrescriptionDialogOpen(false);
+      setTempSessionId(null);
     }
   };
+
+  console.log('appointments', appointments)
 
   const parseAppointmentDate = (dateStr, timeStr) => {
     try {
@@ -318,6 +398,35 @@ function TherapistAppointments() {
     );
   };
 
+  const renderPrescriptionNote = (session) => {
+    if (session.status !== 'Completed') return null;
+    
+    if (session.note) {
+      return (
+        <div className="mt-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-2">
+            <div className="flex-shrink-0">
+              <FileText className="text-blue-500 mt-0.5" size={16} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-700 mb-1">Prescription/Note:</p>
+              <p className="text-sm text-blue-600 whitespace-pre-wrap">{session.note}</p>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="mt-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+          <p className="text-sm text-gray-500 flex items-center gap-2">
+            <FileText size={14} />
+            No prescription or note added for this session
+          </p>
+        </div>
+      );
+    }
+  };
+
   const isSessionLive = (appointment) => {
     try {
       const now = new Date();
@@ -497,7 +606,7 @@ function TherapistAppointments() {
                               <Link 
                                 to={
                                   session.session_mode === 'message'
-                                    ? `/chat/${session.client}/${session.therapist}/${session.id}`
+                                    ? `/chat/${session.client}/${session.therapist}/${session.id}/therapist`
                                     : `/videoCall/videoCallWithClient/${session.id}/${session.session_mode}`
                                 }
                                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md flex items-center gap-1"
@@ -526,7 +635,7 @@ function TherapistAppointments() {
                             
                             {session.status === 'Scheduled' && isSessionLive(session) && (
                               <button
-                                onClick={() => handleCompleteSession(session.id)}
+                                onClick={() => handleOpenPrescriptionDialog(session.id)}
                                 disabled={isProcessing || session.status === 'Completed'}
                                 className={`
                                   px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
@@ -538,7 +647,7 @@ function TherapistAppointments() {
                                   disabled:opacity-70 disabled:cursor-not-allowed
                                 `}
                               >
-                                {isProcessing && session.id === selectedId ? (
+                                {isProcessing && session.id === tempSessionId ? (
                                   <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
                                 ) : (
                                   <>
@@ -571,6 +680,9 @@ function TherapistAppointments() {
 
                       {/* Feedback Display */}
                       {session.status === 'Completed' && renderFeedback(session.feedback, session.rating)}
+
+                      {/* Prescription Note Display */}
+                      {renderPrescriptionNote(session)}
                     </div>
                   ))}
                 </div>
@@ -606,6 +718,13 @@ function TherapistAppointments() {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onConfirm={handleConfirmCancel}
+        isLoading={isProcessing}
+      />
+
+      <PrescriptionDialog
+        isOpen={isPrescriptionDialogOpen}
+        onClose={() => setIsPrescriptionDialogOpen(false)}
+        onConfirm={handleCompleteSession}
         isLoading={isProcessing}
       />
     </div>

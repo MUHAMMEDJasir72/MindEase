@@ -70,7 +70,7 @@ function App() {
         <Route path="/bookTherapist/:id" element={<UserRoute><StripeProvider><BookTherapist/></StripeProvider></UserRoute>} />
         <Route path="/appointments" element={<UserRoute><Appointments/></UserRoute>} />
         <Route path="/videoCall/:role/:roomName/:type" element={<VideoCall/>} />
-        <Route path="/chat/:userId/:therapistId/:sessionId" element={<Chat/>} />
+        <Route path="/chat/:userId/:therapistId/:sessionId/:role" element={<Chat/>} />
         <Route path="/wallet" element={<UserRoute><Wallet/></UserRoute>} />
        
         {/* therapist routes */}

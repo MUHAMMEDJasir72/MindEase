@@ -32,6 +32,7 @@ function AdminTherapistChat({ roomName, sender, receiver, onClose }) { // Added 
   const [currentUser, setCurrentUser] = useState('');
 
   useEffect(() => {
+    console.log('hi','roomName',roomName,'sender',sender,'receiver',receiver,'onClose',onClose,)
     const fetchChatHistory = async () => {
       try {
         if (!sender || !receiver) return;
