@@ -24,8 +24,11 @@ DEBUG = os.environ.get("DEBUG")
 
 ALLOWED_HOSTS = [
     "api.mindeasee.shop",
+    "apii.mindeasee.shop",
     "localhost",
     "127.0.0.1",
+    
+    
 ]
 
 CORS_ALLOW_CREDENTIALS = True
