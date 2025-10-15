@@ -358,7 +358,7 @@ function Chat() {
               <img 
                 className="h-full w-full object-cover" 
                 src={`${import.meta.env.VITE_BASE_URL}${user.profile_image}`}
-                alt={user.user.fullname || "User"}
+                alt={user.fullname || "User"}
               />
             ) : (
               <div className="h-full w-full bg-teal-600 flex items-center justify-center text-white font-bold text-xl">
