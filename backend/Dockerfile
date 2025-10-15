@@ -1,5 +1,4 @@
-FROM python:3.10-slim
-
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -15,9 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libdbus-1-dev \
     libglib2.0-dev \
     python3-dev \
-    libmagic1 \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
-
 
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
