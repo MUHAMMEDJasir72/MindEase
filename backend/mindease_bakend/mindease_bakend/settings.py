@@ -24,11 +24,9 @@ DEBUG = os.environ.get("DEBUG")
 
 ALLOWED_HOSTS = [
     "api.mindeasee.shop",
-    "apii.mindeasee.shop",
+    "mindeasee.shop",
     "localhost",
-    "127.0.0.1",
-    
-    
+    "16.170.42.96",    
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -65,6 +63,7 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -72,7 +71,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
 
@@ -165,7 +163,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.mindeasee.shop",
     "https://mindeasee.shop",
     "https://api.mindeasee.shop",
-    "https://apii.mindeasee.shop",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
