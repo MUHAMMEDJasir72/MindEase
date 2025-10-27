@@ -3,8 +3,7 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTherapistInfo, getUserInfo } from '../api/therapist';
 import { basicUrl, routerBaseUrl } from '../api/axiosInstance';
-import { markAsAttended } from '../api/user';
-import { useSelector } from 'react-redux';
+import { getMessages, markAsAttended } from '../api/user';
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -67,7 +66,7 @@ function Chat() {
 
   useEffect(() => {
     // Fetch all messages between user and therapist
-    setIsLoading(true);
+    // setIsLoading(true);
 
     const fetchTherapistInfo = async () => {
       const info = await getTherapistInfo(therapistId);
@@ -86,26 +85,28 @@ function Chat() {
         console.log('Failed to load user information.');
       }
     };
+
+
+    const fetchMessages = async () => {
+  let id1 = role === 'therapist' ? therapistId : userId;
+  let id2 = role === 'therapist' ? userId : therapistId;
+
+  const res = await getMessages(id1, id2);
+  if (res.success) {
+    setMessages(res.data); // also typo: should be setMessages not setMessage
+  } else {
+    console.log('Failed to load messages.');
+  }
+};
+
     
     fetchUserInfo();
     fetchTherapistInfo();
+    fetchMessages()
+   
+ 
 
-
-    const url = role === 'therapist'
-      ? `${basicUrl}api/users/chat/conversation/${therapistId}/${userId}/`
-      : `${basicUrl}api/users/chat/conversation/${userId}/${therapistId}/`;
-
-    axios
-      .get(url)
-      .then((res) => {
-        setMessages(res.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching messages:', error);
-        setError('Failed to load messages. Please try again later.');
-        setIsLoading(false);
-      });
+   
 
     // Set up WebSocket
     socketRef.current = new WebSocket(`${routerBaseUrl}ws/chat/${roomName}/`);
@@ -147,6 +148,7 @@ function Chat() {
     return () => {
       socketRef.current?.close();
     };
+      //  setIsLoading(false);
   }, [userId, therapistId, roomName, sender]);
 
   useEffect(() => {

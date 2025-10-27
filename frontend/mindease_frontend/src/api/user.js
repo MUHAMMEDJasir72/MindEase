@@ -285,3 +285,14 @@ try {
   return { success: false, message: error.message || 'An error occurred' };
 }
 };
+
+
+export const getMessages = async (id1, id2) => {
+try {
+  const response = await API.get(`/users/chat/conversation/${id1}/${id2}/`);
+  return { success: true, data: response.data };
+} catch (error) {
+  console.error('Error fetching profile:', error); // Optionally log the error
+  return { success: false, message: error.message || 'An error occurred' };
+}
+};

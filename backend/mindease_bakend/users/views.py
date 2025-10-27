@@ -826,7 +826,7 @@ class GetAppointment(APIView):
         user = request.user
 
         appointments = TherapySession.objects.filter(client=user).order_by(
-            "date", "time"
+            "-date", "-time"
         )
 
         serializer = TherapySessionSerializer(appointments, many=True)
