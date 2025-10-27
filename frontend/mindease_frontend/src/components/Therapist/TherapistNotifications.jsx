@@ -53,15 +53,16 @@ const TherapistNotification = () => {
     };
 
     socket.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      console.log("Received message:", data);
+  const data = JSON.parse(e.data);
+  console.log("Received message:", data);
 
-      if (data?.message) {
-        setNotifications(prev => [...prev, data.message]);
-      } else {
-        console.warn("Invalid WebSocket message format:", data);
-      }
-    };
+  if (data?.message) {
+    setNotifications(prev => [data.message, ...prev]); 
+  } else {
+    console.warn("Invalid WebSocket message format:", data);
+  }
+};
+
 
     socket.onclose = (e) => {
       console.log("WebSocket disconnected", e);

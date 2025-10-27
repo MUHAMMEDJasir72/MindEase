@@ -171,9 +171,24 @@ class SpecializationsView(APIView):
         )
 
     def patch(self, request, id):
-        specialization = get_object_or_404(SpecializationsList, id=id)
+        specialization_obj = get_object_or_404(SpecializationsList, id=id)
+        new_name = request.data.get("specialization", "").strip()
+
+        # Check for duplicates (case-insensitive), excluding the current record
+        if (
+            new_name
+            and SpecializationsList.objects
+            .filter(specialization__iexact=new_name)
+            .exclude(id=id)
+            .exists()
+        ):
+            return Response(
+                {"error": "This specialization already exists."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = SpecializationsListSerializer(
-            specialization, data=request.data, partial=True
+            specialization_obj, data=request.data, partial=True
         )
         if serializer.is_valid():
             serializer.save()
@@ -602,8 +617,7 @@ class get_notifications(APIView):
     def get(self, request):
         user = request.user
         AdminNotification.objects.filter(user=user, read=True).delete()
-        notifications = AdminNotification.objects.filter(
-            user=user).order_by("-time")
+        notifications = AdminNotification.objects.filter(user=user).order_by("-time")
         serializer = AdminNotificationSerializer(notifications, many=True)
         return Response(serializer.data)
 
