@@ -168,7 +168,7 @@ const UserDetails = () => {
               <div className="w-24 h-24 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden">
                 {user.profile_image ? (
                   <img 
-                    src={`${import.meta.env.VITE_BASE_URL}${user.profile_image}`} 
+                    src={`${user.profile_image}`} 
                     alt={user.fullname || 'User'} 
                     className="w-full h-full object-cover"
                     onError={(e) => {

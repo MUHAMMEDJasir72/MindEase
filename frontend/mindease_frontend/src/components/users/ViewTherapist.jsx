@@ -69,7 +69,7 @@ function ViewTherapist({ onOpen, onClose, id }) {
             <div className="md:w-1/3 bg-gradient-to-br from-teal-600 to-teal-400 text-white p-6 flex flex-col items-center">
               <div className="relative w-32 h-32 mb-4">
                 <img
-                  src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
+                  src={`${therapist.profile_image}`}
                   alt={therapist.user.fullname || 'Therapist'}
                   className="w-full h-full object-cover rounded-full border-4 border-white shadow-lg"
                 />

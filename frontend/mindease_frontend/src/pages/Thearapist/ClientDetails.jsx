@@ -115,7 +115,7 @@ function ClientDetails() {
                   <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-teal-100 bg-gray-200">
                     {client.profile_image ? (
                       <img 
-                        src={`${import.meta.env.VITE_BASE_URL}${client.profile_image}`}
+                        src={`${client.profile_image}`}
                         alt={client.fullname}
                         className="w-full h-full object-cover"
                       />

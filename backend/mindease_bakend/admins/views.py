@@ -610,7 +610,13 @@ class get_notifications(APIView):
 
 # @permission_classes([IsAuthenticated])
 # @login_required
+
+from django.http import FileResponse, Http404, HttpResponseRedirect
+
 def protected_document_view(request, path):
+    if path.startswith("http"):
+        return HttpResponseRedirect(path)
+
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if not os.path.exists(file_path):
         raise Http404("File not found")

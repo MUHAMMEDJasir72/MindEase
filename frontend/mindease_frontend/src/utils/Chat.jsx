@@ -292,7 +292,7 @@ function Chat() {
         return (
           <div className="mt-2 rounded-lg overflow-hidden">
             <img 
-              src={`${import.meta.env.VITE_BASE_URL}${msg.media.replace('/media/media/', '/media/')}`}  
+              src={`${msg.media.replace('/media/media/', '/media/')}`}  
               alt="Sent image" 
               className="max-w-full max-h-64 object-contain rounded-lg"
             />
@@ -351,13 +351,13 @@ function Chat() {
             {therapist.profile_image && role === 'user' ? (
               <img 
                 className="h-full w-full object-cover" 
-                src={`${import.meta.env.VITE_BASE_URL}${therapist.profile_image}`}
+                src={`${therapist.profile_image}`}
                 alt={therapist.user.fullname || "Therapist"}
               />
             ) : user.profile_image && role === 'therapist' ? (
               <img 
                 className="h-full w-full object-cover" 
-                src={`${import.meta.env.VITE_BASE_URL}${user.profile_image}`}
+                src={`${user.profile_image}`}
                 alt={user.fullname || "User"}
               />
             ) : (

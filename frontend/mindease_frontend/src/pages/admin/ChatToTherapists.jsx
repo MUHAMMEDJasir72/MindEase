@@ -65,7 +65,8 @@ function ChatToTherapists() {
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
                     <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <User className="h-5 w-5 text-blue-600" />
+                      <img src={selectedTherapist.profile_image}
+                      className="h-10 w-10 rounded-full object-cover"/>
                     </div>
                   </div>
                   <div>
@@ -126,7 +127,8 @@ function ChatToTherapists() {
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <User className="h-5 w-5 text-blue-600" />
+                        <img src={therapist.profile_image}
+                        className="h-10 w-10 rounded-full object-cover"/>
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">

@@ -52,12 +52,19 @@ const TherapistProfileEditModal = ({ isOpen, onClose, therapistData, onSave }) =
       const initialDocuments = {};
       
       // Set up initial documents and their previews
-      Object.keys(documentLabels).forEach(docKey => {
-        if (therapistData[docKey]) {
-          initialPreviews[docKey] = `${import.meta.env.VITE_BASE_URL}${therapistData[docKey]}`;
-          initialDocuments[docKey] = therapistData[docKey];
-        }
-      });
+    Object.keys(documentLabels).forEach(docKey => {
+  if (therapistData[docKey]) {
+    const value = therapistData[docKey];
+    // ✅ Check if it's already a full URL (e.g. Cloudinary)
+    if (value.startsWith('http')) {
+      initialPreviews[docKey] = value;
+    } else {
+      initialPreviews[docKey] = `${import.meta.env.VITE_BASE_URL}${value}`;
+    }
+    initialDocuments[docKey] = value;
+  }
+});
+
       
       setPreviews(initialPreviews);
       setDocuments(initialDocuments);

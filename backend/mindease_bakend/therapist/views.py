@@ -871,8 +871,14 @@ class Get_total_rating(APIView):
         return JsonResponse({"rate": avg_rating})
 
 
+from django.http import FileResponse, Http404, HttpResponseRedirect
+
 @login_required
 def Therapist_protected_document_view(request, path):
+    # If the path is actually a full Cloudinary URL, redirect
+    if path.startswith("http"):
+        return HttpResponseRedirect(path)
+
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if not os.path.exists(file_path):
         raise Http404("File not found")
