@@ -189,7 +189,7 @@ function Chat() {
     
     try {
       const response = await axios.post(
-        `${basicUrl}/api/users/chat/upload-media/`,
+        `${basicUrl}api/users/chat/upload-media/`,
         formData,
         {
           headers: {
