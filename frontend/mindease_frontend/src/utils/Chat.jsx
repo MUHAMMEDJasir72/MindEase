@@ -92,8 +92,8 @@ function Chat() {
 
 
     const url = role === 'therapist'
-      ? `${basicUrl}/api/users/chat/conversation/${therapistId}/${userId}/`
-      : `${basicUrl}/api/users/chat/conversation/${userId}/${therapistId}/`;
+      ? `${basicUrl}api/users/chat/conversation/${therapistId}/${userId}/`
+      : `${basicUrl}api/users/chat/conversation/${userId}/${therapistId}/`;
 
     axios
       .get(url, { withCredentials: true })
@@ -106,7 +106,7 @@ function Chat() {
         setError('Failed to load messages. Please try again later.');
         setIsLoading(false);
       });
-      
+
     console.log(`${import.meta.env.VITE_ROUTER_URL}ws/chat/${roomName}/`);
 
     // Set up WebSocket
