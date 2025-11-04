@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTherapistInfo, getUserInfo } from '../api/therapist';
 import { basicUrl, routerBaseUrl } from '../api/axiosInstance';
-import { getMessages, markAsAttended } from '../api/user';
+import { markAsAttended } from '../api/user';
+import { useSelector } from 'react-redux';
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -66,7 +67,7 @@ function Chat() {
 
   useEffect(() => {
     // Fetch all messages between user and therapist
-    // setIsLoading(true);
+    setIsLoading(true);
 
     const fetchTherapistInfo = async () => {
       const info = await getTherapistInfo(therapistId);
@@ -85,28 +86,28 @@ function Chat() {
         console.log('Failed to load user information.');
       }
     };
-
-
-    const fetchMessages = async () => {
-  let id1 = role === 'therapist' ? therapistId : userId;
-  let id2 = role === 'therapist' ? userId : therapistId;
-
-  const res = await getMessages(id1, id2);
-  if (res.success) {
-    setMessages(res.data); // also typo: should be setMessages not setMessage
-  } else {
-    console.log('Failed to load messages.');
-  }
-};
-
     
     fetchUserInfo();
     fetchTherapistInfo();
-    fetchMessages()
-   
- 
 
-   
+
+    const url = role === 'therapist'
+      ? `${basicUrl}/api/users/chat/conversation/${therapistId}/${userId}/`
+      : `${basicUrl}/api/users/chat/conversation/${userId}/${therapistId}/`;
+
+    axios
+      .get(url, { withCredentials: true })
+      .then((res) => {
+        setMessages(res.data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching messages:', error);
+        setError('Failed to load messages. Please try again later.');
+        setIsLoading(false);
+      });
+      
+    console.log(`${import.meta.env.VITE_ROUTER_URL}ws/chat/${roomName}/`);
 
     // Set up WebSocket
     socketRef.current = new WebSocket(`${routerBaseUrl}ws/chat/${roomName}/`);
@@ -148,7 +149,6 @@ function Chat() {
     return () => {
       socketRef.current?.close();
     };
-      //  setIsLoading(false);
   }, [userId, therapistId, roomName, sender]);
 
   useEffect(() => {
@@ -189,7 +189,7 @@ function Chat() {
     
     try {
       const response = await axios.post(
-        `${basicUrl}api/users/chat/upload-media/`,
+        `${basicUrl}/api/users/chat/upload-media/`,
         formData,
         {
           headers: {
@@ -286,25 +286,30 @@ function Chat() {
     return groups;
   };
 
-  const renderMediaMessage = (msg) => {
-    if (!msg.media) return null;
+  
 
+  const renderMediaMessage = (msg) => {
+    console.log('msg',msg)
+    if (!msg.media) return null;
     switch (msg.media_type) {
       case 'image':
         return (
           <div className="mt-2 rounded-lg overflow-hidden">
             <img 
-              src={`${msg.media.replace('/media/media/', '/media/')}`}  
-              alt="Sent image" 
-              className="max-w-full max-h-64 object-contain rounded-lg"
-            />
+  src={msg.media}
+  alt="Sent image"
+  className="max-w-full max-h-64 object-contain rounded-lg"
+/>
+
+
+
           </div>
         );
       case 'video':
         return (
           <div className="mt-2 rounded-lg overflow-hidden">
             <video controls className="max-w-full max-h-64 rounded-lg">
-              <source src={`${import.meta.env.VITE_BASE_URL}${msg.media.replace('/media/media/', '/media/')}`} type="video/mp4" />
+              <source src={msg.media} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -318,7 +323,7 @@ function Chat() {
             <div className="ml-3 overflow-hidden">
               <p className="text-sm font-medium truncate">{msg.media.split('/').pop()}</p>
               <a 
-                href={`http://localhost:8000${msg.media.replace('/media/media/', '/media/')}`} 
+                href={`${msg.media}`} 
                 download
                 className="text-xs text-blue-400 hover:text-blue-600"
               >
