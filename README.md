@@ -1,341 +1,138 @@
-MindEase – Your Online Mental Wellness Platform
+🧠 MindEase – Online Counseling Platform
 
-MindEase is an online psychologist booking platform designed to make mental health support accessible and comfortable.
-It allows users to book one-on-one sessions with certified therapists via video call or chat, helping bridge the gap between individuals and mental wellness professionals.
+MindEase is an online counseling platform designed to help people find relief from mental health issues through professional therapy sessions — all from the comfort and privacy of home.
+Users can connect with certified therapists through video calls, voice calls, or real-time chat, manage appointments, handle secure payments, and more — all in one place.
 
-🪶 Table of Contents
+🌐 Live: https://mindeasee.shop
 
-About the Project
+📦 Backend: Django REST Framework (hosted on AWS EC2)
+💻 Frontend: React (hosted on Vercel)
 
-Features
+🚀 Features
+🧍‍♀️ For Users
 
-Tech Stack
+🔍 View and filter therapists by specialization and category
 
-System Architecture
+🗓️ Book sessions for preferred date and time
 
-Project Structure
+💬 Communicate via real-time chat, video calls (WebRTC), and voice calls
 
-Installation Guide
+💰 Wallet system for payments and refunds
 
-Environment Variables
+💳 Stripe integration for secure payments
 
-API Overview
+❌ Cancel sessions (with refunds if canceled at least 1 hour before)
 
-Authentication Flow
+🕒 View session history and upcoming sessions
 
-Reports & Analytics
+🔐 Login with Google Authentication
 
-Deployment Guide
+💸 Request wallet withdrawals
 
-Screenshots
+👩‍⚕️ For Therapists
 
-Future Enhancements
+📝 Apply to become a therapist (admin approval required)
 
-Contributing
+⏰ Create and manage available time slots
 
-Contact
+💼 View bookings, earnings, and chat with clients
 
-License
+💸 Request payouts (manual transfer by admin to UPI account)
 
-💡 About the Project
+🧑‍💼 For Admin
 
-MindEase provides a platform for users to connect with psychologists for therapy sessions online.
-It supports two types of sessions — video call and chat-based therapy.
+✅ Approve or reject therapist applications
 
-The app focuses on:
+💬 Chat directly with therapists
 
-Building trust between users and therapists
+🧾 View all sessions, users, and therapist details
 
-Providing an easy scheduling and payment flow
+🚫 Block/unblock users and therapists
 
-Offering mental wellness reports for admins
+💰 Earn 20% commission on each session
 
-It’s a full-stack web application built with React (frontend) and Django REST Framework (backend), deployed on AWS EC2.
+📊 Access to analytics and reports
 
-✨ Features
-👥 User Features
-
-Sign up and log in with OTP verification
-
-View available therapists and their specializations
-
-Book 1-hour video call or chat sessions
-
-Integrated secure payment gateway (Razorpay)
-
-Real-time chat functionality
-
-View session history and invoices
-
-Manage wallet balance and refunds
-
-Receive notifications about sessions and updates
-
-🧑‍⚕️ Therapist Features
-
-Apply for therapist account and upload verification documents
-
-Manage availability and session slots
-
-Receive real-time booking notifications
-
-Conduct chat or video call sessions
-
-Track session history and earnings
-
-🛡️ Admin Features
-
-Approve or reject therapist applications
-
-Manage users, therapists, and sessions
-
-Generate sales and booking reports
-
-View analytics dashboards (revenue, bookings, therapist performance)
-
-Manage coupons and promotional offers
-
-🧩 Tech Stack
-Frontend
-
-React.js (Vite)
-
-Redux Toolkit (Modern Redux)
-
-Tailwind CSS
-
-React Router DOM
-
-Axios
-
-Socket.IO Client (real-time chat)
-
-Cloudinary for file uploads
-
-Backend
-
-Django & Django REST Framework
-
-PostgreSQL
-
-Django Channels & Redis (WebSockets)
-
-JWT Authentication
-
-Razorpay API
-
-Cloudinary for media storage
-
-Deployment
-
-AWS EC2 (Ubuntu)
-
-Gunicorn & Nginx
-
-Cloudinary for static/media files
-
-GitHub for version control
-
-🧱 System Architecture
-                ┌───────────────────────────┐
-                │        Frontend           │
-                │  React + Redux + Vite     │
-                └───────────┬───────────────┘
-                            │  REST API / WebSocket
-                ┌───────────▼───────────────┐
-                │         Backend           │
-                │ Django REST + Channels    │
-                └───────────┬───────────────┘
-                            │
-            ┌───────────────┼────────────────┐
-            │               │                │
-   ┌────────▼──────┐ ┌──────▼────────┐ ┌─────▼────────┐
-   │ PostgreSQL DB │ │ Cloudinary    │ │ Razorpay API  │
-   │   Data Store  │ │ File Storage  │ │ Payment System│
-   └───────────────┘ └──────────────┘ └───────────────┘
-
-📂 Project Structure
-MindEase/
-├── backend/
-│   ├── mindease/                # Django project settings
-│   ├── user/                    # User-related logic
-│   ├── therapist/               # Therapist module
-│   ├── adminpanel/              # Admin functionalities
-│   ├── reports/                 # Analytics & Reports
-│   ├── media/                   # Media files (handled by Cloudinary)
-│   └── ...
-│
-├── frontend/
-│   ├── mindease_frontend/
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   ├── pages/
-│   │   │   ├── redux/
-│   │   │   ├── utils/
-│   │   │   └── styles/
-│   │   ├── public/
-│   │   └── index.html
-│
-└── README.md
+🧰 Tech Stack
+Layer	Technologies
+Frontend	React, Tailwind CSS
+Backend	Django REST Framework, Django Channels, Redis, Daphne
+Database	PostgreSQL (Amazon RDS)
+Authentication	JWT, Google OAuth
+Payment	Stripe
+Video & Voice Calls	WebRTC
+Deployment	AWS EC2 (Backend), Vercel (Frontend), Nginx, Docker
+Cloud Storage	Cloudinary
+Real-time Communication	WebSockets via Channels + Redis
 
 ⚙️ Installation Guide
 1️⃣ Clone the Repository
-git clone https://github.com/yourusername/mindease.git
-cd mindease
+git clone [https://github.com/yourusername/mindease.git](https://github.com/MUHAMMEDJasir72/MindEase.git)
+cd MindEase
 
-2️⃣ Setup Backend
+2️⃣ Backend Setup
 cd backend
+cd mindease_bakend
 python -m venv venv
-source venv/bin/activate   # On Windows: venv\Scripts\activate
+source venv/bin/activate  # For Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 
-Run migrations:
+Set up your .env file:
+
+SECRET_KEY=your_secret_key
+DEBUG=True
+DATABASE_URL=your_postgres_db_url
+CLOUDINARY_URL=your_cloudinary_url
+STRIPE_SECRET_KEY=your_stripe_secret
+JWT_SECRET=your_jwt_secret
+GOOGLE_CLIENT_ID	Google OAuth Client ID
+GOOGLE_CLIENT_SECRET	Google OAuth Client Secret
+
+
+Run migrations and start server:
 
 python manage.py migrate
 python manage.py runserver
 
-3️⃣ Setup Frontend
-cd ../frontend
+3️⃣ Frontend Setup
+cd frontend
+cd mindease_frontend
 npm install
 npm run dev
 
+🐳 Docker Setup (Optional)
 
-The frontend will start at http://localhost:5173
-The backend runs at http://127.0.0.1:8000
+To run using Docker:
 
-🔐 Environment Variables
-
-Create a .env file in the backend directory and add:
-
-SECRET_KEY=your_secret_key
-DEBUG=True
-DATABASE_NAME=mindease_db
-DATABASE_USER=your_username
-DATABASE_PASSWORD=your_password
-CLOUDINARY_URL=your_cloudinary_url
-RAZORPAY_KEY_ID=your_key
-RAZORPAY_KEY_SECRET=your_secret
-REDIS_URL=redis://127.0.0.1:6379
-
-🔗 API Overview
-Endpoint	Method	Description
-/api/register/	POST	Register new user with OTP
-/api/login/	POST	Login and receive JWT
-/api/therapists/	GET	Get all therapists
-/api/book-session/	POST	Book a session
-/api/payment/verify/	POST	Verify payment
-/api/chat/send/	POST	Send chat message
-/api/chat/history/	GET	Retrieve messages
-🔄 Authentication Flow
-
-User registers → receives OTP via email
-
-Verifies OTP → Account is created
-
-Logs in → JWT tokens are issued
-
-Tokens stored securely in local storage
-
-Refresh tokens used for session persistence
-
-📈 Reports & Analytics
-
-Admin can view:
-
-Total sessions booked (daily/monthly/yearly)
-
-Total revenue generated
-
-Active therapists and users
-
-Coupon usage reports
-
-Top performing psychologists
-
-Reports can be exported as PDF or Excel files.
-
-☁️ Deployment Guide
-Backend Deployment
-
-Hosted on AWS EC2 (Ubuntu)
-
-Served with Gunicorn
-
-Reverse proxy setup via Nginx
-
-Environment variables stored securely in .env
-
-Frontend Deployment
-
-Built using npm run build
-
-Deployed on Vercel, Netlify, or served via Nginx on EC2
-
-Media & Static Files
-
-Managed by Cloudinary
-
-🖼️ Screenshots
-
-(Add screenshots after hosting your app)
-
-Page	Preview
-Home Page	
-
-Therapist List	
-
-Chat Session	
-
-Video Call	
-
-Admin Dashboard	
-🔮 Future Enhancements
-
-AI-powered mental health chatbot
-
-Therapist calendar scheduling system
-
-Session recording & review system
-
-Email reminders for upcoming sessions
-
-Mood tracking and journaling for users
-
-Zoom / Google Meet API integration
-
-🤝 Contributing
-
-Fork this repository
-
-Create a feature branch:
-
-git checkout -b feature/new-feature
+docker-compose up --build
 
 
-Commit your changes
 
-Push to your branch and open a Pull Request
+📱 Key Modules
 
-📧 Contact
+Authentication Module – Handles user/therapist registration, login, and JWT management
 
-Developer: Jasir
+Session Management – Booking, canceling, and managing therapy sessions
+
+Wallet Module – Track payments, refunds, and withdrawals
+
+Admin Dashboard – Manage users, therapists, and transactions
+
+Real-time Communication – WebRTC for video/voice, WebSockets for chat and notifications
+
+📊 Future Improvements
+
+🌍 Multi-language support
+
+📅 Calendar synchronization (Google Calendar integration)
+
+📈 Advanced analytics dashboard for therapists and admin
+
+
+👨‍💻 Developer
+
+👤 Jasir 
 📍 Kasargod, India
-📩 Email: your-email@example.com
-
-🔗 LinkedIn: linkedin.com/in/yourprofile
-
-💻 GitHub: github.com/yourusername
-
-🪪 License
-
-This project is licensed under the MIT License.
-You’re free to use, modify, and distribute it.
-
-Would you like me to include:
-
-✅ Badges (Tech stack, build, license, version, etc.)
-
-✅ README banner / logo section (MindEase logo at top)
-
-I can make it look like a polished GitHub landing page with those additions. Do you want that version?
+💼 Developer | Python & Django Enthusiast
+📧 jasirsnr72@gmail.com
