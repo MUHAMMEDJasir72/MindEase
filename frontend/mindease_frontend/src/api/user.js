@@ -29,7 +29,7 @@ export const updateProfileImage = async (file) => {
   formData.append('profile_image', file);
 
   try {
-    const res = await API.patch('/users/profile_image/', formData, {
+    const res = await API.patch('/users/profile-image/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return res.data;
@@ -49,7 +49,7 @@ export const verifyPassword = async (password) => {
 
 export const changePassword = async (password1, password2) => {
   try {
-    const response = await API.post('/users/change_password/', { password1, password2 });
+    const response = await API.post('/users/change-password/', { password1, password2 });
     return { 
       success: true, 
       message: response.data?.message || "Password updated successfully" 
@@ -119,7 +119,7 @@ export const changePassword = async (password1, password2) => {
 
   export const changeForgotPassword = async (email, password1, password2) => {
     try {
-      const response = await API.post('/users/change_forgot_password/', { email, password1, password2 });
+      const response = await API.post('/users/change-forgot-password/', { email, password1, password2 });
       return { success: true };  // Consider returning response data if needed
     } catch (error) {
       // Check if error response has message and return it

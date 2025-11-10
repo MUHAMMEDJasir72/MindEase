@@ -1,4 +1,4 @@
-from .models import TherapySession  # Make sure this import is correct
+from .models import TherapySession 
 from datetime import datetime
 import os
 from rest_framework.decorators import api_view, parser_classes
@@ -6,11 +6,7 @@ from rest_framework.parsers import MultiPartParser
 from django.contrib.auth import login
 from google.auth.transport import requests
 from google.oauth2 import id_token
-from django.contrib.sites.models import Site
-from dj_rest_auth.registration.views import SocialLoginView
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from rest_framework.decorators import api_view, permission_classes
-from datetime import time
 from .serializers import MessageSerializer
 from .models import Message
 from .models import TherapySession
@@ -28,20 +24,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from datetime import timedelta
-from .serializers import MyTokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import UserDetails, TemporaryUser
 from decouple import config
 import re
-import string
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
 import random
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -56,6 +47,7 @@ from admins.models import *
 from rest_framework import permissions
 import logging
 logger = logging.getLogger("users")
+import cloudinary.uploader
 
 User = get_user_model()
 
@@ -71,9 +63,7 @@ class IsNotBlockedUser(permissions.BasePermission):
 
 
 class RegisterUserView(APIView):
-    def post(self, request):
-        """Handle user registration with validation and OTP sending."""
-        data = request.data
+    def validate_registration_data(self, data):
         full_name = data.get("fullName", "").strip()
         email = data.get("email", "").strip()
         age = data.get("age", "").strip()
@@ -83,8 +73,6 @@ class RegisterUserView(APIView):
         phone = data.get("phone", "").strip()
         password1 = data.get("password1", "")
         password2 = data.get("password2", "")
-
-        logger.info("Received registration request with data: %s", data)
 
         if not all(
             [
@@ -99,69 +87,39 @@ class RegisterUserView(APIView):
                 password2,
             ]
         ):
-            return Response(
-                {"success": False, "error": "All fields are required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {"error": "All fields are required."}
 
         if not re.match(r"^[A-Za-z]{3,20}$", full_name):
-            return Response(
-                {
-                    "success": False,
-                    "error": "Fullname must contain only letters and be 3–20 characters long.",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {
+                "error": "Fullname must contain only letters and be 3–20 characters long."
+            }
 
         try:
             validate_email(email)
         except ValidationError:
-            return Response(
-                {"success": False, "error": "Invalid email format."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {"error": "Invalid email format."}
 
         if UserDetails.objects.filter(email=email).exists():
-            return Response(
-                {"success": False, "error": "Email already registered."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {"error": "Email already registered."}
 
         if not age.isdigit() or not (0 < int(age) <= 150):
-            return Response(
-                {"success": False, "error": "Age must be a number between 1 and 150."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {"error": "Age must be a number between 1 and 150."}
 
         if not re.match(r"^[A-Za-z\s]{3,50}$", place):
-            return Response(
-                {
-                    "success": False,
-                    "error": "Place must contain only letters and be 3–50 characters long.",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {
+                "error": "Place must contain only letters and be 3–50 characters long."
+            }
 
         if not re.match(r"^[A-Za-z\s]{2,30}$", language):
-            return Response(
-                {
-                    "success": False,
-                    "error": "Language must contain only letters and be 2–30 characters long.",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {
+                "error": "Language must contain only letters and be 2–30 characters long."
+            }
 
         if not re.match(r"^\+?[1-9]\d{8,14}$", phone):
-            return Response(
-                {"success": False, "error": "Invalid phone number format."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {"error": "Invalid phone number format."}
 
         if password1 != password2:
-            return Response(
-                {"success": False, "error": "Passwords do not match."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return {"error": "Passwords do not match."}
 
         if (
             len(password1) < 8
@@ -169,13 +127,41 @@ class RegisterUserView(APIView):
             or not re.search(r"[0-9]", password1)
             or not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password1)
         ):
+            return {
+                "error": "Password must be 8–30 characters long, include at least one number and one special character."
+            }
+
+        return {
+            "full_name": full_name,
+            "email": email,
+            "age": age,
+            "place": place,
+            "gender": gender,
+            "language": language,
+            "phone": phone,
+            "password1": password1,
+            "password2": password2,
+        }
+
+    def post(self, request):
+        data = request.data
+        logger.info("Received registration request with data: %s", data)
+
+        validation_result = self.validate_registration_data(data)
+        if "error" in validation_result:
             return Response(
-                {
-                    "success": False,
-                    "error": "Password must be 8–30 characters long, include at least one number and one special character.",
-                },
+                {"success": False, "error": validation_result["error"]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        full_name = validation_result["full_name"]
+        email = validation_result["email"]
+        age = validation_result["age"]
+        place = validation_result["place"]
+        gender = validation_result["gender"]
+        language = validation_result["language"]
+        phone = validation_result["phone"]
+        password1 = validation_result["password1"]
 
         temp_user = TemporaryUser.objects.filter(email=email)
         if temp_user.exists():
@@ -208,6 +194,7 @@ class RegisterUserView(APIView):
             {"message": "User registered successfully. Please verify your OTP."},
             status=status.HTTP_201_CREATED,
         )
+
 
 
 class LoginViews(APIView):
@@ -478,6 +465,7 @@ class ProfileView(APIView):
             "phone": user.phone,
             "profile_image": user.profile_image.url if user.profile_image else None,
         }
+        logger.info(f"Profile data fetched successfully for user: {user.username}")
         return Response(
             {"success": True, "profile_info": profile_data, "login_method": method}
         )
@@ -1218,33 +1206,30 @@ def upload_media(request):
     sender = request.POST.get("sender")
     receiver = request.POST.get("receiver")
 
-    media_dir = os.path.join(settings.MEDIA_ROOT, "chat_media")
-    os.makedirs(media_dir, exist_ok=True)
-
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    ext = file.name.split(".")[-1]
+    ext = file.name.split(".")[-1].lower()
     filename = f"{timestamp}_{sender}_{receiver}.{ext}"
 
-    file_path = os.path.join(media_dir, filename)
-    with open(file_path, "wb+") as destination:
-        for chunk in file.chunks():
-            destination.write(chunk)
-
-    media_type = "other"
-    if ext.lower() in ["jpg", "jpeg", "png", "gif"]:
-        media_type = "image"
-    elif ext.lower() in ["mp4", "webm", "ogg"]:
-        media_type = "video"
-    elif ext.lower() in ["pdf", "doc", "docx", "txt"]:
-        media_type = "document"
-
-    return Response(
-        {
-            "media_url": os.path.join("/media/chat_media", filename),
-            "media_type": media_type,
-        }
+    # ✅ Upload directly to Cloudinary
+    upload_result = cloudinary.uploader.upload(
+        file,
+        folder="chat_media",
+        public_id=f"{timestamp}_{sender}_{receiver}",
+        resource_type="auto"
     )
 
+    media_type = "other"
+    if ext in ["jpg", "jpeg", "png", "gif"]:
+        media_type = "image"
+    elif ext in ["mp4", "webm", "ogg"]:
+        media_type = "video"
+    elif ext in ["pdf", "doc", "docx", "txt"]:
+        media_type = "document"
+
+    return Response({
+        "media_url": upload_result["secure_url"],  # ✅ real Cloudinary URL
+        "media_type": media_type,
+    })
 
 class MarkAsAttended(APIView):
     def post(self, request):
@@ -1260,7 +1245,7 @@ class MarkAsAttended(APIView):
                 {"message": "Session not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        if role == "videoCallWithTherapist" or role == "user":
+        if role == "Client" or role == "user":
             session.user_attended = True
         else:
             session.therapist_attended = True

@@ -607,7 +607,7 @@ function TherapistAppointments() {
                                 to={
                                   session.session_mode === 'message'
                                     ? `/chat/${session.client}/${session.therapist}/${session.id}/therapist`
-                                    : `/videoCall/videoCallWithClient/${session.id}/${session.session_mode}`
+                                    : `/videoCall/Therapist/${session.id}/${session.session_mode}`
                                 }
                                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md flex items-center gap-1"
                               >

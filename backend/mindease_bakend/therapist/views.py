@@ -1,71 +1,53 @@
 from django.conf import settings
 import os
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, Http404
 from django.db.models import Avg
 from rest_framework.decorators import api_view, permission_classes
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from calendar import month_name
 from django.forms.models import model_to_dict
 from users.serializers import UserSerializer
-import re
 from django.http import JsonResponse
-from .models import AvailableDate
 from django.utils.dateparse import parse_date
 from django.utils.timezone import localtime
-from django.db.models import Q
 from datetime import datetime, timedelta
 from django.utils import timezone
 from .serializers import AvailableDateSerializer
-from datetime import date
 from .models import AvailableDate, AvailableTimes
 from rest_framework.exceptions import NotFound
-import json
 from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-import traceback
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from .models import *
-from django.contrib.auth import authenticate, get_user_model
 from admins.serializers import TherapistDetailsSerializer
-
 from users.models import *
 from users.serializers import TherapySessionSerializer
-
-
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from .serializers import *
-from .models import TherapistDetails
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from .models import TherapistDetails, Specializations, Languages
-from django.contrib.auth.models import User
-
-
 from rest_framework import permissions
+from django.http import FileResponse, Http404, HttpResponseRedirect
+import cloudinary.uploader
+import re
+from rest_framework.exceptions import ValidationError
+
 
 
 class IsNotBlockedTherapist(permissions.BasePermission):
     """
     Allows access only to non-blocked therapists.
     """
-
     def has_permission(self, request, view):
         user = request.user
         if user.is_authenticated and not user.is_therapist_active:
             return False
         return True
+
+
 
 
 class RegisterTherapistView(APIView):
@@ -74,78 +56,97 @@ class RegisterTherapistView(APIView):
     def post(self, request):
         data = request.data
         files = request.FILES
+
         try:
             user = request.user  
 
             if TherapistDetails.objects.filter(user=user).exists():
                 return Response(
-                    {
-                        "success": False,
-                        "message": "You have already submitted the form.",
-                    },
+                    {"success": False, "message": "You have already submitted the form."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+
+            # Helper function to handle file uploads
+            def upload_to_cloudinary(file):
+                if not file:
+                    return None
+
+                # Detect if file is PDF
+                if file.name.lower().endswith('.pdf'):
+                    upload_result = cloudinary.uploader.upload(
+                        file,
+                        folder="documents",
+                        resource_type="raw"
+                    )
+                else:
+                    upload_result = cloudinary.uploader.upload(
+                        file,
+                        folder="documents",
+                        resource_type="image"
+                    )
+
+                return upload_result.get("secure_url")
 
             therapist = TherapistDetails.objects.create(
                 user=user,
                 professionalTitle=data.get("professionalTitle"),
                 yearsOfExperience=data.get("yearsOfExperience"),
-                professionalLicenseNumber=data.get(
-                    "professionalLicenseNumber"),
+                professionalLicenseNumber=data.get("professionalLicenseNumber"),
                 licenseIssuingAuthority=data.get("licenseIssuingAuthority"),
                 licenseExpiryDate=data.get("licenseExpiryDate"),
                 degree=data.get("degree"),
                 university=data.get("university"),
                 yearOfGraduation=data.get("yearOfGraduation"),
                 additionalCertifications=data.get("additionalCertifications"),
-                governmentIssuedID=files.get("governmentIssuedID"),
-                professionalLicense=files.get("professionalLicense"),
-                educationalCertificate=files.get("educationalCertificate"),
-                additionalCertificationDocument=files.get(
-                    "additionalCertificationDocument"
-                ),
-                profile_image=files.get("profile_image"),
+                governmentIssuedID=upload_to_cloudinary(files.get("governmentIssuedID")),
+                professionalLicense=upload_to_cloudinary(files.get("professionalLicense")),
+                educationalCertificate=upload_to_cloudinary(files.get("educationalCertificate")),
+                additionalCertificationDocument=upload_to_cloudinary(files.get("additionalCertificationDocument")),
+                profile_image=upload_to_cloudinary(files.get("profile_image")),
             )
 
-            specializations = data.get(
-                "specializations")  
-            specializations_list = specializations.split(
-                ",") 
-
+            # Save specializations
+            specializations = data.get("specializations")
+            specializations_list = specializations.split(",")
             for spec_name in specializations_list:
                 try:
                     specialization_obj = SpecializationsList.objects.get(
                         specialization=spec_name.strip()
                     )
                     Specializations.objects.create(
-                        specialization=specialization_obj, therapist_details=therapist
+                        specialization=specialization_obj,
+                        therapist_details=therapist
                     )
                 except SpecializationsList.DoesNotExist:
                     continue
 
+            # Save languages
             languages = data.getlist("languages")
             lang_data = languages[0].split(",")
             for lang in lang_data:
                 Languages.objects.create(
-                    therapist_details=therapist, languages=lang)
+                    therapist_details=therapist, languages=lang
+                )
 
+            # Admin notification
             admin_user = UserDetails.objects.filter(is_superuser=True).first()
             AdminNotification.objects.create(
                 user=admin_user,
                 title="New Therapist Request",
-                message=f"New Therapist Request from {user.fullname} ",
+                message=f"New Therapist Request from {user.fullname}",
                 type="success",
                 location=f"/therapistDetails/{therapist.id}",
             )
 
             return Response(
-                {"success": True, "message": "form subimtted successfully"},
+                {"success": True, "message": "Form submitted successfully"},
                 status=status.HTTP_201_CREATED,
             )
 
         except Exception as e:
             return Response(
-                {"success": False, "error": str(e)}, status=status.HTTP_400_BAD_REQUEST
+                {"success": False, "error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 
@@ -382,110 +383,106 @@ class RemoveSlotView(APIView):
             return Response({"message": str(e)}, status=500)
 
 
+
+
 class UpdateTherapistProfile(APIView):
     permission_classes = [IsAuthenticated, IsNotBlockedTherapist]
 
     def put(self, request):
         data = request.data
         user = request.user
-        print('data',data)
 
         try:
             details = TherapistDetails.objects.get(user=user)
 
+            # Helper function for Cloudinary upload
+            def upload_to_cloudinary(file):
+                if not file:
+                    return None
+
+                if file.name.lower().endswith(".pdf"):
+                    upload_result = cloudinary.uploader.upload(
+                        file,
+                        folder="documents",
+                        resource_type="raw"
+                    )
+                else:
+                    upload_result = cloudinary.uploader.upload(
+                        file,
+                        folder="documents",
+                        resource_type="image"
+                    )
+                return upload_result.get("secure_url")
+
+            # --- Update user info ---
             user.fullname = data.get("user[fullname]", user.fullname)
             user.age = data.get("user[age]", user.age)
             user.gender = data.get("user[gender]", user.gender)
             user.phone = data.get("user[phone]", user.phone)
             user.place = data.get("user[place]", user.place)
 
-            details.professionalTitle = data.get(
-                "professionalTitle", details.professionalTitle
-            )
-            details.yearsOfExperience = data.get(
-                "yearsOfExperience", details.yearsOfExperience
-            )
-            details.professionalLicenseNumber = data.get(
-                "professionalLicenseNumber", details.professionalLicenseNumber
-            )
-            details.licenseIssuingAuthority = data.get(
-                "licenseIssuingAuthority", details.licenseIssuingAuthority
-            )
-            details.licenseExpiryDate = data.get(
-                "licenseExpiryDate", details.licenseExpiryDate
-            )
+            # --- Update therapist details ---
+            details.professionalTitle = data.get("professionalTitle", details.professionalTitle)
+            details.yearsOfExperience = data.get("yearsOfExperience", details.yearsOfExperience)
+            details.professionalLicenseNumber = data.get("professionalLicenseNumber", details.professionalLicenseNumber)
+            details.licenseIssuingAuthority = data.get("licenseIssuingAuthority", details.licenseIssuingAuthority)
+            details.licenseExpiryDate = data.get("licenseExpiryDate", details.licenseExpiryDate)
             details.degree = data.get("degree", details.degree)
             details.university = data.get("university", details.university)
-            details.yearOfGraduation = data.get(
-                "yearOfGraduation", details.yearOfGraduation
-            )
-            details.additionalCertifications = data.get(
-                "additionalCertifications", details.additionalCertifications
-            )
+            details.yearOfGraduation = data.get("yearOfGraduation", details.yearOfGraduation)
+            details.additionalCertifications = data.get("additionalCertifications", details.additionalCertifications)
 
-            details.profile_image = (
-                request.FILES.getlist("profile_image")[0]
-                if request.FILES.getlist("profile_image")
-                else details.profile_image
-            )
-            details.governmentIssuedID = (
-                request.FILES.getlist("governmentIssuedID")[0]
-                if request.FILES.getlist("governmentIssuedID")
-                else details.governmentIssuedID
-            )
-            details.professionalLicense = (
-                request.FILES.getlist("professionalLicense")[0]
-                if request.FILES.getlist("professionalLicense")
-                else details.professionalLicense
-            )
-            details.educationalCertificate = (
-                request.FILES.getlist("educationalCertificate")[0]
-                if request.FILES.getlist("educationalCertificate")
-                else details.educationalCertificate
-            )
-            details.additionalCertificationDocument = (
-                request.FILES.getlist("additionalCertificationDocument")[0]
-                if request.FILES.getlist("additionalCertificationDocument")
-                else details.additionalCertificationDocument
-            )
+            # --- Upload and update documents (handle both image & pdf properly) ---
+            if request.FILES.get("profile_image"):
+                details.profile_image = upload_to_cloudinary(request.FILES.get("profile_image"))
+
+            if request.FILES.get("governmentIssuedID"):
+                details.governmentIssuedID = upload_to_cloudinary(request.FILES.get("governmentIssuedID"))
+
+            if request.FILES.get("professionalLicense"):
+                details.professionalLicense = upload_to_cloudinary(request.FILES.get("professionalLicense"))
+
+            if request.FILES.get("educationalCertificate"):
+                details.educationalCertificate = upload_to_cloudinary(request.FILES.get("educationalCertificate"))
+
+            if request.FILES.get("additionalCertificationDocument"):
+                details.additionalCertificationDocument = upload_to_cloudinary(request.FILES.get("additionalCertificationDocument"))
+
             details.status = "pending"
             details.save()
             user.save()
 
+            # --- Update specializations ---
             Specializations.objects.filter(therapist_details=details).delete()
-            specializations_data = []
-
-            for key in data:
-                if re.match(r"specializations\[\d+\]\[specialization\]", key):
-                    specializations_data.append({"specialization": data[key]})
-
+            specializations_data = [
+                {"specialization": data[key]}
+                for key in data
+                if re.match(r"specializations\[\d+\]\[specialization\]", key)
+            ]
             for specialization in specializations_data:
                 spec_name = specialization.get("specialization")
-
                 try:
-                    spec_obj = SpecializationsList.objects.get(
-                        specialization=spec_name)
-
+                    spec_obj = SpecializationsList.objects.get(specialization=spec_name)
                     Specializations.objects.create(
                         therapist_details=details, specialization=spec_obj
                     )
-
                 except SpecializationsList.DoesNotExist:
-                    raise ValidationError(
-                        f"There is not {spec_name} specialization, try another one"
-                    )
+                    raise ValidationError(f"There is no '{spec_name}' specialization, try another one")
 
+            # --- Update languages ---
             Languages.objects.filter(therapist_details=details).delete()
-            languages_data = []
-            for key in data:
-                if re.match(r"languages\[\d+\]\[languages\]", key):
-                    languages_data.append({"languages": data[key]})
-
+            languages_data = [
+                {"languages": data[key]}
+                for key in data
+                if re.match(r"languages\[\d+\]\[languages\]", key)
+            ]
             for language in languages_data:
                 Languages.objects.create(
-                    therapist_details=details, languages=language.get(
-                        "languages")
+                    therapist_details=details,
+                    languages=language.get("languages")
                 )
+
+            # --- Notify admin ---
             admin_user = UserDetails.objects.filter(is_superuser=True).first()
             AdminNotification.objects.create(
                 user=admin_user,
@@ -496,7 +493,8 @@ class UpdateTherapistProfile(APIView):
             )
 
             return Response(
-                {"message": "form resubmitted successfully"}, status=status.HTTP_200_OK
+                {"message": "Form resubmitted successfully"},
+                status=status.HTTP_200_OK
             )
 
         except TherapistDetails.DoesNotExist:
@@ -506,6 +504,7 @@ class UpdateTherapistProfile(APIView):
             )
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class MakeCompleted(APIView):
@@ -871,19 +870,28 @@ class Get_total_rating(APIView):
         return JsonResponse({"rate": avg_rating})
 
 
-from django.http import FileResponse, Http404, HttpResponseRedirect
 
 @login_required
 def Therapist_protected_document_view(request, path):
-    # If the path is actually a full Cloudinary URL, redirect
+    # Handle full Cloudinary URLs
     if path.startswith("http"):
+        # For Cloudinary URLs (PDF or image)
+        if "cloudinary.com" in path:
+            # Ensure PDFs open as attachments or inline properly
+            if "/upload/" in path and not path.split("/upload/")[1].startswith("fl_attachment/"):
+                # Insert fl_attachment for download prompt or remove it for inline
+                pdf_url = path.replace("/upload/", "/upload/fl_attachment/")
+                return HttpResponseRedirect(pdf_url)
+            return HttpResponseRedirect(path)
         return HttpResponseRedirect(path)
 
+    # Handle local media files
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if not os.path.exists(file_path):
         raise Http404("File not found")
 
     return FileResponse(open(file_path, "rb"))
+
 
 
 class MarkTherapistNotification(APIView):

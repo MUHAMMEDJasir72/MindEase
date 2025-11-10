@@ -69,6 +69,20 @@ function TherapistProfile() {
       setIsEditModalOpen(false);
     }
   };
+           const getDocumentUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http')) {
+    if (url.endsWith('.pdf') && url.includes('/image/upload/')) {
+      return url.replace('/image/upload/', '/raw/upload/');
+    }
+    return url;
+  }
+  return `${baseUrl}/${url.replace(/^\/?media\//, '').replace(/\/$/, '')}`;
+};
+
+
+
+
   if (loading) {
     return (
       <div className="flex h-screen bg-gray-50">
@@ -327,69 +341,85 @@ function TherapistProfile() {
           </div>
           
           {/* Documents Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center mb-6">
-              <div className="bg-yellow-100 p-3 rounded-full mr-4">
-                <FaFileAlt className="text-yellow-600 text-2xl" />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-800">Documents</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {therapistData.governmentIssuedID && (
-                <a href={`${baseUrl}/therapists/therapist-secure-documents/${therapistData.governmentIssuedID.replace(/^\/?media\//, '').replace(/\/$/, '')}`} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex flex-col items-center text-center">
-                    <FaIdCard className="text-gray-600 text-3xl mb-2" />
-                    <span className="text-sm font-medium text-gray-700">Government ID</span>
-                    <span className="text-xs text-gray-500 mt-1">View Document</span>
-                  </div>
-                </a>
-              )}
-              
-              {therapistData.professionalLicense && (
-                <a href={`${baseUrl}/therapists/therapist-secure-documents/${therapistData.professionalLicense.replace(/^\/?media\//, '').replace(/\/$/, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex flex-col items-center text-center">
-                    <FaFileAlt className="text-gray-600 text-3xl mb-2" />
-                    <span className="text-sm font-medium text-gray-700">Professional License</span>
-                    <span className="text-xs text-gray-500 mt-1">View Document</span>
-                  </div>
-                </a>
-              )}
-              
-              {therapistData.educationalCertificate && (
-                <a href={`${baseUrl}/therapists/therapist-secure-documents/${therapistData.educationalCertificate.replace(/^\/?media\//, '').replace(/\/$/, '')}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex flex-col items-center text-center">
-                    <FaGraduationCap className="text-gray-600 text-3xl mb-2" />
-                    <span className="text-sm font-medium text-gray-700">Educational Certificate</span>
-                    <span className="text-xs text-gray-500 mt-1">View Document</span>
-                  </div>
-                </a>
-              )}
-              
-              {therapistData.additionalCertificationDocument && (
-                <a href={`${baseUrl}/therapists/therapist-secure-documents/${therapistData.additionalCertificationDocument.replace(/^\/?media\//, '').replace(/\/$/, '')}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex flex-col items-center text-center">
-                    <FaFileAlt className="text-gray-600 text-3xl mb-2" />
-                    <span className="text-sm font-medium text-gray-700">Additional Certifications</span>
-                    <span className="text-xs text-gray-500 mt-1">View Document</span>
-                  </div>
-                </a>
-              )}
-            </div>
-          </div>
+
+
+<div className="bg-white rounded-lg shadow-md p-6">
+  <div className="flex items-center mb-6">
+    <div className="bg-yellow-100 p-3 rounded-full mr-4">
+      <FaFileAlt className="text-yellow-600 text-2xl" />
+    </div>
+    <h2 className="text-xl font-semibold text-gray-800">Documents</h2>
+  </div>
+  {
+    console.log('JapaneseYenIcon', therapistData.governmentIssuedID)
+  }
+
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    {therapistData.governmentIssuedID && (
+      <a
+        href={getDocumentUrl(therapistData.governmentIssuedID)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex flex-col items-center text-center">
+          <FaIdCard className="text-gray-600 text-3xl mb-2" />
+          <span className="text-sm font-medium text-gray-700">Government ID</span>
+          <span className="text-xs text-gray-500 mt-1">View Document</span>
+        </div>
+      </a>
+    )}
+
+    {therapistData.professionalLicense && (
+      <a
+        href={getDocumentUrl(therapistData.professionalLicense)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex flex-col items-center text-center">
+          <FaFileAlt className="text-gray-600 text-3xl mb-2" />
+          <span className="text-sm font-medium text-gray-700">Professional License</span>
+          <span className="text-xs text-gray-500 mt-1">View Document</span>
+        </div>
+      </a>
+    )}
+
+    {therapistData.educationalCertificate && (
+      <a
+        href={getDocumentUrl(therapistData.educationalCertificate)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex flex-col items-center text-center">
+          <FaGraduationCap className="text-gray-600 text-3xl mb-2" />
+          <span className="text-sm font-medium text-gray-700">Educational Certificate</span>
+          <span className="text-xs text-gray-500 mt-1">View Document</span>
+        </div>
+      </a>
+    )}
+
+    {therapistData.additionalCertificationDocument && (
+      <a
+        href={getDocumentUrl(therapistData.additionalCertificationDocument)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex flex-col items-center text-center">
+          <FaFileAlt className="text-gray-600 text-3xl mb-2" />
+          <span className="text-sm font-medium text-gray-700">Additional Certifications</span>
+          <span className="text-xs text-gray-500 mt-1">View Document</span>
+        </div>
+      </a>
+    )}
+  </div>
+</div>
+
+
+
+
         </div>
       </div>
     </div>

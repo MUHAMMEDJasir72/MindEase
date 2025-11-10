@@ -45,7 +45,7 @@ export const logoutUser = async () => {
 export const verifyOtp = async (otp,email) => {
  
   try {
-      const response = await API.post("/users/verify_otp/", {otp,email});
+      const response = await API.post("/users/verify-otp/", {otp,email});
       return { success: true, message: response.data.message};
   } catch (error) {
       return { success: false, message: error.response?.data?.message || "Invalid OTP" };
@@ -65,7 +65,7 @@ export const verifyFotgetPasswordOtp = async (otp,email) => {
 
 export const resendOtp = async (email) => {
     try {
-      const response = await API.post("/users/resend_otp/", { email });
+      const response = await API.post("/users/resend-otp/", { email });
       return { success: true, message: "OTP resent successfully!" };
     } catch (error) {
       return { success: false, message: error.response?.data?.message || "Failed to resend OTP!" };

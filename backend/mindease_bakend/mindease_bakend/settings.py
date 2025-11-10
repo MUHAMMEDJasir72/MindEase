@@ -234,7 +234,8 @@ CHANNEL_LAYERS = {
 }
 
 
-
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
 
 LOGGING = {
     "version": 1,
@@ -250,28 +251,21 @@ LOGGING = {
         },
     },
     "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
+    "console": {
+        "class": "logging.StreamHandler",
+        "formatter": "verbose",
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",  # change to DEBUG if you want more detail
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": True,
-        },
-        # Example: your custom app
-        "myapp": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
-    },
+    "file": {
+    "class": "logging.FileHandler",
+    "filename": os.path.join(LOG_DIR, "debug.log"),
+    "formatter": "verbose",
+},
+},
+"root": {
+    "handlers": ["console", "file"],
+    "level": "DEBUG",
+},
+
 }
 
 

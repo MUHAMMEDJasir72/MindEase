@@ -288,64 +288,53 @@ function Chat() {
 
   
 
-  const renderMediaMessage = (msg) => {
-    console.log('msg',msg)
-    if (!msg.media) return null;
-    switch (msg.media_type) {
-      case 'image':
-        return (
-          <div className="mt-2 rounded-lg overflow-hidden">
-            <img 
-  src={msg.media}
-  alt="Sent image"
-  className="max-w-full max-h-64 object-contain rounded-lg"
-/>
+ const renderMediaMessage = (msg) => {
+  console.log(msg)
+  if (!msg.media) return null;
 
+  let mediaUrl = msg.media;
 
+  // ✅ If it's a PDF, show first page as image
+  if (msg.media_type === 'document' && msg.media.endsWith('.pdf')) {
+    // Convert PDF URL to image preview (Cloudinary transformation)
+    mediaUrl = msg.media
+      .replace('/upload/', '/upload/pg_1/')
+      .replace('.pdf', '.jpg');
+  }
 
-          </div>
-        );
-      case 'video':
-        return (
-          <div className="mt-2 rounded-lg overflow-hidden">
-            <video controls className="max-w-full max-h-64 rounded-lg">
-              <source src={msg.media} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        );
-      case 'document':
-        return (
-          <div className="mt-2 p-3 bg-white bg-opacity-20 rounded-lg flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-medium truncate">{msg.media.split('/').pop()}</p>
-              <a 
-                href={`${msg.media}`} 
-                download
-                className="text-xs text-blue-400 hover:text-blue-600"
-              >
-                Download
-              </a>
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div className="mt-2 p-3 bg-white bg-opacity-20 rounded-lg">
-            <a 
-              href={`http://localhost:8000${msg.media.replace('/media/media/', '/media/')}`} 
-              download
-              className="text-blue-400 hover:text-blue-600"
-            >
-              Download file
-            </a>
-          </div>
-        );
-    }
-  };
+  switch (msg.media_type) {
+    case 'image':
+    case 'document': 
+    case 'other': // treat PDF/doc as image
+      return (
+        <div className="mt-2 rounded-lg overflow-hidden">
+          <img
+            src={mediaUrl}
+            alt="Sent media"
+            className="max-w-full max-h-64 object-contain rounded-lg"
+            onError={(e) => {
+              // fallback if image fails (like .docx)
+              e.target.src = "/default-doc-preview.png";
+            }}
+          />
+        </div>
+      );
+
+    case 'video':
+      return (
+        <div className="mt-2 rounded-lg overflow-hidden">
+          <video controls className="max-w-full max-h-64 rounded-lg">
+            <source src={msg.media} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+
+    default:
+      return null;
+  }
+};
+
 
   const groupedMessages = groupMessagesByDate(messages);
 

@@ -5,8 +5,6 @@ from django.http import FileResponse, Http404
 from rest_framework.decorators import api_view, permission_classes
 from django.utils.timezone import localtime
 from datetime import datetime
-from rest_framework.permissions import IsAdminUser  # Optional
-from django.db.models import Exists, OuterRef
 from django.db.models import Sum, Count
 from datetime import date
 from rest_framework.response import Response
@@ -21,9 +19,8 @@ from .serializers import *
 from rest_framework.permissions import IsAuthenticated
 from users.models import *
 from decouple import config
-from django.core.mail import send_mail
 from .models import *
-
+from django.http import FileResponse, Http404, HttpResponseRedirect
 
 User = get_user_model()
 
@@ -625,7 +622,7 @@ class get_notifications(APIView):
 # @permission_classes([IsAuthenticated])
 # @login_required
 
-from django.http import FileResponse, Http404, HttpResponseRedirect
+
 
 def protected_document_view(request, path):
     if path.startswith("http"):

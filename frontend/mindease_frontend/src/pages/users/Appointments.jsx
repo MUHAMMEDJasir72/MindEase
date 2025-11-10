@@ -579,7 +579,7 @@ function Appointments() {
                                 to={
                                   appointment.session_mode === 'message'
                                     ? `/chat/${appointment.client}/${appointment.therapist}/${appointment.id}/user`
-                                    : `/videoCall/videoCallWithTherapist/${appointment.id}/${appointment.session_mode}`
+                                    : `/videoCall/Client/${appointment.id}/${appointment.session_mode}`
                                 }
                                 className="block w-full"
                               >

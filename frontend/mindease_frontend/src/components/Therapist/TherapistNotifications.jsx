@@ -109,7 +109,8 @@ const TherapistNotification = () => {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
-
+ 
+  console.log('notifications', notifications)
 
   return (
     <div className="relative" ref={notificationRef}>

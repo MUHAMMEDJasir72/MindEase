@@ -20,6 +20,7 @@ def send_user_notification_on_save(sender, instance, created, **kwargs):
                     "message": instance.message,
                     "time": instance.time.isoformat(),
                     "type": instance.type,
+                    "location": instance.location,
                 },
             },
         )
@@ -44,6 +45,7 @@ def send_therapist_notification_on_save(sender, instance, created, **kwargs):
                     "message": instance.message,
                     "time": instance.time.isoformat(),
                     "type": instance.type,
+                    "location": instance.location,
                 },
             },
         )
@@ -62,6 +64,7 @@ def send_admin_notification_on_save(sender, instance, created, **kwargs):
                     "message": instance.message,
                     "time": instance.time.isoformat(),
                     "type": instance.type,
+                    "location": instance.location,
                 },
             },
         )
