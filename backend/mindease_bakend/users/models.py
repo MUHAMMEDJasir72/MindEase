@@ -123,8 +123,24 @@ class Message(models.Model):
         ordering = ["timestamp"]
 
     def save(self, *args, **kwargs):
+<<<<<<< HEAD
         # ✅ Automatically detect media type based on extension
         if self.media and not self.media_type:
+=======
+        if self.media:
+            # 🧹 Fix path issues safely
+            self.media.name = self.media.name.replace("\\", "/")
+            if self.media.name.startswith("/media/"):
+                self.media.name = self.media.name.replace("/media/", "")
+            elif self.media.name.startswith("media/"):
+                self.media.name = self.media.name.replace("media/", "")
+
+            # ✅ Ensure it keeps the "chat_media/" prefix
+            if not self.media.name.startswith("chat_media/"):
+                self.media.name = "chat_media/" + self.media.name.lstrip("/")
+
+            # Detect media type
+>>>>>>> bf89e3c (save server changes)
             ext = self.media.name.split(".")[-1].lower()
             if ext in ["jpg", "jpeg", "png", "gif"]:
                 self.media_type = "image"
@@ -134,6 +150,7 @@ class Message(models.Model):
                 self.media_type = "document"
             else:
                 self.media_type = "other"
+
         super().save(*args, **kwargs)
 
 
