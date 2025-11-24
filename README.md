@@ -1,4 +1,4 @@
-🧠 MindEase – Online Counseling Platform
+MindEase – Online Counseling Platform
 
 MindEase is an online counseling platform designed to help people find relief from mental health issues through professional therapy sessions — all from the comfort and privacy of home.
 Users can connect with certified therapists through video calls, voice calls, or real-time chat, manage appointments, handle secure payments, and more — all in one place.
@@ -64,10 +64,9 @@ Video & Voice Calls	WebRTC
 Deployment	AWS EC2 (Backend), Vercel (Frontend), Nginx, Docker
 Cloud Storage	Cloudinary
 Real-time Communication	WebSockets via Channels + Redis
-
 ⚙️ Installation Guide
 1️⃣ Clone the Repository
-git clone [https://github.com/yourusername/mindease.git](https://github.com/MUHAMMEDJasir72/MindEase.git)
+git clone https://github.com/MUHAMMEDJasir72/MindEase.git
 cd MindEase
 
 2️⃣ Backend Setup
@@ -86,8 +85,8 @@ DATABASE_URL=your_postgres_db_url
 CLOUDINARY_URL=your_cloudinary_url
 STRIPE_SECRET_KEY=your_stripe_secret
 JWT_SECRET=your_jwt_secret
-GOOGLE_CLIENT_ID	Google OAuth Client ID
-GOOGLE_CLIENT_SECRET	Google OAuth Client Secret
+GOOGLE_CLIENT_ID=Google OAuth Client ID
+GOOGLE_CLIENT_SECRET=Google OAuth Client Secret
 
 
 Run migrations and start server:
@@ -106,8 +105,6 @@ npm run dev
 To run using Docker:
 
 docker-compose up --build
-
-
 
 📱 Key Modules
 
@@ -129,10 +126,9 @@ Real-time Communication – WebRTC for video/voice, WebSockets for chat and noti
 
 📈 Advanced analytics dashboard for therapists and admin
 
-
 👨‍💻 Developer
 
-👤 Jasir 
+👤 Jasir
 📍 Kasargod, India
 💼 Developer | Python & Django Enthusiast
 📧 jasirsnr72@gmail.com
