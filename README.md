@@ -11,11 +11,16 @@ Users can connect with certified therapists through video calls, voice calls, or
 🚀 Features
 🧍‍♀️ For Users
 
-🔍 View and filter therapists by specialization and category
+🔍 View and filter therapists by specialization and category 
+
 🗓️ Book sessions for preferred date and time
+
 💬 Communicate via real-time chat, video calls (WebRTC), and voice calls
+
 💰 Wallet system for payments and refunds
+
 💳 Stripe integration for secure payments
+
 ❌ Cancel sessions (with refunds if canceled at least 1 hour before)
 🕒 View session history and upcoming sessions
 🔐 Login with Google Authentication
