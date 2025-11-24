@@ -21,10 +21,10 @@ urlpatterns = [
     path("request-withdraw/", RequestWithdraw.as_view(), name="request_withdraw"),
     path("get-admin/", GetAdmin.as_view(), name="get_admin"),
     path("chat-history/<int:sender_id>/<int:receiver_id>/", views.get_chat_history, name="chat_history"),
-    path("reportForTherapistDashboard/<int:therapist_id>/", ReportForTherapistDashboard.as_view(), name="reportForTherapistDashboard"),
+    path("report-dashboard/<int:therapist_id>/", ReportForTherapistDashboard.as_view(), name="reportForTherapistDashboard"),
     path("get-notifications/", views.get_notifications, name="get_notifications"),
     path("get-total-raiting/", Get_total_rating.as_view(), name="get_total_rating"),
     path("therapist-secure-documents/<path:path>", Therapist_protected_document_view, name="therapist-secure_document"),
     path("mark-therapist-notification/", MarkTherapistNotification.as_view(), name="mark-therapist-notification"),
-    path("mark-alltherapist-notifications/", MarkAllTherapistNotifications.as_view(), name="mark-alltherapist-notifications"),
+    path("mark-all-therapist-notifications/", MarkAllTherapistNotifications.as_view(), name="mark-alltherapist-notifications"),
 ]

@@ -242,7 +242,7 @@ export const getAdminTherapistChat = async (sender, receiver) => {
 
 export const getInfoForTherapistDash = async (id) => {
   try {
-    const response = await API.get(`/therapists/reportForTherapistDashboard/${id}/`);
+    const response = await API.get(`/therapists/report-dashboard/${id}/`);
     return { success: true, data: response.data };
   } catch (error) {
     return { success: false, error: error.response?.data || error.message };
@@ -285,7 +285,7 @@ export const markTherapistNotificationAsRead = async (id) => {
 
 export const markAllTherapistNotifications = async () => {
   try {
-    const response = await API.patch('/therapists/mark-alltherapist-notifications/');
+    const response = await API.patch('/therapists/mark-all-therapist-notifications/');
     return { success: true };
   } catch (error) {
     return { success: false, message: error.response?.data?.message || 'An error occurred' };

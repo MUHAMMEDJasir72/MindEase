@@ -97,7 +97,7 @@ export const rejectTherapist = async (id, reason) => {
 
   export const deleteSpecialize = async (id) => {
     try {
-      const response = await API.delete(`/admin/specializations/${id}/`);
+      const response = await API.delete(`/admin/update-specializations/${id}/`);
       return {
         success: true,
         message: response.data.message,
@@ -112,7 +112,7 @@ export const rejectTherapist = async (id, reason) => {
 
   export const editSpecialize = async (id, data) => {
     try {
-      const response = await API.patch(`/admin/specializations/${id}/`, data);
+      const response = await API.patch(`/admin/update-specializations/${id}/`, data);
       return {
         success: true,
         message: response.data.message,
@@ -197,7 +197,7 @@ export const rejectTherapist = async (id, reason) => {
 
 export const getInfoForAdminDash = async () => {
   try {
-    const response = await API.get(`/admin/reportForAdminDashboard/`);
+    const response = await API.get(`/admin/report-dashboard/`);
     return { success: true, data: response.data };
   } catch (error) {
     return { success: false, error: error.response?.data || error.message };
