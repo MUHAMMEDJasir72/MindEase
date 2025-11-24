@@ -12,70 +12,58 @@ Users can connect with certified therapists through video calls, voice calls, or
 🧍‍♀️ For Users
 
 🔍 View and filter therapists by specialization and category
-
 🗓️ Book sessions for preferred date and time
-
 💬 Communicate via real-time chat, video calls (WebRTC), and voice calls
-
 💰 Wallet system for payments and refunds
-
 💳 Stripe integration for secure payments
-
 ❌ Cancel sessions (with refunds if canceled at least 1 hour before)
-
 🕒 View session history and upcoming sessions
-
 🔐 Login with Google Authentication
-
 💸 Request wallet withdrawals
 
 👩‍⚕️ For Therapists
 
 📝 Apply to become a therapist (admin approval required)
-
 ⏰ Create and manage available time slots
-
 💼 View bookings, earnings, and chat with clients
-
 💸 Request payouts (manual transfer by admin to UPI account)
 
 🧑‍💼 For Admin
 
 ✅ Approve or reject therapist applications
-
 💬 Chat directly with therapists
-
 🧾 View all sessions, users, and therapist details
-
 🚫 Block/unblock users and therapists
-
 💰 Earn 20% commission on each session
-
 📊 Access to analytics and reports
 
 🧰 Tech Stack
-Layer	Technologies
-Frontend	React, Tailwind CSS
-Backend	Django REST Framework, Django Channels, Redis, Daphne
-Database	PostgreSQL (Amazon RDS)
-Authentication	JWT, Google OAuth
-Payment	Stripe
-Video & Voice Calls	WebRTC
-Deployment	AWS EC2 (Backend), Vercel (Frontend), Nginx, Docker
-Cloud Storage	Cloudinary
-Real-time Communication	WebSockets via Channels + Redis
+
+Layer Technologies
+Frontend React, Tailwind CSS
+Backend Django REST Framework, Django Channels, Redis, Daphne
+Database PostgreSQL (Amazon RDS)
+Authentication JWT, Google OAuth
+Payment Stripe
+Video & Voice Calls WebRTC
+Deployment AWS EC2 (Backend), Vercel (Frontend), Nginx, Docker
+Cloud Storage Cloudinary
+Real-time Communication WebSockets via Channels + Redis
+
 ⚙️ Installation Guide
 1️⃣ Clone the Repository
+
 git clone https://github.com/MUHAMMEDJasir72/MindEase.git
+
 cd MindEase
 
 2️⃣ Backend Setup
+
 cd backend
 cd mindease_bakend
 python -m venv venv
-source venv/bin/activate  # For Windows: venv\Scripts\activate
+source venv/bin/activate # For Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
 
 Set up your .env file:
 
@@ -85,9 +73,8 @@ DATABASE_URL=your_postgres_db_url
 CLOUDINARY_URL=your_cloudinary_url
 STRIPE_SECRET_KEY=your_stripe_secret
 JWT_SECRET=your_jwt_secret
-GOOGLE_CLIENT_ID=Google OAuth Client ID
-GOOGLE_CLIENT_SECRET=Google OAuth Client Secret
-
+GOOGLE_CLIENT_ID Google OAuth Client ID
+GOOGLE_CLIENT_SECRET Google OAuth Client Secret
 
 Run migrations and start server:
 
@@ -95,6 +82,7 @@ python manage.py migrate
 python manage.py runserver
 
 3️⃣ Frontend Setup
+
 cd frontend
 cd mindease_frontend
 npm install
@@ -109,21 +97,15 @@ docker-compose up --build
 📱 Key Modules
 
 Authentication Module – Handles user/therapist registration, login, and JWT management
-
 Session Management – Booking, canceling, and managing therapy sessions
-
 Wallet Module – Track payments, refunds, and withdrawals
-
 Admin Dashboard – Manage users, therapists, and transactions
-
 Real-time Communication – WebRTC for video/voice, WebSockets for chat and notifications
 
 📊 Future Improvements
 
 🌍 Multi-language support
-
 📅 Calendar synchronization (Google Calendar integration)
-
 📈 Advanced analytics dashboard for therapists and admin
 
 👨‍💻 Developer
