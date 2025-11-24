@@ -10,6 +10,7 @@ Users can connect with certified therapists through video calls, voice calls, or
 💻 Frontend: React (hosted on Vercel)
 
 🚀 Features 
+------------
 
 🧍‍♀️ For Users
 --------------
