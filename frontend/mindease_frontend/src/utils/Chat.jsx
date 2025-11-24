@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTherapistInfo, getUserInfo } from '../api/therapist';
 import { basicUrl, routerBaseUrl } from '../api/axiosInstance';
-import { markAsAttended } from '../api/user';
+import { checkAuth, markAsAttended } from '../api/user';
 import { useSelector } from 'react-redux';
 
 function Chat() {
@@ -69,6 +69,14 @@ function Chat() {
     // Fetch all messages between user and therapist
     setIsLoading(true);
 
+
+    const checkAuthUser = async () =>{
+      const auth = await checkAuth()
+      if(!auth.data.authenticated){
+        navigate('/login')
+      }
+    }
+
     const fetchTherapistInfo = async () => {
       const info = await getTherapistInfo(therapistId);
       if (info.success) {
@@ -86,7 +94,8 @@ function Chat() {
         console.log('Failed to load user information.');
       }
     };
-    
+
+    checkAuthUser()
     fetchUserInfo();
     fetchTherapistInfo();
 
