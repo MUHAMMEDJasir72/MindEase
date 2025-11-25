@@ -1016,6 +1016,12 @@ class ConversationView(APIView):
             user1 = User.objects.get(id=user1_id)
             user2 = User.objects.get(id=user2_id)
 
+            if request.user.id not in [user1.id, user2.id]:
+                return Response(
+                    {"error": "You are not authorized to view this conversation."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
             messages = Message.objects.filter(
                 Q(sender=user1, receiver=user2) | Q(
                     sender=user2, receiver=user1)

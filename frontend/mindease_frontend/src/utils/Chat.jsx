@@ -111,8 +111,14 @@ function Chat() {
         setIsLoading(false);
       })
       .catch((error) => {
-        console.error('Error fetching messages:', error);
-        setError('Failed to load messages. Please try again later.');
+        console.log("jasir...",error)
+        if (error.response?.status === 403) {
+        setError("You are not authorized to view this conversation.");
+        navigate("/login"); 
+    } else {
+      console.error("Error fetching messages:", error);
+      setError("Failed to load messages. Please try again later.");
+    }
         setIsLoading(false);
       });
 
