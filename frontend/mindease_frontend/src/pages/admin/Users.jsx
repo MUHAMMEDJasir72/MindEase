@@ -8,7 +8,7 @@ import AdminNotification from '../../components/admin/AdminNotifications';
 function Users() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: 'fullname', direction: 'ascending' });
+  const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'descending'});
   const [filters, setFilters] = useState({
     status: 'all',
     gender: 'all'

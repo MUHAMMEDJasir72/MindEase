@@ -67,7 +67,9 @@ class GetUsersView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        users = User.objects.filter(is_staff=False, is_superuser=False)
+        users = User.objects.filter(is_staff=False, is_superuser=False).order_by('-id')
+        for user in users:
+            print(user.id)
         serializer = UsersSerializer(users, many=True)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
