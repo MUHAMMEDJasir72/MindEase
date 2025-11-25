@@ -100,6 +100,9 @@ class Notification(models.Model):
 
 # users/models.py
 
+User = get_user_model()
+
+
 
 User = get_user_model()
 
@@ -123,6 +126,7 @@ class Message(models.Model):
         ordering = ["timestamp"]
 
     def save(self, *args, **kwargs):
+        # ✅ Automatically detect media type based on extension
         if self.media and not self.media_type:
             ext = self.media.name.split(".")[-1].lower()
             if ext in ["jpg", "jpeg", "png", "gif"]:
@@ -133,8 +137,8 @@ class Message(models.Model):
                 self.media_type = "document"
             else:
                 self.media_type = "other"
-        super().save(*args, **kwargs)
 
+        super().save(*args, **kwargs)
 
 
 
