@@ -875,6 +875,14 @@ class CancelSession(APIView):
             session.time.is_booked = False
             session.time.save()
 
+            WalletTransaction.objects.create(
+                wallet=client_wallet,
+                transaction_type="CREDIT",
+                amount=session.price,
+                description=f"Refund from session #{session.id}. Reason: {reason}",
+            )
+
+
             BlockedSlot.objects.get_or_create(
                 client=session.client, date=session.date, time=session.time
             )
